@@ -3,8 +3,6 @@
 
 #include "TGOR_Dimension.h"
 
-#include "RealitiesRendering/Actors/TGOR_SkyboxActor.h"
-
 #include "Engine/Classes/Components/SplineComponent.h"
 #include "Engine/SphereReflectionCapture.h"
 #include "Engine/ExponentialHeightFog.h"
@@ -28,7 +26,6 @@ UTGOR_Dimension::UTGOR_Dimension()
 	Volatile = true;
 	Lifeline = 25.0f;
 
-	CosmeticTypes.Add(ATGOR_SkyboxActor::StaticClass());
 	CosmeticTypes.Add(ASkyLight::StaticClass());
 	CosmeticTypes.Add(ASphereReflectionCapture::StaticClass());
 	CosmeticTypes.Add(AExponentialHeightFog::StaticClass());

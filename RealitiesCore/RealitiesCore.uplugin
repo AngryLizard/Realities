@@ -111,10 +111,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "RealitiesRendering",
-			"Enabled": true
-		},
-		{
 			"Name": "RealitiesAnimation",
 			"Enabled": true
 		},

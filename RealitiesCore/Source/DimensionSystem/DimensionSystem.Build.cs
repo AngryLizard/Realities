@@ -13,7 +13,6 @@ public class DimensionSystem : ModuleRules
 			{
 				"RealitiesUGC",
 				"RealitiesUtility",
-				"RealitiesRendering",
 
 				"CoreSystem",
 
