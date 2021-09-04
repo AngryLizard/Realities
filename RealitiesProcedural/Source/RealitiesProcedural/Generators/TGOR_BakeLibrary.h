@@ -1,0 +1,22 @@
+// The Gateway of Realities: Planes of Existence.
+
+#pragma once
+
+#include "TGOR_BakeLibrary.generated.h"
+
+//////////////////////////////////////////// STRUCT /////////////////////////////////////////////////
+
+
+/**
+ *
+ */
+UCLASS()
+class REALITIESPROCEDURAL_API UTGOR_BakeLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+};
+

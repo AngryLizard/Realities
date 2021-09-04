@@ -1,0 +1,44 @@
+// TGOR (C) // CHECKED //
+#pragma once
+
+#include "TGOR_BoxPhysicsVolume.h"
+#include "TGOR_LevelVolume.generated.h"
+
+///////////////////////////////////////////////// DECL ///////////////////////////////////////////////////
+
+class UTGOR_DimensionData;
+
+/**
+* .
+*/
+
+UCLASS()
+class DIMENSIONSYSTEM_API ATGOR_LevelVolume : public ATGOR_BoxPhysicsVolume
+{
+	GENERATED_BODY()
+	
+public:
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	ATGOR_LevelVolume(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual bool PreAssemble(UTGOR_DimensionData* Dimension) override;
+
+	//////////////////////////////////////////////// IMPLEMENTABLES /////////////////////////////////////////
+
+	/** */
+
+public:
+
+	/** Sets gravity according to given force */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
+		void SetExternal(const FVector& Force);
+
+protected:
+
+private:
+	
+};

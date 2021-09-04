@@ -1,0 +1,474 @@
+// The Gateway of Realities: Planes of Existence.
+#include "TGOR_PilotComponent.h"
+
+#include "CoreSystem/TGOR_Singleton.h"
+
+#include "DimensionSystem/Data/TGOR_WorldData.h"
+#include "DimensionSystem/Volumes/TGOR_PhysicsVolume.h"
+#include "DimensionSystem/Volumes/TGOR_LevelVolume.h"
+#include "CoreSystem/Storage/TGOR_Package.h"
+
+#include "DimensionSystem/Tasks/TGOR_PilotTask.h"
+#include "DimensionSystem/Data/TGOR_DimensionData.h"
+
+#include "DimensionSystem/Content/TGOR_Spawner.h"
+#include "DimensionSystem/Content/TGOR_Pilot.h"
+#include "DimensionSystem/Content/TGOR_Primitive.h"
+
+#include "Engine/NetConnection.h"
+#include "Engine/ActorChannel.h"
+#include "Net/UnrealNetwork.h"
+#include "DrawDebugHelpers.h"
+
+UTGOR_PilotComponent::UTGOR_PilotComponent()
+:	Super(),
+	AdjustThreshold()
+{
+	TargetPrimitive = UTGOR_Primitive::StaticClass();
+}
+
+void UTGOR_PilotComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	SINGLETON_CHK;
+	PilotState.Timestamp = Singleton->GetGameTimestamp();
+}
+
+void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
+{
+	for (UTGOR_PilotTask* PilotTask : PilotSlots)
+	{
+		PilotTask->Unparent();
+	}
+	PilotSlots.Empty();
+
+	Super::DestroyComponent(bPromoteChildren);
+}
+
+void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SINGLETON_CHK;
+	const FTGOR_Time Timestamp = Singleton->GetGameTimestamp();
+	const float Time = Simulate(Timestamp - PilotState.Timestamp);
+	PilotState.Timestamp += Time;
+
+	SetComponentPosition(ComputePosition());
+}
+
+void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSlots, COND_None); // This MUST be replicated before setup
+	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSetup, COND_None);
+	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotState, COND_None);
+}
+
+void UTGOR_PilotComponent::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& Objs)
+{
+	Super::GetSubobjectsWithStableNamesForNetworking(Objs);
+
+	/*
+	for (UTGOR_PilotTask* PilotTask : PilotSlots)
+	{
+		if (IsValid(PilotTask) && PilotTask->IsNameStableForNetworking())
+		{
+			Objs.Add(PilotTask);
+		}
+	}
+	*/
+}
+
+bool UTGOR_PilotComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (UTGOR_PilotTask* PilotTask : PilotSlots)
+	{
+		if (IsValid(PilotTask))
+		{
+			WroteSomething |= Channel->ReplicateSubobject(PilotTask, *Bunch, *RepFlags);
+		}
+	}
+	return WroteSomething;
+}
+
+
+TSet<UTGOR_CoreContent*> UTGOR_PilotComponent::GetActiveContent_Implementation() const
+{
+	TSet<UTGOR_CoreContent*> Set;
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (IsValid(PilotTask))
+	{
+		Set.Add(PilotTask->GetPilot());
+	}
+	return Set;
+}
+
+const FTGOR_MovementSpace UTGOR_PilotComponent::ComputeSpace() const
+{
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (IsValid(PilotTask))
+	{
+		return PilotTask->ComputeSpace();
+	}
+	return Super::ComputeSpace();
+}
+
+const FTGOR_MovementPosition UTGOR_PilotComponent::ComputePosition() const
+{
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (IsValid(PilotTask))
+	{
+		return PilotTask->ComputePosition();
+	}
+	return Super::ComputePosition();
+}
+
+
+bool UTGOR_PilotComponent::HasParent(const UTGOR_MobilityComponent* Component) const
+{
+	if(Super::HasParent(Component))
+	{
+		return true;
+	}
+
+	UTGOR_MobilityComponent* Parent = GetParent();
+	if (Parent == Component)
+	{
+		return true;
+	}
+	return IsValid(Parent) ? Parent->HasParent(Component) : false;
+}
+
+void UTGOR_PilotComponent::OnPositionChange(const FTGOR_MovementPosition& Position)
+{
+	Super::OnPositionChange(Position);
+
+	ATGOR_PhysicsVolume* Volume = QueryVolume(Position.Linear, SurroundingVolume.Get());
+	if (Volume != SurroundingVolume)
+	{
+		// Notify owner
+		OnVolumeChanged.Broadcast(SurroundingVolume.Get(), Volume);
+		SurroundingVolume = Volume;
+	}
+}
+
+void UTGOR_PilotComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+{
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+
+	if (IsValid(Spawner))
+	{
+		PilotSetup.Primitive = Spawner->GetMFromType<UTGOR_Primitive>(TargetPrimitive);
+		ApplyPilotSetup(PilotSetup);
+
+		if (IsValid(PilotSetup.Primitive))
+		{
+			const float Scale = GetComponentScale().GetMin();
+			const float Strength = Scale * Scale * Scale;
+
+			FTGOR_MovementBody NewBody;
+			NewBody.SetFromCapsule(PilotSetup.Primitive->SurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), PilotSetup.Primitive->Weight * Strength);
+			SetBody(NewBody);
+		}
+	}
+}
+
+bool UTGOR_PilotComponent::PreAssemble(UTGOR_DimensionData* Dimension)
+{
+	if (IsValid(Dimension))
+	{
+		SurroundingVolume = Dimension->GetLevelVolume();
+	}
+
+	return ITGOR_DimensionInterface::PreAssemble(Dimension);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_PilotComponent::SetNetSmooth(FVector Delta, FRotator Rotation)
+{
+	const FTGOR_MovementPosition Space = ComputeSpace();
+	FTGOR_MovementPosition Position;
+	NetSmoothDelta.Linear += Space.Linear + Delta;
+	NetSmoothDelta.Angular = Space.Angular * Rotation.Quaternion();
+}
+
+void UTGOR_PilotComponent::NetSmooth(float Timestep, float Speed)
+{
+	NetSmoothDelta.Linear = FMath::VInterpTo(NetSmoothDelta.Linear, FVector::ZeroVector, Timestep, Speed);
+	NetSmoothDelta.Angular = FMath::QInterpTo(NetSmoothDelta.Angular, FQuat::Identity, Timestep, Speed);
+}
+
+void UTGOR_PilotComponent::SetComponentFromSmoothDelta(USceneComponent* Component, const FTransform& InitialWorld)
+{
+	const FTransform Translate = FTransform(NetSmoothDelta.Linear);
+	const FTransform Rotation = FTransform(NetSmoothDelta.Angular);
+	Component->SetWorldTransform(Rotation * InitialWorld * Translate);
+}
+
+/*
+void UTGOR_PilotComponent::MovementAdjust(const FTGOR_MovementBase& Old, const FTGOR_MovementBase& New)
+{
+	const FTGOR_MovementPosition OldSpace = Old.ComputeSpace();
+	const FTGOR_MovementPosition NewSpace = New.ComputeSpace();
+	NetSmoothDelta.Linear += OldSpace.Linear - NewSpace.Linear;
+	NetSmoothDelta.Angular = (OldSpace.Angular * NewSpace.Angular.Inverse()) * NetSmoothDelta.Angular;
+
+	// Reset if error is too high
+	if (NetSmoothDelta.Compare(FTGOR_MovementPosition(), NetDeltaThreshold) > 1.0f)
+	{
+		NetSmoothDelta = FTGOR_MovementPosition();
+	}
+}
+*/
+
+float UTGOR_PilotComponent::Simulate(float Time)
+{
+	return Time;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+bool UTGOR_PilotComponent::Teleport(const FTGOR_MovementDynamic& Dynamic)
+{
+	ATGOR_PhysicsVolume* Volume = QueryVolume(Dynamic.Linear);
+	if (IsValid(Volume)) // This only fails if a location outside any level volume has been given
+	{
+		UTGOR_PilotComponent* Movement = Volume->GetMovement();
+		if (IsValid(Movement))
+		{
+			const FTGOR_MovementDynamic& Old = ComputeSpace();
+			if (Movement->ParentLinear(this, INDEX_NONE, Dynamic))
+			{
+				OnTeleportedMovement.Broadcast(Old, Dynamic, Volume);
+			}
+		}
+	}
+	return false;
+}
+
+ATGOR_PhysicsVolume* UTGOR_PilotComponent::QueryVolume(const FVector& Location, ATGOR_PhysicsVolume* ReferenceVolume) const
+{
+	SINGLETON_RETCHK(nullptr);
+
+	ATGOR_PhysicsVolume* Volume = nullptr;
+	UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
+	if (IsValid(WorldData))
+	{
+		ATGOR_PhysicsVolume* MainVolume = WorldData->GetMainVolume();
+
+		// Check current volume before querying everything
+		if (IsValid(ReferenceVolume) && ReferenceVolume->IsInside(Location))
+		{
+			Volume = ReferenceVolume->Query(Location);
+		}
+		else if (IsValid(MainVolume))
+		{
+			Volume = MainVolume->Query(Location);
+
+			// Find whether we're out of level
+			if (Volume == MainVolume && !Volume->IsInside(Location))
+			{
+				return nullptr;
+			}
+		}
+
+		// If in own gravity field, assume parent instead
+		if (IsValid(Volume))
+		{
+			UTGOR_MobilityComponent* VolumeMovement = Volume->GetMovement();
+			if (IsValid(VolumeMovement) && VolumeMovement->HasParent(this))
+			{
+				Volume = Volume->GetParentVolume();
+			}
+		}
+	}
+	return Volume;
+}
+
+FTGOR_MovementDynamic UTGOR_PilotComponent::ComputeBase() const
+{
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (IsValid(PilotTask))
+	{
+		return PilotTask->ComputeBase();
+	}
+	return FTGOR_MovementDynamic();
+}
+
+UTGOR_PilotTask* UTGOR_PilotComponent::GetPilotTask() const
+{
+	if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+	{
+		return PilotSlots[PilotState.ActiveSlot];
+	}
+	return nullptr;
+}
+
+UTGOR_MobilityComponent* UTGOR_PilotComponent::GetParent() const
+{
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if(IsValid(PilotTask))
+	{
+		return PilotTask->GetParent();
+	}
+	return nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool UTGOR_PilotComponent::Detach()
+{
+	UTGOR_MobilityComponent* Parent = GetParent();
+	if (Parent)
+	{
+		return Parent->ParentLinear(this, INDEX_NONE, ComputeSpace());
+	}
+	return false;
+}
+
+bool UTGOR_PilotComponent::IsAttachedWith(int32 Identifier) const
+{
+	return PilotState.ActiveSlot == Identifier;
+}
+
+void UTGOR_PilotComponent::AttachWith(int32 Identifier)
+{
+	if (Identifier != PilotState.ActiveSlot)
+	{
+		if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+		{
+			PilotSlots[PilotState.ActiveSlot]->Unregister();
+		}
+
+		PilotState.ActiveSlot = Identifier;
+
+		if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+		{
+			PilotSlots[PilotState.ActiveSlot]->Register();
+		}
+		OnPilotChanged.Broadcast();
+	}
+}
+
+UTGOR_PilotTask* UTGOR_PilotComponent::GetPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const
+{
+	if (*Type)
+	{
+		for (UTGOR_PilotTask* PilotSlot : PilotSlots)
+		{
+			if (PilotSlot->IsA(Type))
+			{
+				return PilotSlot;
+			}
+		}
+	}
+	return nullptr;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void UTGOR_PilotComponent::RepNotifyPilotState(const FTGOR_PilotState& Old)
+{
+	SetComponentPosition(ComputePosition());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool UTGOR_PilotComponent::ApplyPilotSetup(FTGOR_PilotInstance Setup)
+{
+	// TODO: Use primitive definition to initialise body
+	if (Body.Volume < SMALL_NUMBER)
+	{
+		FVector Origin, Extend;
+		AActor* Actor = GetOwner();
+		Actor->GetActorBounds(true, Origin, Extend);
+		Body.SetFromBox(FVector(0.5f), Extend * 2, 1.0f);
+	}
+
+	SINGLETON_RETCHK(false);
+
+	UTGOR_PilotTask* CurrentTask = GetPilotTask();
+	TMap<UTGOR_Pilot*, TArray<UTGOR_PilotTask*>> Previous;
+
+	// Remove slots but cache both instances and items in case the new loadout can use them
+	for (int Slot = 0; Slot < PilotSlots.Num(); Slot++)
+	{
+		UTGOR_PilotTask* PilotSlot = PilotSlots[Slot];
+		if (IsValid(PilotSlot))
+		{
+			PilotSlot->Unparent();
+			Previous.FindOrAdd(PilotSlot->GetPilot()).Add(PilotSlot);
+		}
+	}
+
+	PilotSlots.Empty();
+	PilotSetup.Primitive = Setup.Primitive;
+
+	// Apply loadout
+	if (IsValid(Setup.Primitive))
+	{
+		// Add static slots
+		TArray<UTGOR_Pilot*> Pilots = Setup.Primitive->Instanced_PilotInsertions.Collection;
+
+		// Generate slots
+		for (UTGOR_Pilot* Pilot : Pilots)
+		{
+			if (IsValid(Pilot))
+			{
+				UTGOR_PilotTask* PilotSlot = nullptr;
+
+				TArray<UTGOR_PilotTask*>* Ptr = Previous.Find(Pilot);
+				if (Ptr && Ptr->Num() > 0)
+				{
+					PilotSlot = Ptr->Pop();
+				}
+				else
+				{
+					// No cache was found, create a new one
+					PilotSlot = Pilot->CreatePilotTask(this, PilotSlots.Num());
+				}
+
+				// Initialise and add to slots
+				if (IsValid(PilotSlot))
+				{
+					PilotSlots.Add(PilotSlot);
+				}
+			}
+		}
+	}
+
+	// Reparent with current (or retry euclidean if task got removed)
+	const int32 ActiveSlot = PilotSlots.Find(CurrentTask);
+	if (PilotSlots.IsValidIndex(ActiveSlot))
+	{
+		AttachWith(ActiveSlot);
+	}
+	else
+	{
+		Teleport(ComputeSpace());
+	}
+
+	// Discard tasks that got removed
+	for (const auto& Pair : Previous)
+	{
+		for (UTGOR_PilotTask* PilotSlot : Pair.Value)
+		{
+			PilotSlot->Unparent();
+			PilotSlot->MarkPendingKill();
+		}
+	}
+	return true;
+}
+
+void UTGOR_PilotComponent::OnReplicatePilotSetup()
+{
+	ApplyPilotSetup(PilotSetup);
+}
