@@ -1,1 +1,4 @@
-Core
+CreatureContent
+CoreContent
+CustomisationContent
+MovementContent

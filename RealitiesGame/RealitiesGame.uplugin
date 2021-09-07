@@ -16,17 +16,22 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "Camera",
+			"Name": "CoreContent",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "Customisation",
+			"Name": "CreatureContent",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "Movement",
+			"Name": "CustomisationContent",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "MovementContent",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
