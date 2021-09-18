@@ -8,7 +8,7 @@
 #include "TGOR_UserData.generated.h"
 
 class ATGOR_OnlineController;
-class UTGOR_TrackedComponent;
+class UTGOR_IdentityComponent;
 
 using UserLambda = std::function<bool(FTGOR_UserInstance& User)>;
 using ConstUserLambda = std::function<bool(const FTGOR_UserInstance& User)>;
@@ -63,7 +63,7 @@ public:
 
 	/** Add body to a user, return unique body identifier */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Online|Internal", Meta = (Keywords = "C++"))
-		int32 AddUserBody(int32 UserKey, UTGOR_TrackedComponent* Component);
+		int32 AddUserBody(int32 UserKey, UTGOR_IdentityComponent* Component);
 
 	/** Remove body from a user */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Online|Internal", Meta = (Keywords = "C++"))

@@ -13,7 +13,7 @@ class UTGOR_NamedSocket;
 /**
  * 
  */
-UCLASS(ClassGroup = (Custom), Blueprintable, Within=Pawn, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class PHYSICSSYSTEM_API UTGOR_ArmatureComponent : public UTGOR_RigidComponent
 {
 	GENERATED_BODY()

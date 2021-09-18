@@ -12,7 +12,7 @@
 ATGOR_GameMode::ATGOR_GameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	bStartPlayersAsSpectators = false;
+	bStartPlayersAsSpectators = true;
 }
 
 void ATGOR_GameMode::GameWelcomePlayer(UNetConnection* Connection, FString& RedirectURL)

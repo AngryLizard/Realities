@@ -70,16 +70,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System")
 		TSubclassOf<UTGOR_Spawner> DefaultSpawner;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Get current actor world identifier (INDEX_NONE if not tracked) */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
+		int32 GetWorldIdentifier() const;
+
+	/** Track this actor in world and return identifier (returns current identifier if already tracked) */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
+		int32 CreateWorldIdentifier();
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////	
 protected:
 	
 	/** Actor identification in current dimension */
 	UPROPERTY(ReplicatedUsing = OnIdentityRepNotify)
-		FTGOR_SpawnIdentity Identity;
+		FTGOR_SpawnIdentity DimensionIdentity;
 
 	UFUNCTION()
 		void OnIdentityRepNotify(const FTGOR_SpawnIdentity& Old);
 
+	/** Actor identification in current world (or -1 if not tracked) */
+	UPROPERTY(Replicated)
+		int32 WorldIdentity;
 
 	/** Associated Dimension objects */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Dimension")

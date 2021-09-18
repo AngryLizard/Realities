@@ -11,7 +11,6 @@
 #include "CoreSystem/Components/TGOR_Component.h"
 #include "DimensionSystem/Components/TGOR_WorldComponent.h"
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
-#include "DimensionSystem/Components/TGOR_TrackedComponent.h"
 #include "DimensionSystem/Components/TGOR_DimensionGateComponent.h"
 #include "DimensionSystem/Volumes/TGOR_LevelVolume.h"
 #include "DimensionSystem/Volumes/TGOR_PhysicsVolume.h"
@@ -20,9 +19,9 @@
 #include "DimensionSystem/Gameplay/TGOR_DimensionGameState.h"
 #include "DimensionSystem/Gameplay/TGOR_DimensionController.h"
 
+#include "Engine/Classes/Components/ModelComponent.h"
 #include "Engine/LevelStreaming.h"
 #include "Engine/World.h"
-#include "Engine/Classes/Components/ModelComponent.h"
 
 #include "CoreSystem/Storage/TGOR_Package.h"
 
@@ -957,13 +956,13 @@ int32 UTGOR_WorldData::GetUniqueTrackedIdentifier() const
 	return TrackedIdentifier;
 }
 
-int32 UTGOR_WorldData::RegisterTracked(UTGOR_TrackedComponent* Component, bool Create /*=false*/)
+int32 UTGOR_WorldData::RegisterTracked(UTGOR_IdentityComponent* Component, bool Create /*=false*/)
 {
 	ETGOR_FetchEnumeration State;
 	const FTGOR_DimensionIdentifier DimensionIdentifier = GetIdentifier(Component->GetOwner(), State);
 	if (State == ETGOR_FetchEnumeration::Found)
 	{
-		const int32 Identifier = Component->GetTrackedIdentifier();
+		const int32 Identifier = Component->GetWorldIdentifier();
 		if (FTGOR_DimensionIdentifier* Ptr = TrackedActors.Find(Identifier))
 		{
 			*Ptr = DimensionIdentifier;
@@ -1000,12 +999,12 @@ void UTGOR_WorldData::PossessTrackedWith(int32 Identifier, ATGOR_DimensionContro
 	}
 }
 
-UTGOR_TrackedComponent* UTGOR_WorldData::GetTracked(int32 Identifier, ETGOR_FetchEnumeration& Branches) const
+UTGOR_IdentityComponent* UTGOR_WorldData::GetTracked(int32 Identifier, ETGOR_FetchEnumeration& Branches) const
 {
 	Branches = ETGOR_FetchEnumeration::Empty;
 	if (const FTGOR_DimensionIdentifier* Ptr = TrackedActors.Find(Identifier))
 	{
-		return Cast<UTGOR_TrackedComponent>(GetIdentity(*Ptr, Branches));
+		return GetIdentity(*Ptr, Branches);
 	}
 	return nullptr;
 }

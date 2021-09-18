@@ -20,12 +20,11 @@
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
 
-class ATGOR_Pawn;
 class UTGOR_Dimension;
 class UTGOR_DimensionData;
 class ATGOR_PhysicsVolume;
 class ATGOR_DimensionController;
-class UTGOR_TrackedComponent;
+class UTGOR_IdentityComponent;
 
 /**
 * TGOR_WorldData allows storing dimensions and handles storing/loading all registered actors
@@ -309,7 +308,7 @@ public:
 
 	/** Register tracked to this world */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
-		int32 RegisterTracked(UTGOR_TrackedComponent* Component, bool Create = false);
+		int32 RegisterTracked(UTGOR_IdentityComponent* Component, bool Create = false);
 
 	/** Unregister tracked from this world */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
@@ -321,12 +320,12 @@ public:
 
 	/** Get tracked component with a given identifier */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Dimension", Meta = (ExpandEnumAsExecs = "Branches", Keywords = "C++"))
-		UTGOR_TrackedComponent* GetTracked(int32 Identifier, ETGOR_FetchEnumeration& Branches) const;
+		UTGOR_IdentityComponent* GetTracked(int32 Identifier, ETGOR_FetchEnumeration& Branches) const;
 
 	template<typename T> T* GetTrackedActor(int32 Identifier) const
 	{
 		ETGOR_FetchEnumeration State;
-		UTGOR_TrackedComponent* Identity = GetTracked(Identifier, State);
+		UTGOR_IdentityComponent* Identity = GetTracked(Identifier, State);
 		if (IsValid(Identity))
 		{
 			return Cast<T>(Identity->GetOwner());

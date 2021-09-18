@@ -1,17 +1,19 @@
 // The Gateway of Realities: Planes of Existence.
 
 #pragma once
-#include "CreatureSystem/Actors/TGOR_Avatar.h"
+#include "CreatureSystem/Actors/TGOR_Pawn.h"
 
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "TGOR_Creature.generated.h"
 
-class UTGOR_Loadout;
+class ATGOR_Pawn;
 class UTGOR_Stat;
+class UTGOR_Camera;
 class UTGOR_Effect;
+class UTGOR_Tracker;
+class UTGOR_Loadout;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 UCLASS(Blueprintable)
 class CREATURESYSTEM_API UTGOR_Creature : public UTGOR_Spawner

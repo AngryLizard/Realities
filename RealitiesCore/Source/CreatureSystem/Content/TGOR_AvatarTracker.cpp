@@ -1,9 +1,0 @@
-// The Gateway of Realities: Planes of Existence.
-#include "TGOR_AvatarTracker.h"
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-UTGOR_AvatarTracker::UTGOR_AvatarTracker()
-	: Super()
-{
-}

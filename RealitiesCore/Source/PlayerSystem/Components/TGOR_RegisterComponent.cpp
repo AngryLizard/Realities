@@ -27,7 +27,7 @@ void UTGOR_RegisterComponent::RegisterInteract(UTGOR_ActionTask* ActionSlot, int
 	// Server only
 	if (IsValid(ActionSlot) && ActionSlot->Identifier.Component->IsServer())
 	{
-		APawn* Pawn = ActionSlot->Identifier.Component->GetOuterAPawn();
+		APawn* Pawn = Cast<APawn>(ActionSlot->Identifier.Component->GetOwner());
 		if (IsValid(Pawn))
 		{
 			ATGOR_OnlineController* Controller = Cast<ATGOR_OnlineController>(Pawn->GetController());
@@ -44,7 +44,7 @@ bool UTGOR_RegisterComponent::IsSupported(UTGOR_ActionComponent* Component) cons
 {
 	if (IsValid(Component))
 	{
-		APawn* Pawn = Component->GetOuterAPawn();
+		APawn* Pawn = Cast<APawn>(Component->GetOwner());
 		if (IsValid(Pawn))
 		{
 			ATGOR_OnlineController* Controller = Cast<ATGOR_OnlineController>(Pawn->GetController());

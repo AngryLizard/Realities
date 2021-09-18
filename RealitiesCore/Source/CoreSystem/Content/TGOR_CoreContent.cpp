@@ -20,45 +20,39 @@ void UTGOR_CoreContent::BuildResource()
 
 void UTGOR_CoreContent::PostBuildResource()
 {
-	if (Display.DisplayName.IsEmpty())
-	{
-		Display.DisplayName = FText::FromString(DefaultName);
-	}
+	Super::PostBuildResource();
 
-	if (Display.Description.IsEmpty())
+	if (DisplayName.IsEmpty())
 	{
-		Display.Description = DefaultDescription;
-	}
-
-	if (!IsValid(Display.Icon))
-	{
-		Display.Icon = DefaultIcon;
+		DisplayName = FText::FromString(DefaultName);
 	}
 
 	// Add display name if no alias was defined
 	if (ChatAlias.Num() == 0)
 	{
-		if (!Display.DisplayName.IsEmpty())
+		if (!DisplayName.IsEmpty())
 		{
-			ChatAlias.Add(Display.DisplayName.ToString());
+			ChatAlias.Add(DisplayName.ToString());
 		}
 		else
 		{
 			ChatAlias.Add(DefaultName);
 		}
 	}
+
+	// Create display struct
+	Display.Description = DefaultDescription;
+	Display.Icon = DefaultIcon;
+	Display.Aspect = Aspect;
+	Display.DisplayName = DisplayName;
+	Display.CustomColor = CustomColor;
+	Display.UseCustomColor = UseCustomColor;
 }
 
 void UTGOR_CoreContent::Reset()
 {
 	Super::Reset();
 	Singleton = nullptr;
-}
-
-
-const FTGOR_Display& UTGOR_CoreContent::GetDisplay() const
-{
-	return Display;
 }
 
 const TArray<FString>& UTGOR_CoreContent::GetAliases() const
@@ -80,7 +74,7 @@ FString UTGOR_CoreContent::GetFirstAlias() const
 
 void UTGOR_CoreContent::SetRawDisplayName(const FText& Name)
 {
-	Display.DisplayName = Name;
+	DisplayName = Name;
 	MarkPackageDirty();
 }
 
@@ -107,10 +101,14 @@ UTGOR_Content* UTGOR_CoreContent::GetContentStatic(const UObject* WorldContextOb
 	ERRET("Singleton/ContentManager not found", Error, nullptr);
 }
 
-
 void UTGOR_CoreContent::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success)
 {
 	Super::MoveInsertion(Insertion, Action, Success);
 
 	MOV_INSERTION(CategoryInsertions);
+}
+
+const FTGOR_Display& UTGOR_CoreContent::GetDisplay() const
+{
+	return Display;
 }

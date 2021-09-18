@@ -4,8 +4,9 @@
 #include "TGOR_CameraComponent.h"
 #include "GameFramework/PlayerController.h"
 
-#include "CreatureSystem/Content/TGOR_Camera.h"
+#include "CreatureSystem/Content/Cameras/TGOR_Camera.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
+#include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 
 #include "Engine.h"
@@ -45,10 +46,9 @@ void UTGOR_CameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Update springarm every tick to to prevent shifting camera when the player turns
+	// Update spring-arm every tick to to prevent shifting camera when the player turns
 	SpringArm->SetWorldRotation(ViewRotation);
 	
-	// TODO: Casting every tick is probably unnecessary, and we want this to (sometimes) work if the actor isn't possessed.
 	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (IsValid(Pawn) && Pawn->IsLocallyControlled())
 	{
@@ -99,6 +99,26 @@ void UTGOR_CameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 			// Apply filtered state to camera
 			Pair.Key->Apply(this, SpringArm, Pair.Value);
+		}
+
+
+		// Smooth delta if framerate drops too low
+		DeltaTime = FMath::Min(DeltaTime, 0.1f);
+
+		if (UTGOR_PhysicsComponent* PhysicsComponent = GetOwner()->FindComponentByClass<UTGOR_PhysicsComponent>())
+		{
+			// Rotate upside
+			const FVector UpVector = PhysicsComponent->ComputePhysicsUpVector();
+			const float Timestep = FMath::Min(0.1f, DeltaTime) * 10.0f;
+			RotateCameraUpside(UpVector, Timestep);
+
+			// Rotate with movement base
+			const FTGOR_MovementDynamic ParentSpace = PhysicsComponent->ComputeBase();
+			const float Angle = ParentSpace.AngularVelocity.Size();
+			if (Angle > SMALL_NUMBER)
+			{
+				RotateCamera(ParentSpace.AngularVelocity / Angle, Angle * DeltaTime, false);
+			}
 		}
 	}
 }
@@ -374,4 +394,31 @@ void UTGOR_CameraComponent::SetControlThrottle(float Throttle)
 float UTGOR_CameraComponent::GetControlThrottle() const
 {
 	return ControlThrottle;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_CameraComponent::RotateCameraHorizontally(float Amount)
+{
+	if (UTGOR_PhysicsComponent* PhysicsComponent = GetOwner()->FindComponentByClass<UTGOR_PhysicsComponent>())
+	{
+		RotateCamera(PhysicsComponent->GetUpVector(), Amount, true);
+	}
+}
+
+void UTGOR_CameraComponent::RotateCameraVertically(float Amount)
+{
+	const FQuat CameraRotation = GetControlRotation();
+	RotateCamera(CameraRotation.GetAxisY(), Amount, true);
+}
+
+FQuat UTGOR_CameraComponent::ToLocalCameraRotation(const FTGOR_MovementPosition& Position) const
+{
+	const FQuat CameraRotation = GetControlRotation();
+	return Position.Angular.Inverse() * CameraRotation;
+}
+
+void UTGOR_CameraComponent::FromLocalCameraRotation(const FTGOR_MovementPosition& Position, const FQuat& Quat)
+{
+	SetViewRotation(Position.Angular.Inverse() * Quat);
 }

@@ -334,7 +334,7 @@ public:
 
 	/** Get avatar from body identifier */
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "!TGOR Dimension|Internal", Meta = (Keywords = "C++"))
-		ATGOR_Pawn* GetBodyPawn(int32 Identifier) const;
+		APawn* GetBodyPawn(int32 Identifier) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

@@ -27,7 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovementUpdateDelegate);
 /**
  * 
  */
-UCLASS(ClassGroup = (Custom), Blueprintable, Within=Pawn, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class MOVEMENTSYSTEM_API UTGOR_MovementComponent : public UTGOR_Component, public ITGOR_AnimationInterface, public ITGOR_SpawnerInterface, public ITGOR_RegisterInterface, public ITGOR_AttributeInterface
 {
 	GENERATED_BODY()

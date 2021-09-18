@@ -33,7 +33,7 @@ void UTGOR_SimulationComponent::RegionTick(float DeltaTime)
 	
 	ServerTick(DeltaTime);
 
-	APawn* Pawn = GetOuterAPawn();
+	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (IsValid(Pawn) && !Pawn->IsLocallyControlled())
 	{
 		AuthorityTick(DeltaTime);
@@ -52,7 +52,7 @@ void UTGOR_SimulationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 
 	if (Role >= ROLE_AutonomousProxy)
 	{
-		APawn* Pawn = GetOuterAPawn();
+		APawn* Pawn = Cast<APawn>(GetOwner());
 		if (IsValid(Pawn) && Pawn->IsLocallyControlled())
 		{
 			OwnerTick(DeltaTime);
@@ -102,11 +102,7 @@ void UTGOR_SimulationComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProp
 
 void UTGOR_SimulationComponent::DirectInfluenced(const FTGOR_ElementInstance& State, AActor* Instigator)
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
-	{
-		//Pawn->HealthComponent->ConsumeStat(1.0f, true);
-	}
+	//Pawn->HealthComponent->ConsumeStat(1.0f, true);
 }
 
 void UTGOR_SimulationComponent::AmbientInfluenced(const FTGOR_ElementInstance& State)
@@ -117,49 +113,37 @@ void UTGOR_SimulationComponent::AmbientInfluenced(const FTGOR_ElementInstance& S
 
 void UTGOR_SimulationComponent::Exhaust(float Amount, bool Sync)
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
+	if (Amount < 0.0f)
 	{
-		if (Amount < 0.0f)
-		{
-			//Pawn->StaminaComponent->RestoreStat(Amount, Sync);
-		}
-		else
-		{
-			//Pawn->StaminaComponent->ConsumeStat(Amount, Sync);
-		}
+		//Pawn->StaminaComponent->RestoreStat(Amount, Sync);
+	}
+	else
+	{
+		//Pawn->StaminaComponent->ConsumeStat(Amount, Sync);
 	}
 }
 
 void UTGOR_SimulationComponent::Deplete(float Amount, bool Sync)
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
+	if (Amount < 0.0f)
 	{
-		if (Amount < 0.0f)
-		{
-			//Pawn->EnergyComponent->RestoreStat(Amount, Sync);
-		}
-		else
-		{
-			//Pawn->EnergyComponent->ConsumeStat(Amount, Sync);
-		}
+		//Pawn->EnergyComponent->RestoreStat(Amount, Sync);
+	}
+	else
+	{
+		//Pawn->EnergyComponent->ConsumeStat(Amount, Sync);
 	}
 }
 
 void UTGOR_SimulationComponent::Damage(float Amount, bool Sync)
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
+	if (Amount < 0.0f)
 	{
-		if (Amount < 0.0f)
-		{
-			//Pawn->HealthComponent->RestoreStat(Amount, Sync);
-		}
-		else
-		{
-			//Pawn->HealthComponent->ConsumeStat(Amount, Sync);
-		}
+		//Pawn->HealthComponent->RestoreStat(Amount, Sync);
+	}
+	else
+	{
+		//Pawn->HealthComponent->ConsumeStat(Amount, Sync);
 	}
 }
 
@@ -183,21 +167,17 @@ void UTGOR_SimulationComponent::OnReplicateSetup()
 
 void UTGOR_SimulationComponent::Regenerate()
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
+	// Regenerate depending on current health state
+	//if (Pawn->HealthComponent->HealthState == ETGOR_HealthState::Normal)
 	{
-		// Regenerate depending on current health state
-		//if (Pawn->HealthComponent->HealthState == ETGOR_HealthState::Normal)
-		{
-			//Pawn->HealthComponent->RegenerateStat(HealthRegenPerSecond);
-		}
-		//else if (Pawn->HealthComponent->HealthState == ETGOR_HealthState::Downed)
-		{
-			//Pawn->HealthComponent->RegenerateStat(DownedHealthRegenPerSecond);
-		}
-
-		// Regenerate eneger and stamina
-		//Pawn->EnergyComponent->RegenerateStat(EnergyRegenPerSecond);
-		//Pawn->StaminaComponent->RegenerateStat(StaminaRegenPerSecond);
+		//Pawn->HealthComponent->RegenerateStat(HealthRegenPerSecond);
 	}
+	//else if (Pawn->HealthComponent->HealthState == ETGOR_HealthState::Downed)
+	{
+		//Pawn->HealthComponent->RegenerateStat(DownedHealthRegenPerSecond);
+	}
+
+	// Regenerate eneger and stamina
+	//Pawn->EnergyComponent->RegenerateStat(EnergyRegenPerSecond);
+	//Pawn->StaminaComponent->RegenerateStat(StaminaRegenPerSecond);
 }

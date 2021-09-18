@@ -10,7 +10,7 @@
 #include "CustomisationSystem/Content/TGOR_Bodypart.h"
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "KnowledgeSystem/Content/TGOR_Tracker.h"
-#include "CreatureSystem/Content/TGOR_Camera.h"
+#include "CreatureSystem/Content/Cameras/TGOR_Camera.h"
 
 
 UTGOR_Creature::UTGOR_Creature()

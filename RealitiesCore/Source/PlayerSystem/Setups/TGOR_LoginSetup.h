@@ -8,6 +8,7 @@
 #include "TGOR_LoginSetup.generated.h"
 
 
+/* Login to server and wait for authentification */
 UCLASS()
 class PLAYERSYSTEM_API UTGOR_LoginSetup : public UTGOR_Setup
 {

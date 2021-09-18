@@ -11,7 +11,6 @@
 class UTGOR_MobilityComponent;
 class UTGOR_DimensionData;
 class UTGOR_Dimension;
-class ATGOR_Pawn;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FComponentSentDelegate, UTGOR_PilotComponent*, Component);

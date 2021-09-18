@@ -44,7 +44,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActionScheduleDelegate, UTGOR_Actio
 /**
  * TGOR_ActionComponent allows equipment of actions
  */
-UCLASS(ClassGroup = (Custom), Blueprintable, Within=Pawn, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_ItemRegisterComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface
 {
 	GENERATED_BODY()

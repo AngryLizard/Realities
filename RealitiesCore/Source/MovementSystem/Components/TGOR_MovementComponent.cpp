@@ -111,10 +111,8 @@ UTGOR_AnimationComponent* UTGOR_MovementComponent::GetAnimationComponent() const
 
 void UTGOR_MovementComponent::BuildMovementFrame()
 {
-	APawn* Pawn = GetOuterAPawn();
-
 	// Make sure initial location is correct
-	const float Scale = Pawn->GetActorScale().GetMin();
+	const float Scale = GetOwner()->GetActorScale().GetMin();
 
 	// Client should already have gotten all the updates
 	if (GetOwnerRole() != ENetRole::ROLE_SimulatedProxy)
@@ -518,7 +516,7 @@ bool UTGOR_MovementComponent::ServerInputLight_Validate(FTGOR_MovementInput Upda
 
 void UTGOR_MovementComponent::ServerKnockout_Implementation()
 {
-	APawn* Pawn = GetOuterAPawn();
+	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (Pawn->IsLocallyControlled())
 	{
 		OnKnockout.Broadcast();

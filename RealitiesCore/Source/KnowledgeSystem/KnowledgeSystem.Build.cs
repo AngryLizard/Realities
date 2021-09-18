@@ -15,6 +15,7 @@ public class KnowledgeSystem : ModuleRules
 				"RealitiesUtility",
 
 				"CoreSystem",
+				"DimensionSystem",
 				"UISystem",
 
 				"Core",

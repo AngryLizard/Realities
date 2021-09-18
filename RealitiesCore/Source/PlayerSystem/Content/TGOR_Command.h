@@ -187,11 +187,11 @@ public:
 
 	/** Call command */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Commands", Meta = (Keywords = "C++"))
-		bool Call(FString& Error, ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const FString& Args);
+		bool Call(FString& Error, APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const FString& Args);
 
 	/** Execute command, return true if successful */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Commands", Meta = (Keywords = "C++"))
-		bool Command(FString& Error, ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const TMap<FString, FTGOR_CommandArg>& Args);
+		bool Command(FString& Error, APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const TMap<FString, FTGOR_CommandArg>& Args);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -219,13 +219,6 @@ public:
 	/** Parses arguments and returns valid arguments as well as possible last arguments */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Commands", Meta = (Keywords = "C++"))
 		TArray<FString> AutoComplete(const FString& Args, FString& Prefix);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	/** Spawns an item by index on a controllable */
-	/*UFUNCTION(BlueprintCallable, Category = "!TGOR Commands", Meta = (ExpandEnumAsExecs = "Branches", Keywords = "C++"))
-		void SpawnItem(ATGOR_Pawn* Pawn, int32 Index, float Quantity, ETGOR_FetchEnumeration& Branches);*/
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

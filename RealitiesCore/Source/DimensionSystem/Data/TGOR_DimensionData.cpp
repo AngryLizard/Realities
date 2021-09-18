@@ -96,9 +96,9 @@ bool UTGOR_DimensionData::Read_Implementation(FTGOR_GroupReadPackage& Package, U
 				Pair.Value.Identity = SpawnIdentity(Pair.Value.SpawnActor, Origin + Pair.Value.SpawnLocation, Pair.Value.SpawnRotation);
 				if (IsValid(Pair.Value.Identity))
 				{
-					Pair.Value.Identity->Identity.Identifier = Pair.Key;
+					Pair.Value.Identity->DimensionIdentity.Identifier = Pair.Key;
 					Pair.Value.Identity->SetActorSpawner(Pair.Value.SpawnActor);
-					Pair.Value.Identity->Identity.Dimension = Dimension;
+					Pair.Value.Identity->DimensionIdentity.Dimension = Dimension;
 					Dimension->SetCullDistance(Pair.Value.Identity->GetOwner());
 
 					Pair.Value.Identity->PreAssemble(this);
@@ -184,40 +184,40 @@ void UTGOR_DimensionData::AssembleDimension()
 	if (IsValid(WorldData))
 	{
 		UTGOR_Dimension* Dimension = WorldData->GetDimensionContent(Identifier);
-
-		// Find and set up Dimensionactors and DimensionComponents in the level
-		for (AActor* Actor : LoadedLevel->Actors)
+		if (IsValid(Dimension))
 		{
-			if (IsValid(Actor))
+			// Find and set up Dimensionactors and DimensionComponents in the level
+			for (AActor* Actor : LoadedLevel->Actors)
 			{
-				TArray<UTGOR_IdentityComponent*> Components;
-				Actor->GetComponents(Components);
-				for (UTGOR_IdentityComponent* Component : Components)
+				if (IsValid(Actor))
 				{
-					// Avoid collisions
-					int32 ActorIdentifier = Component->GetActorIdentifier();
-					if (DimensionObjects.Contains(ActorIdentifier) || ActorIdentifier == -1)
+					TArray<UTGOR_IdentityComponent*> Components;
+					Actor->GetComponents(Components);
+					for (UTGOR_IdentityComponent* Component : Components)
 					{
-						ActorIdentifier = GetUniqueActorIdentifier();
+						// Avoid collisions
+						int32 ActorIdentifier = Component->GetActorIdentifier();
+						if (DimensionObjects.Contains(ActorIdentifier) || ActorIdentifier == -1)
+						{
+							ActorIdentifier = GetUniqueActorIdentifier();
+						}
+
+						// Add spawn info
+						FTGOR_SpawnInstance Spawn;
+						Spawn.Identity = Component;
+						DimensionObjects.Add(ActorIdentifier, Spawn);
+						Component->DimensionIdentity.Identifier = ActorIdentifier;
+						Component->DimensionIdentity.Dimension = Dimension;
+						Component->PreAssemble(this);
+						Spawn.SpawnActor = Component->DimensionIdentity.Spawner;
 					}
 
-					// Add spawn info
-					FTGOR_SpawnInstance Spawn;
-					Spawn.Identity = Component;
-					DimensionObjects.Add(ActorIdentifier, Spawn);
-					Component->Identity.Identifier = ActorIdentifier;
-					Component->Identity.Dimension = Dimension;
-					Component->PreAssemble(this);
-					Spawn.SpawnActor = Component->Identity.Spawner;
+					Dimension->SetCullDistance(Actor);
 				}
-
-				Dimension->SetCullDistance(Actor);
 			}
-		}
 
-		// Make sure a regioncontroller has been found
-		SINGLETON_CHK;
-		DimensionAssembled = true;
+			DimensionAssembled = true;
+		}
 	}
 }
 
@@ -322,8 +322,8 @@ UTGOR_IdentityComponent* UTGOR_DimensionData::AddDimensionObject(int32 ActorIden
 			Spawn.Identity = SpawnIdentity(Spawner, Location, Rotation);
 			if (IsValid(Spawn.Identity))
 			{
-				Spawn.Identity->Identity.Identifier = ActorIdentifier;
-				Spawn.Identity->Identity.Dimension = Dimension;
+				Spawn.Identity->DimensionIdentity.Identifier = ActorIdentifier;
+				Spawn.Identity->DimensionIdentity.Dimension = Dimension;
 				Spawn.Identity->SetActorSpawner(Spawner);
 				DimensionObjects.Add(ActorIdentifier, Spawn);
 
@@ -391,8 +391,8 @@ void UTGOR_DimensionData::RegisterDimensionObject(UTGOR_IdentityComponent* Dimen
 			Spawn.SpawnActor = DimensionObject->GetActorSpawner();
 			Spawn.Identity = DimensionObject;
 
-			Spawn.Identity->Identity.Identifier = ActorIdentifier;
-			Spawn.Identity->Identity.Dimension = WorldData->GetDimensionContent(Identifier);
+			Spawn.Identity->DimensionIdentity.Identifier = ActorIdentifier;
+			Spawn.Identity->DimensionIdentity.Dimension = WorldData->GetDimensionContent(Identifier);
 			// Reset spawn so we reassemble everything properly
 			Spawn.Identity->SetActorSpawner(Spawn.SpawnActor, true);
 
@@ -432,8 +432,8 @@ void UTGOR_DimensionData::SwapDimensionObject(int32 ActorIdentifier, UTGOR_Dimen
 			}
 
 			//Assign new identifier
-			Current->Identity->Identity.Identifier = ActorIdentifier;
-			Current->Identity->Identity.Dimension = WorldData->GetDimensionContent(Other->Identifier);
+			Current->Identity->DimensionIdentity.Identifier = ActorIdentifier;
+			Current->Identity->DimensionIdentity.Dimension = WorldData->GetDimensionContent(Other->Identifier);
 			Dimension->SetCullDistance(Current->Identity->GetOwner());
 			//Current->Identity->SetActorSpawner(...); Does not change on swap
 

@@ -5,7 +5,7 @@
 
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "CoreSystem/TGOR_Singleton.h"
-#include "CreatureSystem/Content/TGOR_Creature.h"
+#include "CreatureSystem/Content/TGOR_DefaultCreature.h"
 #include "PlayerSystem/Actors/TGOR_Spectator.h"
 
 
@@ -17,7 +17,7 @@ UTGOR_SpawnSetup::UTGOR_SpawnSetup()
 	SetupName = LOCTEXT("SpawnSetupName", "Spawn player");
 	SetupOwner = ETGOR_SetupOwnerEnumeration::All;
 
-	DefaultBody = UTGOR_Creature::StaticClass();
+	DefaultBody = UTGOR_DefaultCreature::StaticClass();
 	OnlySpawnServerBody = false;
 }
 
@@ -55,6 +55,15 @@ bool UTGOR_SpawnSetup::Attempt_Implementation(bool IsServer)
 				Setup.Creature = Creature;
 				Spectator->RequestNewBody(Setup);
 			}
+			else
+			{
+				SetLoadingStatus(LOCTEXT("SpectatorWaiting", "Getting current spectator..."));
+				return false;
+			}
+		}
+		else
+		{
+			return SetFinishedStatus(LOCTEXT("NoCreature", "No creature defined, skipping..."));
 		}
 	}
 	return Super::Attempt_Implementation(IsServer);

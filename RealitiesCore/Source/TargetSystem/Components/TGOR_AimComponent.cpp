@@ -55,6 +55,21 @@ void UTGOR_AimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 			It.RemoveCurrent();
 		}
 	}
+
+	// Automatically update if possessed by player
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	if (IsValid(Pawn) && Pawn->IsLocallyControlled())
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController());
+		if (IsValid(PlayerController) && PlayerController->IsLocalController())
+		{
+			// Update aim
+			UpdateCandidatesNearby();
+			const FVector Location = PlayerController->PlayerCameraManager->GetCameraLocation();
+			const FRotator Rotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+			UpdateAimFromCamera(Location, Rotation.Vector());
+		}
+	}
 }
 
 void UTGOR_AimComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const

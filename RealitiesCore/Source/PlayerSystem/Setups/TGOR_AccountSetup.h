@@ -8,6 +8,7 @@
 #include "TGOR_AccountSetup.generated.h"
 
 
+/* Load available user accounts */
 UCLASS()
 class PLAYERSYSTEM_API UTGOR_AccountSetup : public UTGOR_Setup
 {

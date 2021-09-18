@@ -42,8 +42,8 @@ public:
 
 	/** Returns keys of players in this channel */
 	UFUNCTION(BlueprintNativeEvent, Category = "!TGOR Chat", Meta = (Keywords = "C++"))
-		TArray<int32> GetPlayersInChannel(ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance);
-		TArray<int32> GetPlayersInChannel_Implementation(ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance);
+		TArray<int32> GetPlayersInChannel(APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance);
+		TArray<int32> GetPlayersInChannel_Implementation(APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance);
 
 	/** Returns true if player is part of channel */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Chat", Meta = (Keywords = "C++"))

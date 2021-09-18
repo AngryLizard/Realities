@@ -9,6 +9,7 @@
 
 class UTGOR_Creature;
 
+/* Automatically spawn a creature from current spectator */
 UCLASS()
 class PLAYERSYSTEM_API UTGOR_SpawnSetup : public UTGOR_Setup
 {
@@ -24,7 +25,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Player", Meta = (Keywords = "C++"))
 		TSubclassOf<UTGOR_Creature> DefaultBody;
 
-	/* Spawn server body only (skip client) */
+	/* Spawn server body only (skip clients) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Player", Meta = (Keywords = "C++"))
 		bool OnlySpawnServerBody;
 };

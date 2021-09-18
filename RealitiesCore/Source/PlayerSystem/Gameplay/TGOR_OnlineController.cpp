@@ -10,13 +10,12 @@
 #include "CoreSystem/Gameplay/TGOR_PlayerState.h"
 #include "CoreSystem/Utility/TGOR_Encryption.h"
 #include "CreatureSystem/Actors/TGOR_Pawn.h"
-#include "CreatureSystem/Actors/TGOR_Avatar.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
 #include "KnowledgeSystem/Components/TGOR_UnlockComponent.h"
 #include "CustomisationSystem/Components/TGOR_ModularSkeletalMeshComponent.h"
 #include "DimensionSystem/Data/TGOR_WorldData.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
-#include "DimensionSystem/Components/TGOR_TrackedComponent.h"
+#include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 #include "DimensionSystem/Components/TGOR_WorldComponent.h"
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "ActionSystem/Content/TGOR_Loadout.h"
@@ -114,19 +113,7 @@ void ATGOR_OnlineController::PlayerTick(float DeltaTime)
 		!IsValid(World->GetGameState())) return;
 
 	SINGLETON_CHK;
-	
-
-	// Test timestamp
-	/*
-	if (Role == ROLE_AutonomousProxy)
-	{
-		RPTCK(FString("Adapted: ") + FString::SanitizeFloat(Singleton->GameTimestamp - tst))
-	}
-	if (Role == ROLE_Authority)
-	{
-		tst = Singleton->GameTimestamp;
-	}
-	*/
+	SetControlRotation(PlayerCameraManager->GetCameraRotation());
 
 	// Update timestamp
 	if (GetLocalRole() == ROLE_AutonomousProxy)
@@ -151,6 +138,7 @@ void ATGOR_OnlineController::GetLifetimeReplicatedProps(TArray< FLifetimePropert
 
 void ATGOR_OnlineController::PawnLeavingGame()
 {
+	// TODO: This could be done through some general interface or spawner
 	ATGOR_Pawn* C = Cast<ATGOR_Pawn>(GetPawn());
 	if (IsValid(C) && !C->DespawnsOnLogout())
 	{
@@ -195,25 +183,25 @@ void ATGOR_OnlineController::OnWorldUpdate()
 bool ATGOR_OnlineController::ApplyPossession(APawn* OtherPawn)
 {
 	SINGLETON_RETCHK(false);
-	ATGOR_Pawn* OwnPawn = Cast<ATGOR_Pawn>(GetPawn());
-	if (IsValid(OwnPawn))
+
+	Possess(OtherPawn);
+	UTGOR_WorldComponent* WorldManager = GetWorldManager();
+	WorldManager->UpdateDimensionRequestsFromPawn(GetPawn());
+
+	// TODO: This could be done through some general interface or spawner
+	ATGOR_Pawn* C = Cast<ATGOR_Pawn>(GetPawn());
+	if (IsValid(C))
 	{
-		Possess(OtherPawn);
-		UTGOR_WorldComponent* WorldManager = GetWorldManager();
-		WorldManager->UpdateDimensionRequestsFromPawn(GetPawn());
-
-		OwnPawn->OnUnposession();
-
-		UTGOR_UserData* UserData = Singleton->GetData<UTGOR_UserData>();
-		if (IsValid(UserData))
-		{
-			// Update other controllers since a body can be owned by multiple
-			UserData->ForEachController([](ATGOR_OnlineController* OnlineController) { OnlineController->UpdateBodyDisplay(); return true; });
-		}
-		return true;
+		C->OnUnposession();
 	}
-	
-	return Super::ApplyPossession(OtherPawn);
+
+	UTGOR_UserData* UserData = Singleton->GetData<UTGOR_UserData>();
+	if (IsValid(UserData))
+	{
+		// Update other controllers since a body can be owned by multiple
+		UserData->ForEachController([](ATGOR_OnlineController* OnlineController) { OnlineController->UpdateBodyDisplay(); return true; });
+	}
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -653,23 +641,21 @@ void ATGOR_OnlineController::UpdateUserlist(bool Force)
 				ATGOR_OnlineController* Controller = Cast<ATGOR_OnlineController>(*Iterator);
 				if (IsValid(Controller))
 				{
-					// Get controllable characters
-					ATGOR_Pawn* C = Cast<ATGOR_Pawn>(Controller->GetPawn());
-					if (IsValid(C))
+					// Get controlled character
+					APawn* C = Controller->GetPawn();
+
+					// Check if names match
+					if (UserData->HasUser(Controller->ActiveUserKey))
 					{
-						// Check if names match
-						if (UserData->HasUser(Controller->ActiveUserKey))
-						{
-							const FTGOR_UserInstance& Recipient = UserData->GetUser(Controller->ActiveUserKey);
+						const FTGOR_UserInstance& Recipient = UserData->GetUser(Controller->ActiveUserKey);
 
-							// Build info
-							FTGOR_UserInfo Info;
-							Info.Properties = Recipient.Properties;
-							Info.Ping = Controller->PlayerState->ExactPing;
-							Info.Location = C->GetActorLocation();
+						// Build info
+						FTGOR_UserInfo Info;
+						Info.Properties = Recipient.Properties;
+						Info.Ping = Controller->PlayerState->ExactPing;
+						Info.Location = C->GetActorLocation();
 
-							OnlineUsers.Add(Info);
-						}
+						OnlineUsers.Add(Info);
 					}
 				}
 			}
@@ -782,28 +768,23 @@ void ATGOR_OnlineController::ProcessChatMessageToPlayer(const FTGOR_UserInstance
 
 void ATGOR_OnlineController::ProcessChatMessageToSystem(const FTGOR_UserInstance& User, FTGOR_ChatMessageInstance Message)
 {
-	// Get currently controlled
-	ATGOR_Pawn* C = Cast<ATGOR_Pawn>(GetPawn());
-	if (IsValid(C))
+	// Fetch command
+	if (IsValid(Message.Command))
 	{
-		// Fetch command
-		if (IsValid(Message.Command))
+		// Check privileges
+		if (Message.Command->CanExecuteCommand(User))
 		{
-			// Check privileges
-			if (Message.Command->CanExecuteCommand(User))
+			// Call command
+			FString Error = CommandDefaultError.ToString();
+			if (!Message.Command->Call(Error, GetPawn(), this, User, Message.Message))
 			{
-				// Call command
-				FString Error = CommandDefaultError.ToString();
-				if (!Message.Command->Call(Error, C, this, User, Message.Message))
-				{
-					SendErrorMessage(FText::FromString(Error));
-				}
-				return;
+				SendErrorMessage(FText::FromString(Error));
 			}
-
-			SendErrorMessage(InsufficientPrivileges);
 			return;
 		}
+
+		SendErrorMessage(InsufficientPrivileges);
+		return;
 	}
 
 	SendErrorMessage(CommandNotFound);
@@ -811,33 +792,29 @@ void ATGOR_OnlineController::ProcessChatMessageToSystem(const FTGOR_UserInstance
 
 void ATGOR_OnlineController::ProcessChatMessageToChannel(const FTGOR_UserInstance& User, FTGOR_ChatMessageInstance Message)
 {
-	// Get currently controlled
-	ATGOR_Pawn* C = Cast<ATGOR_Pawn>(GetPawn());
-	if (IsValid(C))
+	// Fetch channel
+	if (IsValid(Message.Channel))
 	{
-		// Fetch channel
-		if (IsValid(Message.Channel))
+		// Get players from channel
+		TArray<int32> Players = Message.Channel->GetPlayersInChannel(GetPawn(), this, User);
+
+		// Find playercontroller with specified key
+		UWorld* World = GetWorld();
+		auto Iterator = World->GetPlayerControllerIterator();
+		for (; Iterator; Iterator++)
 		{
-			// Get players from channel
-			TArray<int32> Players = Message.Channel->GetPlayersInChannel(C, this, User);
-
-			// Find playercontroller with specified key
-			UWorld* World = GetWorld();
-			auto Iterator = World->GetPlayerControllerIterator();
-			for (; Iterator; Iterator++)
+			ATGOR_OnlineController* Controller = Cast<ATGOR_OnlineController>(*Iterator);
+			if (IsValid(Controller) && Players.Contains(Controller->ActiveUserKey))
 			{
-				ATGOR_OnlineController* Controller = Cast<ATGOR_OnlineController>(*Iterator);
-				if (IsValid(Controller) && Players.Contains(Controller->ActiveUserKey))
-				{
-					// Send if part of the channel
-					Message.Domain = ETGOR_ChatDomainEnumeration::Public;
-					Controller->ReceiveChatMessage(Message);
-				}
+				// Send if part of the channel
+				Message.Domain = ETGOR_ChatDomainEnumeration::Public;
+				Controller->ReceiveChatMessage(Message);
 			}
-
-			return;
 		}
+
+		return;
 	}
+
 	SendErrorMessage(ChannelNotFound);
 }
 
@@ -1259,7 +1236,7 @@ int32 ATGOR_OnlineController::GetActiveUserKey()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ATGOR_Pawn* ATGOR_OnlineController::GetBodyPawn(int32 Identifier) const
+APawn* ATGOR_OnlineController::GetBodyPawn(int32 Identifier) const
 {
 	SINGLETON_RETCHK(nullptr);
 	if (Identifier == -1) Identifier = ActiveBodyIdentifier;
@@ -1272,7 +1249,7 @@ ATGOR_Pawn* ATGOR_OnlineController::GetBodyPawn(int32 Identifier) const
 		const FTGOR_UserInstance& User = UserData->GetUser(ActiveUserKey);
 		if (User.Bodies.Contains(Identifier))
 		{
-			return WorldData->GetTrackedActor<ATGOR_Pawn>(Identifier);
+			return WorldData->GetTrackedActor<APawn>(Identifier);
 		}
 	}
 	return nullptr;
@@ -1291,17 +1268,17 @@ void ATGOR_OnlineController::UpdateBodyDisplay()
 		for (const auto& Pair : User.Bodies)
 		{
 			ETGOR_FetchEnumeration State;
-			UTGOR_TrackedComponent* Tracked = WorldData->GetTracked(Pair.Key, State);
-			if (IsValid(Tracked))
+			UTGOR_IdentityComponent* Identity = WorldData->GetTracked(Pair.Key, State);
+			if (IsValid(Identity))
 			{
-				APawn* OtherPawn = Cast<APawn>(Tracked->GetOwner());
+				APawn* OtherPawn = Cast<APawn>(Identity->GetOwner());
 
 				// Only display bodies we can actually possess and that aren't already possessed
 				if (!IsValid(OtherPawn) || (OtherPawn->GetController() == nullptr && OtherPawn != GetPawn()))
 				{
 					FTGOR_UserBodyDisplay Display;
 					Display.Spawner = Pair.Value.Spawner;
-					Display.Dimension = Tracked->GetActorDimension();
+					Display.Dimension = Identity->GetActorDimension();
 					Display.Identifier = Pair.Key;
 					BodyDisplay.Emplace(Display);
 				}
@@ -1388,7 +1365,7 @@ bool ATGOR_OnlineController::RequestPin_Validate(FTGOR_KnowledgePinRequest Reque
 
 void ATGOR_OnlineController::RequestAppearance_Implementation(int32 Identifier, FTGOR_AppearanceInstance Setup)
 {
-	ATGOR_Pawn* OwnPawn = GetBodyPawn(Identifier);
+	APawn* OwnPawn = GetBodyPawn(Identifier);
 	if (IsValid(OwnPawn))
 	{
 		UTGOR_ModularSkeletalMeshComponent* Mesh = OwnPawn->FindComponentByClass<UTGOR_ModularSkeletalMeshComponent>();
@@ -1404,13 +1381,20 @@ bool ATGOR_OnlineController::RequestAppearance_Validate(int32 Identifier, FTGOR_
 
 void ATGOR_OnlineController::RequestActions_Implementation(int32 Identifier, FTGOR_LoadoutInstance Setup)
 {
-	ATGOR_Pawn* OwnPawn = GetBodyPawn(Identifier);
+	APawn* OwnPawn = GetBodyPawn(Identifier);
 	if (IsValid(OwnPawn))
 	{
-		UTGOR_ActionComponent* Equipment = OwnPawn->FindComponentByClass<UTGOR_ActionComponent>();
-		UTGOR_Creature* Creature = OwnPawn->GetSpawnerContent();
-		Setup.Loadout = Creature->GetMFromType<UTGOR_Loadout>(Equipment->TargetLoadout);
-		Equipment->ApplyActionSetup(Setup);
+		UTGOR_IdentityComponent* Identity = OwnPawn->FindComponentByClass<UTGOR_IdentityComponent>();
+		if (IsValid(Identity))
+		{
+			UTGOR_Spawner* Spawner = Identity->GetActorSpawner();
+			UTGOR_ActionComponent* Equipment = OwnPawn->FindComponentByClass<UTGOR_ActionComponent>();
+			if (IsValid(Spawner) && IsValid(Equipment))
+			{
+				Setup.Loadout = Spawner->GetMFromType<UTGOR_Loadout>(Equipment->TargetLoadout);
+				Equipment->ApplyActionSetup(Setup);
+			}
+		}
 	}
 }
 

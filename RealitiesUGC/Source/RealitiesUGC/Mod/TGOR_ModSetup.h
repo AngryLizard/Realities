@@ -46,7 +46,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR System")
 		ETGOR_SetupOwnerEnumeration SetupOwner;
 
-	/** Optional parent setup (first match in loading order) this task is inserted after. If None the setup is inserted at the end of the loading chain.
+	/** Optional parent setup this task is inserted after (first match in loading order). If None, the setup is inserted at the end of the loading chain.
 		Tasks with the same parent task are loaded in reverse loading order after the parent task (i.e. newest first).*/
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR System")
 		TSubclassOf<UTGOR_ModSetup> ParentSetup;
@@ -54,6 +54,10 @@ public:
 	/** Set current status loading text */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR System", Meta = (Keywords = "C++"))
 		void SetLoadingStatus(FText Text);
+
+	/** Set alternative finish message */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR System", Meta = (Keywords = "C++"))
+		bool SetFinishedStatus(FText Text);
 
 	/** Actually invoke setup, return if step is done */
 	UFUNCTION(BlueprintNativeEvent)

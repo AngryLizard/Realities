@@ -24,7 +24,7 @@ FLinearColor UTGOR_Channel::GetChannelColor() const
 }
 
 
-TArray<int32> UTGOR_Channel::GetPlayersInChannel_Implementation(ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance)
+TArray<int32> UTGOR_Channel::GetPlayersInChannel_Implementation(APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance)
 {
 	return(ForAllPlayers(UserInstance));
 }

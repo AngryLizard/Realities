@@ -81,12 +81,14 @@ void ATGOR_NpcSpawnActor::Spawn()
 					UTGOR_IdentityComponent* Component = Dimension->AddDimensionObject(Identifier, Spawner, Location, Rotation, State);
 					if (IsValid(Component))
 					{
-						ATGOR_Pawn* Pawn = Cast<ATGOR_Pawn>(Component->GetOwner());
+						APawn* Pawn = Cast<APawn>(Component->GetOwner());
+						if (IsValid(Component))
+						{
+							Pawn->AIControllerClass = Npc->Controller;
+							Pawn->SpawnDefaultController();
 
-						Pawn->AIControllerClass = Npc->Controller;
-						Pawn->SpawnDefaultController();
-
-						UTGOR_GameInstance::DespawnActor(this);
+							UTGOR_GameInstance::DespawnActor(this);
+						}
 					}
 				}
 			}

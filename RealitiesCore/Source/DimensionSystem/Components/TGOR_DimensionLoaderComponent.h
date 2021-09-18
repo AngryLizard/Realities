@@ -12,7 +12,6 @@
 
 class UTGOR_DimensionData;
 class UTGOR_Dimension;
-class ATGOR_Pawn;
 
 UENUM(BlueprintType)
 enum class ETGOR_DimensionLoaderLevel : uint8

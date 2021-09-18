@@ -226,7 +226,7 @@ bool UTGOR_Command::ParseArgument(FTGOR_CommandArg& CommandArg, FString& Error, 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_Command::Call(FString& Error, ATGOR_Pawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const FString& Args)
+bool UTGOR_Command::Call(FString& Error, APawn* Pawn, ATGOR_OnlineController* Controller, const FTGOR_UserInstance& UserInstance, const FString& Args)
 {
 	// Doesn't support string literals
 	//int32 Size = Args.ParseIntoArray(Parsed, L" ", true);
@@ -465,39 +465,6 @@ TArray<FString> UTGOR_Command::AutoComplete(const FString& Args, FString& Prefix
 	
 	return(Out);
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*void UTGOR_Command::SpawnItem(ATGOR_Pawn* Pawn, int32 Index, float Quantity, ETGOR_FetchEnumeration& Branches)
-{
-	Branches = ETGOR_FetchEnumeration::Empty;
-
-	// Make sure quantity is valid
-	if (Quantity < SMALL_NUMBER)
-	{
-		return;
-	}
-
-	SINGLETON_CHK
-
-	// Get item class to check if valid
-	UTGOR_Item* Item = Singleton->ContentManager->GetTFromIndex<UTGOR_Item>(Index);
-	if(IsValid(Item))
-	{
-		// Get any container class to spawn item in
-		UTGOR_ContainerComponent* Container = Cast<UTGOR_ContainerComponent>(Pawn->GetComponentByClass(UTGOR_ContainerComponent::StaticClass()));
-		if (IsValid(Container))
-		{
-			// Actually spawn item
-			FTGOR_ItemInstance_OLD Instance;
-			Instance.Content = Item;
-			Instance.Quantity = Quantity;
-
-			FVector Location = Pawn->GetActorLocation();
-			Container->DropItem(Instance, Location);
-		}
-	}
-}*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

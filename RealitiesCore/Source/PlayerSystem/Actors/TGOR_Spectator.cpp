@@ -10,16 +10,14 @@
 #include "PlayerSystem/Data/TGOR_UserData.h"
 #include "DimensionSystem/Data/TGOR_WorldData.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
-#include "DimensionSystem/Components/TGOR_TrackedComponent.h"
+#include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 #include "PhysicsSystem/Components/TGOR_ArmatureComponent.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
 #include "PlayerSystem/Gameplay/TGOR_PlayerController.h"
 
 #include "CoreSystem/Gameplay/TGOR_GameInstance.h"
-#include "TargetSystem/Components/TGOR_AimComponent.h"
 #include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
-#include "ActionSystem/Components/TGOR_ActionComponent.h"
 #include "CoreSystem/Storage/TGOR_Package.h"
 
 #include "PlayerSystem/Gameplay/TGOR_OnlineController.h"
@@ -52,79 +50,13 @@ ATGOR_Spectator::ATGOR_Spectator(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bFindCameraComponentWhenViewTarget = true;
+	SetReplicatingMovement(false);
+	bReplicates = true;
 
-	ActionComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_ActionComponent>(this, FName(TEXT("ActionComponent")));
-	ActionComponent->SetNetAddressable();
-	ActionComponent->SetIsReplicated(true);
-	
-	AimComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_AimComponent>(this, FName(TEXT("AimComponent")));
-	AimComponent->SetupAttachment(GetRootComponent());
-	AimComponent->SetNetAddressable();
-	AimComponent->SetIsReplicated(true);
-
-	UTGOR_IdentityComponent* Identity = GetIdentity();
-	Identity->IgnoreStorage = true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-void ATGOR_Spectator::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void ATGOR_Spectator::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-}
-
-void ATGOR_Spectator::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (!Controller) return;
-	Controller->SetControlRotation(GetCameraRotation().Rotator());
-
-	UTGOR_ArmatureComponent* Armature = GetArmature();
-	ATGOR_PlayerController* PlayerController = Cast<ATGOR_PlayerController>(GetController());
-	if (IsValid(PlayerController) && PlayerController->IsLocalController() && IsValid(Armature))
-	{
-		// Rotate with movement base
-		FTGOR_MovementDynamic ParentSpace = Armature->ComputeBase();
-		const float Angle = ParentSpace.AngularVelocity.Size();
-		if (Angle > SMALL_NUMBER)
-		{
-			UTGOR_CameraComponent* Camera = GetCamera();
-			Camera->RotateCamera(ParentSpace.AngularVelocity / Angle, Angle * DeltaTime, false);
-		}
-
-		// Update aim
-		AimComponent->UpdateCandidatesNearby();
-		const FVector Location = PlayerController->PlayerCameraManager->GetCameraLocation();
-		const FRotator Rotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-		AimComponent->UpdateAimFromCamera(Location, Rotation.Vector());
-	}
-}
-
-void ATGOR_Spectator::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-}
-
-void ATGOR_Spectator::UnPossessed()
-{
-	Super::UnPossessed();
-
-	//UTGOR_GameInstance::DespawnActor(this);
-}
-
-
-bool ATGOR_Spectator::Assemble(UTGOR_DimensionData* Dimension)
-{
-	Super::Assemble(Dimension);
-	return true;
+	IdentityComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_IdentityComponent>(this, FName(TEXT("IdentityComponent")));
+	IdentityComponent->SetIsReplicated(true);
+	IdentityComponent->IgnoreStorage = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,8 +81,8 @@ void ATGOR_Spectator::RequestNewBody_Implementation(FTGOR_CreateBodySetup Setup)
 			UTGOR_IdentityComponent* Identity = Dimension->AddDimensionObject(ActorIdewntifier, Setup.Creature, Transform.GetLocation(), Transform.GetRotation().Rotator(), State);
 			if (State == ETGOR_FetchEnumeration::Found)
 			{
-				ATGOR_Avatar* Avatar = Cast<ATGOR_Avatar>(Identity->GetOwner());
-				if (IsValid(Avatar))
+				APawn* Pawn = Cast<APawn>(Identity->GetOwner());
+				if (IsValid(Pawn))
 				{
 					// Assign body to user
 					AController* OwnController = GetController();
@@ -160,18 +92,18 @@ void ATGOR_Spectator::RequestNewBody_Implementation(FTGOR_CreateBodySetup Setup)
 						if (IsValid(OnlineController))
 						{
 							const int32 UserKey = OnlineController->GetActiveUserKey();
-							const int32 BodyIdentifier = UserData->AddUserBody(UserKey, Avatar->GetIdentity());
+							const int32 BodyIdentifier = UserData->AddUserBody(UserKey, Identity);
 
 							OnlineController->RequestAppearance_Implementation(BodyIdentifier, Setup.Setup.Appearance);
 							OnlineController->RequestActions_Implementation(BodyIdentifier, Setup.Setup.Actions);
 							OnlineController->RequestBodySwitch(BodyIdentifier);
-							OnBodyRequest(Avatar);
+							OnBodyRequest(Pawn);
 						}
 						else
 						{
 							// Technically an error case since only NPCs have non-online controllers and those don't call the server
-							OwnController->Possess(Avatar);
-							OnBodyRequest(Avatar);
+							OwnController->Possess(Pawn);
+							OnBodyRequest(Pawn);
 						}
 					}
 				}

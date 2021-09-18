@@ -95,7 +95,7 @@ public:
 
 	/** Linked map */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Dimension")
-		TSoftObjectPtr<UWorld> World;
+		TAssetPtr<UWorld> World;
 
 	/** Available connections in this dimension */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Dimension")

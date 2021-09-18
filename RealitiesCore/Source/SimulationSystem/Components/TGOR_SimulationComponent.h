@@ -10,12 +10,11 @@
 #include "TGOR_SimulationComponent.generated.h"
 
 class UTGOR_CombatComponent;
-class ATGOR_Pawn;
 
 /**
  * 
  */
-UCLASS(ClassGroup = (Custom), Blueprintable, Within = Pawn, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class SIMULATIONSYSTEM_API UTGOR_SimulationComponent : public UTGOR_InfluencableComponent
 {
 	GENERATED_BODY()

@@ -186,7 +186,7 @@ protected:
 		FText DefaultDescription;
 
 	/** Icon of this content class to be shown in content management */
-	UPROPERTY(EditAnywhere, Category = "!TGOR Content", meta = (AllowPrivateAccess = "true", DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface"))
+	UPROPERTY(EditAnywhere, Category = "!TGOR Display", meta = (AllowPrivateAccess = "true", DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface"))
 		UObject* DefaultIcon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "!TGOR Content")

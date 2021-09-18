@@ -41,7 +41,7 @@ void UTGOR_ArmatureComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 
 bool UTGOR_ArmatureComponent::UpdatesBase() const
 {
-	APawn* Pawn = GetOuterAPawn();
+	APawn* Pawn = Cast<APawn>(GetOwner());
 	return Pawn && (Pawn->IsLocallyControlled());
 }
 
@@ -131,8 +131,7 @@ void UTGOR_ArmatureComponent::AttachToMovement(USceneComponent* Component, int32
 
 USkeletalMeshComponent* UTGOR_ArmatureComponent::GetSkeletalMesh() const
 {
-	APawn* Pawn = GetOuterAPawn();
-	return Pawn->FindComponentByClass<USkeletalMeshComponent>();
+	return GetOwnerComponent<USkeletalMeshComponent>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,11 +236,6 @@ float UTGOR_ArmatureComponent::Simulate(float Time)
 
 void UTGOR_ArmatureComponent::OutOfLevel()
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
-	{
-		//Pawn->OutOfLevel();
-	}
 	Super::OutOfLevel();
 }
 

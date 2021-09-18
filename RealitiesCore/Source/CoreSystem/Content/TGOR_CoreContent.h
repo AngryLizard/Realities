@@ -15,58 +15,48 @@ class CORESYSTEM_API UTGOR_CoreContent : public UTGOR_Content, public ITGOR_Sing
 {
 	GENERATED_BODY()
 
-	public:
+public:
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		UTGOR_CoreContent();
-		virtual void BuildResource() override;
-		virtual void PostBuildResource() override;
-		virtual void Reset() override;
+	UTGOR_CoreContent();
+	virtual void BuildResource() override;
+	virtual void PostBuildResource() override;
+	virtual void Reset() override;
 
-		//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
+	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		/** Get display struct */
-		UFUNCTION(BlueprintPure, Category = "!TGOR Content", Meta = (Keywords = "C++"))
-			const FTGOR_Display& GetDisplay() const;
+	/** Get chat aliases */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Chat", Meta = (Keywords = "C++"))
+		const TArray<FString>& GetAliases() const;
 
-		/** Get chat aliases */
-		UFUNCTION(BlueprintPure, Category = "!TGOR Chat", Meta = (Keywords = "C++"))
-			const TArray<FString>& GetAliases() const;
-
-		/** Find first possible chat alias */
-		UFUNCTION(BlueprintPure, Category = "!TGOR Chat", Meta = (Keywords = "C++"))
-			FString GetFirstAlias() const;
+	/** Find first possible chat alias */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Chat", Meta = (Keywords = "C++"))
+		FString GetFirstAlias() const;
 
 #ifdef WITH_EDITOR
-		// Accessors mostly for EditorUtility
-		void SetRawDisplayName(const FText& Name);
+	// Accessors mostly for EditorUtility
+	void SetRawDisplayName(const FText& Name);
 #endif
 
-		////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-		/** Alias used in chat. (defaults to DisplayName if not empty, DefaultName otherwise) */
-		UPROPERTY(EditDefaultsOnly, Category = "!TGOR Chat")
-			TArray<FString> ChatAlias;
+	/** Alias used in chat. (defaults to DisplayName if not empty, DefaultName otherwise) */
+	UPROPERTY(EditDefaultsOnly, Category = "!TGOR Chat")
+		TArray<FString> ChatAlias;
 
-		/** Display used for ingame display */
-		UPROPERTY(EditDefaultsOnly, Category = "!TGOR Chat")
-			FTGOR_Display Display;
-
-
-		////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Wrapper to get content from singleton */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Content", meta = (DeterminesOutputType = "Class", WorldContext = "WorldContextObject", UnsafeDuringActorConstruction = "true", Keywords = "C++"))
 		static UTGOR_Content* GetContentStatic(const UObject* WorldContextObject, TSubclassOf<UTGOR_Content> Class);
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -78,8 +68,30 @@ public:
 
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 
-protected:
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
 
+	UPROPERTY(EditAnywhere, Category = "!TGOR Content")
+		FText DisplayName;
+
+	UPROPERTY(EditAnywhere, Category = "!TGOR Display")
+		float Aspect;
+
+	UPROPERTY(EditAnywhere, Category = "!TGOR Display")
+		FLinearColor CustomColor;
+
+	UPROPERTY(EditAnywhere, Category = "!TGOR Display")
+		bool UseCustomColor;
+
+	/** Get display struct */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Display", Meta = (Keywords = "C++"))
+		const FTGOR_Display& GetDisplay() const;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
+
+	/** Display used for ingame display */
+	UPROPERTY()
+		FTGOR_Display Display;
 
 };

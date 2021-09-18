@@ -22,6 +22,13 @@ void UTGOR_ModSetup::SetLoadingStatus(FText Text)
 	State.State = ETGOR_SetupStateEnumeration::Loading;
 }
 
+bool UTGOR_ModSetup::SetFinishedStatus(FText Text)
+{
+	State.Status = Text;
+	State.State = ETGOR_SetupStateEnumeration::Finished;
+	return true;
+}
+
 bool UTGOR_ModSetup::Attempt_Implementation(bool IsServer)
 {
 	State.Status = LOCTEXT("DefaultSetupFinished", "Done!");

@@ -6,11 +6,11 @@
 #include "CoreSystem/TGOR_Singleton.h"
 #include "CoreSystem/Storage/TGOR_Package.h"
 
+#include "KnowledgeSystem/Components/TGOR_TrackerComponent.h"
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
-#include "DimensionSystem/Components/TGOR_TrackedComponent.h"
 #include "DimensionSystem/Data/TGOR_WorldData.h"
 
-#include "CreatureSystem/Content/TGOR_AvatarTracker.h"
+#include "CreatureSystem/Content/TGOR_PawnTracker.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
 
 #include "PlayerSystem/Gameplay/TGOR_OnlineController.h"
@@ -114,25 +114,28 @@ void UTGOR_UserData::UpdateTrackers(int32 UserKey, float DeltaSeconds)
 			UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
 			if (IsValid(WorldData))
 			{
-				// TODO: This could be generalised to any kind of actor
-				ATGOR_Avatar* Avatar = WorldData->GetTrackedActor<ATGOR_Avatar>(Body.Key);
-				if (IsValid(Avatar))
+				APawn* Pawn = WorldData->GetTrackedActor<APawn>(Body.Key);
+				UTGOR_Creature* Creature = Cast<UTGOR_Creature>(Body.Value.Spawner);
+				if (IsValid(Pawn) && IsValid(Creature))
 				{
-					// Update current avatar context
-					const TSet<UTGOR_CoreContent*> ContentContext = Avatar->GetContext();
-
-					// Track automatic trackers
-					UTGOR_Creature* Creature = Avatar->GetSpawnerContent();
-					const TArray<UTGOR_AvatarTracker*> AvatarTrackers = Creature->Instanced_TrackerInsertions.GetListOfType<UTGOR_AvatarTracker>();//GetIListFromType<UTGOR_AvatarTracker>();
-					for (UTGOR_AvatarTracker* Tracker : AvatarTrackers)
+					UTGOR_TrackerComponent* Tracker = Pawn->FindComponentByClass<UTGOR_TrackerComponent>();
+					if (IsValid(Tracker))
 					{
-						const float Delta = Tracker->Track(Avatar, DeltaSeconds);
-						FTGOR_TrackerInstance& Instance = User.Trackers.Data.FindOrAdd(Tracker);
-						Instance.Put(ContentContext, Delta);
-					}
+						// Update current avatar context
+						const TSet<UTGOR_CoreContent*> ContentContext = Tracker->GetContext();
 
-					// Flush cached trackers into user database
-					Avatar->FlushTracker(User.Trackers);
+						// Track automatic trackers
+						const TArray<UTGOR_PawnTracker*> PawnTrackers = Creature->Instanced_TrackerInsertions.GetListOfType<UTGOR_PawnTracker>();
+						for (UTGOR_PawnTracker* PawnTracker : PawnTrackers)
+						{
+							const float Delta = PawnTracker->Track(Pawn, DeltaSeconds);
+							FTGOR_TrackerInstance& Instance = User.Trackers.Data.FindOrAdd(PawnTracker);
+							Instance.Put(ContentContext, Delta);
+						}
+
+						// Flush cached trackers into user database
+						Tracker->FlushTracker(User.Trackers);
+					}
 				}
 			}
 		}
@@ -141,11 +144,10 @@ void UTGOR_UserData::UpdateTrackers(int32 UserKey, float DeltaSeconds)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int32 UTGOR_UserData::AddUserBody(int32 UserKey, UTGOR_TrackedComponent* Component)
+int32 UTGOR_UserData::AddUserBody(int32 UserKey, UTGOR_IdentityComponent* Component)
 {
 	SINGLETON_RETCHK(INDEX_NONE);
-	FTGOR_UserInstance* Instance = UserBase.Find(UserKey);
-	if (Instance)
+	if (FTGOR_UserInstance* Instance = UserBase.Find(UserKey))
 	{
 		UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
 		if (IsValid(WorldData))

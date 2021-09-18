@@ -1,0 +1,9 @@
+// The Gateway of Realities: Planes of Existence.
+#include "TGOR_PawnTracker.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+UTGOR_PawnTracker::UTGOR_PawnTracker()
+	: Super()
+{
+}

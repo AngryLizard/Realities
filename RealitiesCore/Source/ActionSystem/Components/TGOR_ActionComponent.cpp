@@ -421,14 +421,10 @@ TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Actio
 
 void UTGOR_ActionComponent::PlayAnimation(TSubclassOf<UTGOR_Animation> InAnimation)
 {
-	APawn* Pawn = GetOuterAPawn();
-	if (IsValid(Pawn))
+	UTGOR_AnimationComponent* AnimationComponent = GetOwnerComponent<UTGOR_AnimationComponent>();
+	if (IsValid(AnimationComponent))
 	{
-		UTGOR_AnimationComponent* AnimationComponent = Pawn->FindComponentByClass<UTGOR_AnimationComponent>();
-		if (IsValid(AnimationComponent))
-		{
-			AnimationComponent->SwitchAnimation(PerformanceType, InAnimation);
-		}
+		AnimationComponent->SwitchAnimation(PerformanceType, InAnimation);
 	}
 }
 
@@ -444,7 +440,7 @@ FTGOR_Time UTGOR_ActionComponent::GetServerTime(float Delay)
 
 float UTGOR_ActionComponent::GetClientPing()
 {
-	APawn* Pawn = GetOuterAPawn();
+	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (!IsValid(Pawn))
 	{
 		return(0.0f);
@@ -488,7 +484,7 @@ void UTGOR_ActionComponent::GetNetOccupation(ETGOR_NetOccupation& Branches)
 
 bool UTGOR_ActionComponent::IsLocallyControlled() const
 {
-	APawn* Pawn = GetOuterAPawn();
+	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (IsValid(Pawn))
 	{
 		return Pawn->IsLocallyControlled();
@@ -849,7 +845,6 @@ void UTGOR_ActionComponent::UpdateContext(const FTGOR_AimInstance& Aim)
 
 bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 {
-	APawn* Pawn = GetOuterAPawn();
 	TMap<UTGOR_Action*, TArray<TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>>> Previous;
 
 	// Remove slots but cache both instances and items in case the new loadout can use them
@@ -935,7 +930,7 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 		}
 	}
 
-	UTGOR_InventoryComponent* Inventory = Pawn->FindComponentByClass<UTGOR_InventoryComponent>();
+	UTGOR_InventoryComponent* Inventory = GetOwnerComponent<UTGOR_InventoryComponent>();
 
 	// Push leftovers into inventory and/or drop them
 	for (const auto& Pair : Previous)

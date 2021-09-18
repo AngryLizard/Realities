@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TargetSystem/Components/TGOR_AimComponent.h"
+#include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "TGOR_HitVolumeComponent.generated.h"
 
 class ATGOR_PhysicsVolume;
@@ -31,7 +31,7 @@ struct FTGOR_HitVolumeHandle
  * 
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class ACTIONSYSTEM_API UTGOR_HitVolumeComponent : public UTGOR_AimComponent
+class ACTIONSYSTEM_API UTGOR_HitVolumeComponent : public UTGOR_DimensionComponent
 {
 	GENERATED_BODY()
 

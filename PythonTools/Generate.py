@@ -6,7 +6,7 @@ args = sys.argv[1:]
 root = os.path.dirname(os.path.abspath(__file__))
 template = "TemplateSystem"
 
-path = os.path.join("RealitiesGame", "Source")
+path = os.path.join("RealitiesCore", "Source")
 if len(args) > 0: path = args[0]
 
 modulepath = os.path.join(root,"modules.txt")

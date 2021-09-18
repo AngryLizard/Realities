@@ -6,6 +6,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/Classes/GameFramework/SpringArmComponent.h"
 
+#include "DimensionSystem/TGOR_PilotInstance.h"
+
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "CoreSystem/Interfaces/TGOR_SingletonInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
@@ -196,4 +198,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		float GetControlThrottle() const;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Horizontal camera rotation around current up vector */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		void RotateCameraHorizontally(float Amount);
+
+	/** Vertical camera rotation around control rotation right axis */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		void RotateCameraVertically(float Amount);
+
+	/** Get camera rotation in pawn local space */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		FQuat ToLocalCameraRotation(const FTGOR_MovementPosition& Position) const;
+
+	/** Set camera rotation from pawn local space */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		void FromLocalCameraRotation(const FTGOR_MovementPosition& Position, const FQuat& Quat);
 };

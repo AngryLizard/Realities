@@ -8,7 +8,6 @@
 class ITGOR_AnimationInterface;
 class UTGOR_SubAnimInstance;
 class UTGOR_Performance;
-class ATGOR_Pawn;
 
 /**
  * 
