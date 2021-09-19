@@ -23,7 +23,7 @@ class DIMENSIONSYSTEM_API UTGOR_IdentityComponent : public UTGOR_Component, publ
 	friend class UTGOR_Loader;
 	friend class UTGOR_WorldData;
 	friend class UTGOR_DimensionData;
-	friend class UTGOR_EditorFunctionLibrary;
+	friend class UTGOR_DimensionEditorFunctionLibrary;
 
 public:	
 	UTGOR_IdentityComponent();
