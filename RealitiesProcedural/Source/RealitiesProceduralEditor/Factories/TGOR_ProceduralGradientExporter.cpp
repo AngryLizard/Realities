@@ -43,6 +43,7 @@ struct FTGAFileFooter
 
 bool UTGOR_ProceduralGradientExporterTGA::ExportBinary(UObject* Object, const TCHAR* Type, FArchive& Ar, FFeedbackContext* Warn, int32 FileIndex, uint32 PortFlags)
 {
+	/*
 	UTGOR_ProceduralGradient* Texture = CastChecked<UTGOR_ProceduralGradient>(Object);
 	if (!Texture->Source.IsValid() || (Texture->Source.GetFormat() != TSF_BGRA8))
 	{
@@ -131,6 +132,8 @@ bool UTGOR_ProceduralGradientExporterTGA::ExportBinary(UObject* Object, const TC
 	Ftr.TrailingPeriod = '.';
 	Ar.Serialize(&Ftr, sizeof(Ftr));
 	return true;
+	*/
+	return false;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -137,7 +137,11 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 	}
 
 	// Create bone data
-	BoneCount = MergeOutput.Mesh->RefSkeleton.GetNum();
+
+	const FReferenceSkeleton& OutputSkeleton = MergeOutput.Mesh->GetRefSkeleton();
+	const TArray<FMatrix>& OutputInvMatrices = MergeOutput.Mesh->GetRefBasesInvMatrix();
+
+	BoneCount = OutputSkeleton.GetNum();
 	BindMatrices.SetNum(BoneCount);
 	ExportBones.SetNum(BoneCount);
 
@@ -150,11 +154,11 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 		FTGOR_ExportBone& Bone = ExportBones[BoneIndex];
 
 		// Bone properties
-		Bone.Name = MergeOutput.Mesh->RefSkeleton.GetBoneName(BoneIndex).ToString();
-		MergeOutput.Mesh->RefSkeleton.GetDirectChildBones(BoneIndex, Bone.Children);
+		Bone.Name = OutputSkeleton.GetBoneName(BoneIndex).ToString();
+		OutputSkeleton.GetDirectChildBones(BoneIndex, Bone.Children);
 
 		// Local transform
-		FTransform BoneTransform = MergeOutput.Mesh->RefSkeleton.GetRefBonePose()[BoneIndex];
+		FTransform BoneTransform = OutputSkeleton.GetRefBonePose()[BoneIndex];
 		Bone.Location = BoneTransform.GetLocation();
 		Bone.Rotation = BoneTransform.GetRotation();
 		Bone.Scale = BoneTransform.GetScale3D();
@@ -162,7 +166,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 
 		// Set bind matrix
 		FMatrix& Matrix = BindMatrices[BoneIndex];
-		Matrix = MergeOutput.Mesh->RefBasesInvMatrix[BoneIndex];
+		Matrix = OutputInvMatrices[BoneIndex];
 
 		for (int32 I = 0; I < 4; I++)
 		{
@@ -175,7 +179,8 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 	}
 
 	// Create morph data
-	MorphCount = MergeOutput.Mesh->MorphTargets.Num();
+	const TArray<UMorphTarget*>& OutputMorphTargets = MergeOutput.Mesh->GetMorphTargets();
+	MorphCount = OutputMorphTargets.Num();
 	ExportMorphTargets.SetNum(MorphCount);
 	MorphBuffers.SetNumUninitialized(MorphCount);
 
@@ -193,7 +198,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 		MorphTarget.MaxMorph.Position = FVector(-FLT_MAX);
 		MorphTarget.MaxMorph.Normal = FVector(-FLT_MAX);
 
-		UMorphTarget* MorphAsset = MergeOutput.Mesh->MorphTargets[MorphIndex];
+		UMorphTarget* MorphAsset = OutputMorphTargets[MorphIndex];
 		const FMorphTargetLODModel& Model = MorphAsset->MorphLODModels[0];
 		for (const FMorphTargetDelta& Delta : Model.Vertices)
 		{

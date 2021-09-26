@@ -99,18 +99,18 @@ void FTGOR_SkeletalMeshMerge::MergeSkeleton(const TArray<FTGOR_RefPoseOverride>*
 
 	if (RefPoseOverrides)
 	{
-		OverrideReferenceSkeletonPose(*RefPoseOverrides, NewRefSkeleton, MergeMesh->Skeleton);
+		OverrideReferenceSkeletonPose(*RefPoseOverrides, NewRefSkeleton, MergeMesh->GetSkeleton());
 		OverrideMergedSockets(*RefPoseOverrides);
 	}
 
 	// Assign new referencer skeleton.
 
-	MergeMesh->RefSkeleton = NewRefSkeleton;
+	MergeMesh->SetRefSkeleton(NewRefSkeleton);
 
 	// Rebuild inverse ref pose matrices here as some access patterns 
 	// may need to access these matrices before FinalizeMesh is called
 	// (which would *normally* rebuild the inv ref matrices).
-	MergeMesh->RefBasesInvMatrix.Empty();
+	MergeMesh->GetRefBasesInvMatrix().Empty();
 	MergeMesh->CalculateInvRefMatrices();
 }
 
@@ -149,20 +149,21 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 		const USkeletalMesh* SrcMesh = SrcMeshList[MeshIdx];
 		if (SrcMesh)
 		{
-			if (SrcMesh->bHasVertexColors)
+			if (SrcMesh->GetHasVertexColors())
 			{
-				MergeMesh->bHasVertexColors = true;
+				MergeMesh->SetHasVertexColors(true);
 #if WITH_EDITORONLY_DATA
-				MergeMesh->VertexColorGuid = FGuid::NewGuid();
+				MergeMesh->SetVertexColorGuid(FGuid::NewGuid());
 #endif
 			}
 
 			FMergeMeshInfo& MeshInfo = SrcMeshInfo[MeshIdx];
-			MeshInfo.SrcToDestRefSkeletonMap.AddUninitialized(SrcMesh->RefSkeleton.GetRawBoneNum());
+			const FReferenceSkeleton& RefSkeleton = SrcMesh->GetRefSkeleton();
+			MeshInfo.SrcToDestRefSkeletonMap.AddUninitialized(RefSkeleton.GetRawBoneNum());
 
-			for (int32 i = 0; i < SrcMesh->RefSkeleton.GetRawBoneNum(); i++)
+			for (int32 i = 0; i < RefSkeleton.GetRawBoneNum(); i++)
 			{
-				FName SrcBoneName = SrcMesh->RefSkeleton.GetBoneName(i);
+				FName SrcBoneName = RefSkeleton.GetBoneName(i);
 				int32 DestBoneIndex = NewRefSkeleton.FindBoneIndex(SrcBoneName);
 
 				if (DestBoneIndex == INDEX_NONE)
@@ -208,15 +209,18 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 			}
 
 			// Add morphtargets
-			for (const auto& IndexMap : SrcSkelMesh->MorphTargetIndexMap)
+			const TMap<FName, int32>& MorphTargetIndexMap = SrcSkelMesh->GetMorphTargetIndexMap();
+			const TArray<UMorphTarget*>& MorphTargets = SrcSkelMesh->GetMorphTargets();
+			for (const auto& IndexMap : MorphTargetIndexMap)
 			{
 				TArray<UMorphTarget*>& MorphTargetList = SrcMorphTargets.FindOrAdd(IndexMap.Key);
-				MorphTargetList.Emplace(SrcSkelMesh->MorphTargets[IndexMap.Value]);
+				MorphTargetList.Emplace(MorphTargets[IndexMap.Value]);
 			}
 		}
 
 		// Generate meshmorphs
-		MergeMesh->MorphTargets.Empty();
+		TArray<UMorphTarget*>& MorphTargets = MergeMesh->GetMorphTargets();
+		MorphTargets.Empty();
 		for (const auto& MorphPairs : SrcMorphTargets)
 		{
 			UMorphTarget* MorphTarget = NewObject<UMorphTarget>(MergeMesh, MorphPairs.Key);
@@ -233,7 +237,7 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 					MorphLODModel.NumBaseMeshVerts += OtherTarget->MorphLODModels[LODIdx].NumBaseMeshVerts;
 				}
 			}
-			MergeMesh->MorphTargets.Add(MorphTarget);
+			MorphTargets.Add(MorphTarget);
 		}
 
 		// process each LOD for the new merged mesh
@@ -252,7 +256,7 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 			}
 
 
-			for (UMorphTarget* MorphTarget : MergeMesh->MorphTargets)
+			for (UMorphTarget* MorphTarget : MorphTargets)
 			{
 				FMorphTargetLODModel& MorphLODModel = MorphTarget->MorphLODModels[LODIdx];
 				MorphLODModel.Vertices.Sort(FTGOR_CompareMorphTargetDeltas());
@@ -351,16 +355,17 @@ void FTGOR_SkeletalMeshMerge::GenerateNewSectionArray(TArray<FTGOR_NewSectionInf
 				TArray<FBoneIndexType> DestChunkBoneMap;
 				BoneMapToNewRefSkel(Section.BoneMap, SrcMeshInfo[MeshIdx].SrcToDestRefSkeletonMap, DestChunkBoneMap);
 
-
 				// get the material for this section
 				int32 MaterialIndex = Section.MaterialIndex;
+				const TArray<FSkeletalMaterial>& Materials = SrcMesh->GetMaterials();
+
 				// use the remapping of material indices if there is a valid value
 				if (SrcLODInfo.LODMaterialMap.IsValidIndex(SectionIdx) && SrcLODInfo.LODMaterialMap[SectionIdx] != INDEX_NONE)
 				{
-					MaterialIndex = FMath::Clamp<int32>(SrcLODInfo.LODMaterialMap[SectionIdx], 0, SrcMesh->Materials.Num());
+					MaterialIndex = FMath::Clamp<int32>(SrcLODInfo.LODMaterialMap[SectionIdx], 0, Materials.Num());
 				}
 
-				const FSkeletalMaterial& SkeletalMaterial = SrcMesh->Materials[MaterialIndex];
+				const FSkeletalMaterial& SkeletalMaterial = Materials[MaterialIndex];
 				UMaterialInterface* Material = SkeletalMaterial.MaterialInterface;
 
 				if (SectionUVTransforms.UVTransformsPerMesh.IsValidIndex(MeshIdx))
@@ -477,6 +482,11 @@ void GetTypedSkinnedVertex(
 	// Initialise to zero
 	FMatrix InvBinding = FMatrix::Identity * 0.0f;
 
+	const FReferenceSkeleton& MergeRefSkeleton = MergeMesh->GetRefSkeleton();
+	const FReferenceSkeleton& SkelRefSkeleton = SkelMesh->GetRefSkeleton();
+
+	const TArray<FMatrix>& MergeRefBasesInvMatrix = MergeMesh->GetRefBasesInvMatrix();
+	const TArray<FMatrix>& SkelRefBasesInvMatrix = SkelMesh->GetRefBasesInvMatrix();
 
 #if !PLATFORM_LITTLE_ENDIAN
 	// uint8[] elements in LOD.VertexBufferGPUSkin have been swapped for VET_UBYTE4 vertex stream use
@@ -488,12 +498,12 @@ void GetTypedSkinnedVertex(
 		const float	Weight = (float)SkinWeightVertexBuffer.GetBoneWeight(VertIndex, InfluenceIndex) / 255.0f;
 		const int32 SrcBoneIndex = Section.BoneMap[SkinWeightVertexBuffer.GetBoneIndex(VertIndex, InfluenceIndex)];
 
-		const int32 MeshBoneIndex = MergeMesh->RefSkeleton.FindBoneIndex(SkelMesh->RefSkeleton.GetBoneName(SrcBoneIndex));
+		const int32 MeshBoneIndex = MergeRefSkeleton.FindBoneIndex(SkelRefSkeleton.GetBoneName(SrcBoneIndex));
 		if (MeshBoneIndex != INDEX_NONE)
 		{
 			const FMatrix BoneTransformMatrix = ComponentSpaceTransforms[MeshBoneIndex].ToMatrixWithScale();
-			const FMatrix SrcToLocal = SkelMesh->RefBasesInvMatrix[SrcBoneIndex] * BoneTransformMatrix;
-			const FMatrix RefToLocal = MergeMesh->RefBasesInvMatrix[MeshBoneIndex] * BoneTransformMatrix;
+			const FMatrix SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * BoneTransformMatrix;
+			const FMatrix RefToLocal = MergeRefBasesInvMatrix[MeshBoneIndex] * BoneTransformMatrix;
 
 			OutPosition += SrcToLocal.TransformPosition(VertexLocation) * Weight;
 			OutTangentX += SrcToLocal.TransformVector(VertexTangentX) * Weight;
@@ -503,7 +513,7 @@ void GetTypedSkinnedVertex(
 		}
 		else
 		{
-			const FMatrix SrcToLocal = SkelMesh->RefBasesInvMatrix[SrcBoneIndex] * FMatrix::Identity;
+			const FMatrix SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * FMatrix::Identity;
 
 			OutPosition += SrcToLocal.TransformPosition(VertexLocation) * Weight;
 			OutTangentX += SrcToLocal.TransformVector(VertexTangentX) * Weight;
@@ -627,11 +637,13 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 
 
 		// find existing material index
-		check(MergeMesh->Materials.Num() == MaterialIds.Num());
+
+		TArray<FSkeletalMaterial>& MergeMaterials = MergeMesh->GetMaterials();
+		check(MergeMaterials.Num() == MaterialIds.Num());
 		int32 MatIndex;
 		if (NewSectionInfo.MaterialId == -1)
 		{
-			MatIndex = MergeMesh->Materials.Find(NewSectionInfo.Material);
+			MatIndex = MergeMaterials.Find(NewSectionInfo.Material);
 		}
 		else
 		{
@@ -643,9 +655,9 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 		{
 			FSkeletalMaterial SkeletalMaterial(NewSectionInfo.Material, true, false, NewSectionInfo.SlotName);
 			SkeletalMaterial.UVChannelData = NewSectionInfo.UVChannelData;
-			MergeMesh->Materials.Add(SkeletalMaterial);
+			MergeMaterials.Add(SkeletalMaterial);
 			MaterialIds.Add(NewSectionInfo.MaterialId);
-			Section.MaterialIndex = MergeMesh->Materials.Num() - 1;
+			Section.MaterialIndex = MergeMaterials.Num() - 1;
 		}
 		else
 		{
@@ -657,7 +669,7 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 		// keep track of the current base index for this section in the merged index buffer
 		Section.BaseIndex = MergedIndexBuffer.Num();
 
-		FMeshUVChannelInfo& MergedUVData = MergeMesh->Materials[Section.MaterialIndex].UVChannelData;
+		FMeshUVChannelInfo& MergedUVData = MergeMaterials[Section.MaterialIndex].UVChannelData;
 
 		// iterate over all of the sections that need to be merged together
 		for (int32 MergeIdx = 0; MergeIdx < NewSectionInfo.MergeSections.Num(); MergeIdx++)
@@ -672,9 +684,10 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 
 			// Take the max UV density for each UVChannel between all sections that are being merged.
 			const int32 NewSectionMatId = MergeSectionInfo.Section->MaterialIndex;
-			if (MergeSectionInfo.SkelMesh->Materials.IsValidIndex(NewSectionMatId))
+			const TArray<FSkeletalMaterial>& SectionMaterials = MergeSectionInfo.SkelMesh->GetMaterials();
+			if (SectionMaterials.IsValidIndex(NewSectionMatId))
 			{
-				const FMeshUVChannelInfo& NewSectionUVData = MergeSectionInfo.SkelMesh->Materials[NewSectionMatId].UVChannelData;
+				const FMeshUVChannelInfo& NewSectionUVData = SectionMaterials[NewSectionMatId].UVChannelData;
 				for (int32 i = 0; i < MAX_TEXCOORDS; i++)
 				{
 					const float NewSectionUVDensity = NewSectionUVData.LocalUVDensities[i];
@@ -715,7 +728,7 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 			// add required bones from this source model entry to the merge model entry
 			for (int32 Idx = 0; Idx < SrcLODData.RequiredBones.Num(); Idx++)
 			{
-				FName SrcLODBoneName = MergeSectionInfo.SkelMesh->RefSkeleton.GetBoneName(SrcLODData.RequiredBones[Idx]);
+				FName SrcLODBoneName = MergeSectionInfo.SkelMesh->GetRefSkeleton().GetBoneName(SrcLODData.RequiredBones[Idx]);
 				int32 MergeBoneIndex = NewRefSkeleton.FindBoneIndex(SrcLODBoneName);
 
 				if (MergeBoneIndex != INDEX_NONE)
@@ -758,7 +771,7 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 				DestWeight = SrcLODData.GetSkinWeightVertexBuffer()->GetVertexSkinWeights(VertIdx);
 
 				// if the mesh uses vertex colors, copy the source color if possible or default to white
-				if (MergeMesh->bHasVertexColors)
+				if (MergeMesh->GetHasVertexColors())
 				{
 					if (VertIdx < MaxColorIdx)
 					{
@@ -893,7 +906,7 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 
 	// sort required bone array in strictly increasing order
 	MergeLODData.RequiredBones.Sort();
-	MergeMesh->RefSkeleton.EnsureParentsExistAndSort(MergeLODData.ActiveBoneIndices);
+	MergeMesh->GetRefSkeleton().EnsureParentsExistAndSort(MergeLODData.ActiveBoneIndices);
 
 	// copy the new vertices and indices to the vertex buffer for the new model
 	MergeLODData.StaticVertexBuffers.StaticMeshVertexBuffer.SetUseFullPrecisionUVs(MergeLODInfo.BuildSettings.bUseFullPrecisionUVs);
@@ -918,7 +931,7 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 	// copy vertex resource arrays
 	MergeLODData.SkinWeightVertexBuffer = MergedSkinWeightBuffer;
 
-	if (MergeMesh->bHasVertexColors)
+	if (MergeMesh->GetHasVertexColors())
 	{
 		MergeLODData.StaticVertexBuffers.ColorVertexBuffer.InitFromColorArray(MergedColorBuffer);
 	}
@@ -938,7 +951,7 @@ bool FTGOR_SkeletalMeshMerge::ProcessMergeMesh()
 	// copy settings and bone info from src meshes
 	bool bNeedsInit = true;
 
-	MergeMesh->SkelMirrorTable.Empty();
+	MergeMesh->GetSkelMirrorTable().Empty();
 
 	for (int32 MeshIdx = 0; MeshIdx < SrcMeshList.Num(); MeshIdx++)
 	{
@@ -950,8 +963,8 @@ bool FTGOR_SkeletalMeshMerge::ProcessMergeMesh()
 				// initialize the merged mesh with the first src mesh entry used
 				MergeMesh->SetImportedBounds(SrcMesh->GetImportedBounds());
 
-				MergeMesh->SkelMirrorAxis = SrcMesh->SkelMirrorAxis;
-				MergeMesh->SkelMirrorFlipAxis = SrcMesh->SkelMirrorFlipAxis;
+				MergeMesh->SetSkelMirrorAxis(SrcMesh->GetSkelMirrorAxis());
+				MergeMesh->SetSkelMirrorFlipAxis(SrcMesh->GetSkelMirrorFlipAxis());
 
 				// only initialize once
 				bNeedsInit = false;
@@ -1006,7 +1019,7 @@ void FTGOR_SkeletalMeshMerge::BuildReferenceSkeleton(const TArray<const USkeleta
 
 	// Iterate through all the source mesh reference skeletons and compose the merged reference skeleton.
 
-	FReferenceSkeletonModifier RefSkelModifier(NewRefSkeleton, MergeMesh->Skeleton);
+	FReferenceSkeletonModifier RefSkelModifier(NewRefSkeleton, MergeMesh->GetSkeleton());
 
 	for (int32 MeshIndex = 0; MeshIndex < SourceMeshList.Num(); ++MeshIndex)
 	{
@@ -1017,17 +1030,18 @@ void FTGOR_SkeletalMeshMerge::BuildReferenceSkeleton(const TArray<const USkeleta
 		}
 
 		// Initialise new RefSkeleton with first mesh.
+		const FReferenceSkeleton& RefSkeleton = SourceMesh->GetRefSkeleton();
 
 		if (NewRefSkeleton.GetRawBoneNum() == 0)
 		{
-			NewRefSkeleton = SourceMesh->RefSkeleton;
+			NewRefSkeleton = RefSkeleton;
 			continue;
 		}
 
 		// For subsequent meshes, add any missing bones.
-		for (int32 BoneIndex = 1; BoneIndex < SourceMesh->RefSkeleton.GetRawBoneNum(); ++BoneIndex)
+		for (int32 BoneIndex = 1; BoneIndex < RefSkeleton.GetRawBoneNum(); ++BoneIndex)
 		{
-			const FName SourceBoneName = SourceMesh->RefSkeleton.GetBoneName(BoneIndex);
+			const FName SourceBoneName = RefSkeleton.GetBoneName(BoneIndex);
 
 			// If the source bone is present in the new RefSkeleton, we skip it.
 			int32 TargetBoneIndex = NewRefSkeleton.FindRawBoneIndex(SourceBoneName);
@@ -1037,18 +1051,18 @@ void FTGOR_SkeletalMeshMerge::BuildReferenceSkeleton(const TArray<const USkeleta
 			}
 
 			// Add the source bone to the RefSkeleton.
-			int32 SourceParentIndex = SourceMesh->RefSkeleton.GetParentIndex(BoneIndex);
-			FName SourceParentName = SourceMesh->RefSkeleton.GetBoneName(SourceParentIndex);
+			int32 SourceParentIndex = RefSkeleton.GetParentIndex(BoneIndex);
+			FName SourceParentName = RefSkeleton.GetBoneName(SourceParentIndex);
 			int32 TargetParentIndex = NewRefSkeleton.FindRawBoneIndex(SourceParentName);
 			if (TargetParentIndex == INDEX_NONE)
 			{
 				continue;
 			}
 
-			FMeshBoneInfo MeshBoneInfo = SourceMesh->RefSkeleton.GetRefBoneInfo()[BoneIndex];
+			FMeshBoneInfo MeshBoneInfo = RefSkeleton.GetRefBoneInfo()[BoneIndex];
 			MeshBoneInfo.ParentIndex = TargetParentIndex;
 
-			RefSkelModifier.Add(MeshBoneInfo, SourceMesh->RefSkeleton.GetRefBonePose()[BoneIndex]);
+			RefSkelModifier.Add(MeshBoneInfo, RefSkeleton.GetRefBonePose()[BoneIndex]);
 		}
 	}
 
@@ -1099,7 +1113,7 @@ void FTGOR_SkeletalMeshMerge::OverrideReferenceSkeletonPose(const TArray<FTGOR_R
 	for (int32 i = 0, PoseMax = PoseOverrides.Num(); i < PoseMax; ++i)
 	{
 		const FTGOR_RefPoseOverride& PoseOverride = PoseOverrides[i];
-		const FReferenceSkeleton& SourceSkeleton = PoseOverride.SkeletalMesh->RefSkeleton;
+		const FReferenceSkeleton& SourceSkeleton = PoseOverride.SkeletalMesh->GetRefSkeleton();
 
 		FReferenceSkeletonModifier RefSkelModifier(TargetSkeleton, SkeletonAsset);
 
@@ -1159,7 +1173,7 @@ void FTGOR_SkeletalMeshMerge::ReleaseResources(int32 Slack)
 	}
 
 	MergeMesh->ResetLODInfo();
-	MergeMesh->Materials.Empty();
+	MergeMesh->GetMaterials().Empty();
 }
 
 bool FTGOR_SkeletalMeshMerge::AddSocket(const USkeletalMeshSocket* NewSocket, bool bIsSkeletonSocket)
@@ -1179,9 +1193,10 @@ bool FTGOR_SkeletalMeshMerge::AddSocket(const USkeletalMeshSocket* NewSocket, bo
 	// (i.e. an existing mesh was used, or a created mesh was explicitly assigned a skeleton).
 	// In either case, we want to avoid adding sockets to the Skeleton (as it is shared), but we
 	// still need to check against it to prevent duplication.
-	if (bIsSkeletonSocket && MergeMesh->Skeleton)
+	USkeleton* Skeleton = MergeMesh->GetSkeleton();
+	if (bIsSkeletonSocket && Skeleton)
 	{
-		for (USkeletalMeshSocket const* const ExistingSocket : MergeMesh->Skeleton->Sockets)
+		for (USkeletalMeshSocket const* const ExistingSocket : Skeleton->Sockets)
 		{
 			return false;
 		}
@@ -1223,7 +1238,7 @@ void FTGOR_SkeletalMeshMerge::BuildSockets(const TArray<const USkeletalMesh*>& S
 	{
 		if (SourceMesh)
 		{
-			const TArray<USkeletalMeshSocket*>& NewSkeletonSocketList = SourceMesh->Skeleton->Sockets;
+			const TArray<USkeletalMeshSocket*>& NewSkeletonSocketList = SourceMesh->GetSkeleton()->Sockets;
 			AddSockets(NewSkeletonSocketList, true);
 		}
 	}
@@ -1267,9 +1282,9 @@ void FTGOR_SkeletalMeshMerge::OverrideMergedSockets(const TArray<FTGOR_RefPoseOv
 	for (int32 i = 0, PoseMax = PoseOverrides.Num(); i < PoseMax; ++i)
 	{
 		const FTGOR_RefPoseOverride& PoseOverride = PoseOverrides[i];
-		const FReferenceSkeleton& SourceSkeleton = PoseOverride.SkeletalMesh->RefSkeleton;
+		const FReferenceSkeleton& SourceSkeleton = PoseOverride.SkeletalMesh->GetRefSkeleton();
 
-		const TArray<USkeletalMeshSocket*>& SkeletonSocketList = PoseOverride.SkeletalMesh->Skeleton->Sockets;
+		const TArray<USkeletalMeshSocket*>& SkeletonSocketList = PoseOverride.SkeletalMesh->GetSkeleton()->Sockets;
 		const TArray<USkeletalMeshSocket*>& MeshSocketList = const_cast<USkeletalMesh*>(PoseOverride.SkeletalMesh)->GetMeshOnlySocketList();
 
 		for (int32 j = 0, BoneMax = PoseOverride.Overrides.Num(); j < BoneMax; ++j)

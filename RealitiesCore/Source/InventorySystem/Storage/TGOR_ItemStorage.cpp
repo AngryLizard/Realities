@@ -57,8 +57,7 @@ TMap<UTGOR_Matter*, int32> UTGOR_ItemStorage::GetMissing() const
 	if (IsValid(ItemRef))
 	{
 		// Get missing quantities from item content
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		for (const auto& Pair : Capacity)
+		for (const auto& Pair : ItemRef->Instanced_MatterInsertions.Collection)
 		{
 			// See whether we are storing a value
 			if (const int32* Ptr = CompositionChangeList.Find(Pair.Key))
@@ -82,8 +81,7 @@ TMap<UTGOR_Matter*, int32> UTGOR_ItemStorage::GetComposition() const
 	if (IsValid(ItemRef))
 	{
 		// Get full composition from item content
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		for (const auto& Pair : Capacity)
+		for (const auto& Pair : ItemRef->Instanced_MatterInsertions.Collection)
 		{
 			// See whether we are storing a value
 			if (const int32* Ptr = CompositionChangeList.Find(Pair.Key))
@@ -108,8 +106,7 @@ int32 UTGOR_ItemStorage::RemoveMatter(UTGOR_Matter* Matter, int32 Quantity)
 	if (IsValid(ItemRef) && Quantity > 0)
 	{
 		// Check whether item should have it to begin with
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		if (const int32* ItemPtr = Capacity.Find(Matter))
+		if (const int32* ItemPtr = ItemRef->Instanced_MatterInsertions.Collection.Find(Matter))
 		{
 			// Remove as much as we can and should
 			if (int32* CompPtr = CompositionChangeList.Find(Matter))
@@ -136,8 +133,7 @@ int32 UTGOR_ItemStorage::AddMatter(UTGOR_Matter* Matter, int32 Quantity)
 	if (IsValid(ItemRef) && Quantity > 0)
 	{
 		// Check whether item should have it to begin with
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		const int32* ItemPtr = Capacity.Find(Matter);
+		const int32* ItemPtr = ItemRef->Instanced_MatterInsertions.Collection.Find(Matter);
 		int32* CompPtr = CompositionChangeList.Find(Matter);
 		if (ItemPtr && CompPtr)
 		{
@@ -170,8 +166,7 @@ int32 UTGOR_ItemStorage::CountMatter(UTGOR_Matter* Matter) const
 	if (IsValid(ItemRef))
 	{
 		// Check whether item should have it to begin with
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		if (const int32* ItemPtr = Capacity.Find(Matter))
+		if (const int32* ItemPtr = ItemRef->Instanced_MatterInsertions.Collection.Find(Matter))
 		{
 			Count += *ItemPtr;
 
@@ -286,7 +281,6 @@ void UTGOR_ItemStorage::EmptyMatter()
 	// Set matter 
 	if (IsValid(ItemRef))
 	{
-		const TMap<UTGOR_Matter*, int32>& Capacity = ItemRef->Instanced_MatterInsertions.Collection;
-		CompositionChangeList = Capacity;
+		CompositionChangeList = ItemRef->Instanced_MatterInsertions.Collection;
 	}
 }

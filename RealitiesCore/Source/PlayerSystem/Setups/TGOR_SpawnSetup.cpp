@@ -5,7 +5,7 @@
 
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "CoreSystem/TGOR_Singleton.h"
-#include "CreatureSystem/Content/TGOR_DefaultCreature.h"
+#include "PlayerSystem/Content/TGOR_DefaultPawnSpawner.h"
 #include "PlayerSystem/Actors/TGOR_Spectator.h"
 
 
@@ -17,7 +17,7 @@ UTGOR_SpawnSetup::UTGOR_SpawnSetup()
 	SetupName = LOCTEXT("SpawnSetupName", "Spawn player");
 	SetupOwner = ETGOR_SetupOwnerEnumeration::All;
 
-	DefaultBody = UTGOR_DefaultCreature::StaticClass();
+	DefaultBody = UTGOR_DefaultPawnSpawner::StaticClass();
 	OnlySpawnServerBody = false;
 }
 

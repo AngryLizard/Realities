@@ -26,7 +26,7 @@ struct FTGOR_AimSuspensionHandle
 
 	/** Whether aim should be suspended altogether. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Aim")
-		bool Suspend;
+		bool Suspend = false;
 
 	/** Filter only for certain targets. Completely suspend if none. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Aim")
@@ -49,11 +49,11 @@ struct FTGOR_WeightedPoint
 
 	/** Weight of the point */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Weight;
+		float Weight = 1.0f;
 
 	/** Direction of the point to origin */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector Direction;
+		FVector Direction = FVector::ZeroVector;
 };
 
 

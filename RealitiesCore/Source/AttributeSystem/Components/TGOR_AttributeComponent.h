@@ -30,11 +30,11 @@ struct FTGOR_AttributeOutput
 
 	/** Attribute content. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Attributes")
-		UTGOR_Attribute* Attribute;
+		UTGOR_Attribute* Attribute = nullptr;
 
 	/** Actual attribute value. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Attributes")
-		float Value;
+		float Value = 0.0f;
 
 	/** Which content classes have contributed to this attribute. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Attributes")

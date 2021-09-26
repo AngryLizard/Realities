@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Actor.h"
+#include "GameFramework/Actor.h"
 #include "RealitiesUGC/Mod/TGOR_Insertions.h"
 
 #include "DimensionSystem/TGOR_ActorInstance.h"

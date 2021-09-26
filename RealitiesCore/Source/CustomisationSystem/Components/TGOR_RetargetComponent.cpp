@@ -37,11 +37,14 @@ void UTGOR_RetargetComponent::InitialiseControls(bool bForce)
 			TArray<FNodeItem> NodeItems;
 			SourceRig->GetMappableNodeData(NodeNames, NodeItems);
 
+
+
 			SourceRigBoneMapping.Reset();
-			const int32 NumTargetBones = SourceComponent->SkeletalMesh->RefSkeleton.GetNum();
+			const FReferenceSkeleton& RefSkeleton = SourceComponent->SkeletalMesh->GetRefSkeleton();
+			const int32 NumTargetBones = RefSkeleton.GetNum();
 			for (uint16 Index = 0; Index < NumTargetBones; ++Index)
 			{
-				const FName& BoneName = SourceComponent->SkeletalMesh->RefSkeleton.GetBoneName(Index);
+				const FName& BoneName = RefSkeleton.GetBoneName(Index);
 				if (NodeNames.Contains(BoneName))
 				{
 					SourceRigBoneMapping.Add(BoneName, Index);
@@ -83,7 +86,7 @@ void UTGOR_RetargetComponent::UpdateTransforms(float DeltaTime)
 	{
 		SourceRig->GetBoneHierarchy().ResetTransforms();
 
-		if (SourceComponent && SourceComponent->SkeletalMesh->RefSkeleton.GetNum() == SourceRigBoneMapping.Num())
+		if (SourceComponent && SourceComponent->SkeletalMesh->GetRefSkeleton().GetNum() == SourceRigBoneMapping.Num())
 		{
 			for (auto Iter = SourceRigBoneMapping.CreateConstIterator(); Iter; ++Iter)
 			{

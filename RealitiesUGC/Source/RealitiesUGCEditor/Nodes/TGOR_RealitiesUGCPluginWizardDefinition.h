@@ -12,15 +12,12 @@ public:
 
 	// Begin IPluginWizardDefinition interface
 	virtual const TArray<TSharedRef<FPluginTemplateDescription>>& GetTemplatesSource() const override;
-	virtual void OnTemplateSelectionChanged(TArray<TSharedRef<FPluginTemplateDescription>> InSelectedItems, ESelectInfo::Type SelectInfo) override;
-	virtual TArray<TSharedPtr<FPluginTemplateDescription>> GetSelectedTemplates() const override;
+	virtual void OnTemplateSelectionChanged(TSharedPtr<FPluginTemplateDescription> InSelectedItem, ESelectInfo::Type SelectInfo) override;
+	virtual TSharedPtr<FPluginTemplateDescription> GetSelectedTemplate() const override;
 	virtual void ClearTemplateSelection() override;
 	virtual bool HasValidTemplateSelection() const override;
 
-	virtual ESelectionMode::Type GetSelectionMode() const override { return ESelectionMode::Multi; }
-	virtual bool AllowsEnginePlugins() const override { return false; }
 	virtual bool CanShowOnStartup() const override { return true; }
-	virtual bool CanContainContent() const override;
 	virtual bool HasModules() const override;
 	virtual bool IsMod() const override;
 	virtual void OnShowOnStartupCheckboxChanged(ECheckBoxState CheckBoxState) override;
@@ -42,7 +39,7 @@ private:
 	TArray<TSharedRef<FPluginTemplateDescription>> TemplateDefinitions;
 
 	/** The content that will be used when creating the mod */
-	TArray<TSharedRef<FPluginTemplateDescription>> SelectedTemplates;
+	TSharedPtr<FPluginTemplateDescription> SelectedTemplate;
 
 	/** The base directory of this plugin. Used for accessing the templates used to create mods */
 	FString PluginBaseDir;

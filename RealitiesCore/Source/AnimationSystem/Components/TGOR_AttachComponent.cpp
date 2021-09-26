@@ -216,7 +216,7 @@ FVector CalcLimitConeVert(float AngleX, float AngleY, float Phi, float Ratio)
 
 
 template <EShapeBodySetupHelper UpdateBodySetupAction>
-bool InvalidateOrUpdateConeBodySetup(UBodySetup*& ShapeBodySetup, bool bUseArchetypeBodySetup, float LimitRadius, float AngleX, float AngleY)
+bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, bool bUseArchetypeBodySetup, float LimitRadius, float AngleX, float AngleY)
 {
 	check((bUseArchetypeBodySetup && UpdateBodySetupAction == EShapeBodySetupHelper::InvalidateSharingIfStale) || (!bUseArchetypeBodySetup && UpdateBodySetupAction == EShapeBodySetupHelper::UpdateBodySetup));
 

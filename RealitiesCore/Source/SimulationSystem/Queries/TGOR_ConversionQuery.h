@@ -23,15 +23,15 @@ struct FTGOR_ConversionOutput
 
 	/** Energy content. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		UTGOR_Energy* Energy;
+		UTGOR_Energy* Energy = nullptr;
 
 	/** Max quantity consumed by this response per cycle */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Commands")
-		int32 Quantity;
+		int32 Quantity = 0;
 
 	/** Min float value */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Commands", meta = (EditCondition = "!IsInteger"))
-		float Rate;
+		float Rate = 0.0f;
 };
 
 /**

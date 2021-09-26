@@ -71,8 +71,7 @@ FTGOR_MovementShape UTGOR_Item::GetShape() const
 bool UTGOR_Item::CanAssembleWith(const TMap<UTGOR_Matter*, int32>& Matter) const
 {
 	// Check for each matter type whether entry exists and is sufficient
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	for (const auto& Pair : Capacity)
+	for (const auto& Pair : Instanced_MatterInsertions.Collection)
 	{
 		if (Pair.Value > 0)
 		{
@@ -89,8 +88,7 @@ bool UTGOR_Item::CanAssembleWith(const TMap<UTGOR_Matter*, int32>& Matter) const
 bool UTGOR_Item::IsCompatibleWith(const TMap<UTGOR_Matter*, int32>& Matter) const
 {
 	// Check for each matter type whether entry exists and is sufficient
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	for (const auto& Pair : Capacity)
+	for (const auto& Pair : Instanced_MatterInsertions.Collection)
 	{
 		if (Pair.Value > 0)
 		{
@@ -107,8 +105,7 @@ bool UTGOR_Item::IsCompatibleWith(const TMap<UTGOR_Matter*, int32>& Matter) cons
 bool UTGOR_Item::CanDisassembleInto(const TSet<UTGOR_Matter*>& Matter) const
 {
 	// Check for each matter type whether entry exists
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	for (const auto& Pair : Capacity)
+	for (const auto& Pair : Instanced_MatterInsertions.Collection)
 	{
 		if (!Matter.Contains(Pair.Key))
 		{
@@ -120,14 +117,12 @@ bool UTGOR_Item::CanDisassembleInto(const TSet<UTGOR_Matter*>& Matter) const
 
 bool UTGOR_Item::HasComposition(UTGOR_Matter* Matter) const
 {
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	return Capacity.Contains(Matter);
+	return Instanced_MatterInsertions.Collection.Contains(Matter);
 }
 
 int32 UTGOR_Item::GetCapacityBits(UTGOR_Matter* Matter) const
 {
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	const int32 Quantity = Capacity[Matter];
+	const int32 Quantity = Instanced_MatterInsertions.Collection[Matter];
 	return UTGOR_Math::Log2(Quantity) + 1;
 }
 
@@ -157,7 +152,7 @@ bool UTGOR_Item::IsSupportedBy(const FTGOR_ItemRestriction& Restriction) const
 	return false;
 }
 
-const TMap<UTGOR_Matter*, int32>& UTGOR_Item::GetComponentCapacity() const
+const TMap<TObjectPtr<UTGOR_Matter>, int32>& UTGOR_Item::GetComponentCapacity() const
 {
 	return Instanced_MatterInsertions.Collection;
 }

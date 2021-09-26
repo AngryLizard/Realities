@@ -714,7 +714,7 @@ FString FTGORRigUnit_PreviewAnimation::ProcessPinLabelForInjection(const FString
 
 
 /// ///////////////////////////////////////////////////////// Linker doesn't wanna give it to me? fine, just copy paste!
-
+/*
 bool FCachedRigElement::UpdateCache(const FRigHierarchyContainer* InContainer)
 {
 	if (InContainer)
@@ -754,6 +754,6 @@ bool FCachedRigElement::IsIdentical(const FRigElementKey& InKey, const FRigHiera
 {
 	return InKey == Key && InContainer->Version == ContainerVersion;
 }
-
+*/
 /// /////////////////////////////////////////////////////////
 

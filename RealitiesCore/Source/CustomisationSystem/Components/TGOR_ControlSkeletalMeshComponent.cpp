@@ -104,10 +104,10 @@ void UTGOR_ControlSkeletalMeshComponent::InitialiseControls(bool bForce)
 			TargetRig->GetMappableNodeData(NodeNames, NodeItems);
 
 			TargetRigBoneMapping.Reset();
-			const int32 NumTargetBones = SkeletalMesh->RefSkeleton.GetNum();
+			const int32 NumTargetBones = SkeletalMesh->GetRefSkeleton().GetNum();
 			for (uint16 Index = 0; Index < NumTargetBones; ++Index)
 			{
-				const FName& BoneName = SkeletalMesh->RefSkeleton.GetBoneName(Index);
+				const FName& BoneName = SkeletalMesh->GetRefSkeleton().GetBoneName(Index);
 				if (NodeNames.Contains(BoneName))
 				{
 					TargetRigBoneMapping.Add(BoneName, Index);
@@ -231,7 +231,7 @@ bool UTGOR_ControlSkeletalMeshComponent::AllocateTransformData()
 	// Allocate transforms if not present.
 	if (Super::AllocateTransformData())
 	{
-		LocalSpaceTransforms = SkeletalMesh->RefSkeleton.GetRefBonePose();
+		LocalSpaceTransforms = SkeletalMesh->GetRefSkeleton().GetRefBonePose();
 		FillComponentSpaceTransforms();
 
 		return true;
@@ -265,9 +265,9 @@ void UTGOR_ControlSkeletalMeshComponent::FillComponentSpaceTransforms()
 		return;
 	}
 
-	if (LocalSpaceTransforms.Num() != SkeletalMesh->RefSkeleton.GetNum())
+	if (LocalSpaceTransforms.Num() != SkeletalMesh->GetRefSkeleton().GetNum())
 	{
-		LocalSpaceTransforms = SkeletalMesh->RefSkeleton.GetRefBonePose();
+		LocalSpaceTransforms = SkeletalMesh->GetRefSkeleton().GetRefBonePose();
 	}
 
 	// Compute component transforms of whole hierarchy
@@ -280,7 +280,7 @@ void UTGOR_ControlSkeletalMeshComponent::FillComponentSpaceTransforms()
 		FPlatformMisc::Prefetch(SpaceBasesData + BoneIndex);
 
 		// For all bones below the root, final component-space transform is relative transform * component-space transform of parent.
-		const int32 ParentIndex = SkeletalMesh->RefSkeleton.GetParentIndex(BoneIndex);
+		const int32 ParentIndex = SkeletalMesh->GetRefSkeleton().GetParentIndex(BoneIndex);
 		FPlatformMisc::Prefetch(SpaceBasesData + ParentIndex);
 
 		FTransform::Multiply(SpaceBasesData + BoneIndex, LocalTransformsData + BoneIndex, SpaceBasesData + ParentIndex);

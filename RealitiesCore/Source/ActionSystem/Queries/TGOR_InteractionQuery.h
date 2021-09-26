@@ -22,11 +22,11 @@ struct ACTIONSYSTEM_API FTGOR_InteractionEntry
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_ActionComponent* Caller;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTGOR_ActionComponent* Caller = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Identifier;
+		int32 Identifier = -1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FTGOR_Display Display;
@@ -41,10 +41,10 @@ struct ACTIONSYSTEM_API FTGOR_InteractionRequest
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_ActionComponent* Caller;
+		UTGOR_ActionComponent* Caller = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Action* Action;
+		UTGOR_Action* Action = nullptr;
 };
 
 /**

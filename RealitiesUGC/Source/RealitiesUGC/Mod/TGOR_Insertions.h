@@ -30,7 +30,7 @@ struct CTGOR_Insertion
 template<typename S, bool B>
 struct CTGOR_Insertion<TSubclassOf<S>, B>
 {
-	S* Collection;
+	TObjectPtr<S> Collection;
 
 	bool Contains(const S* Content) const
 	{
@@ -93,7 +93,7 @@ struct CTGOR_Insertion<TSubclassOf<S>, B>
 template<typename S, bool B>
 struct CTGOR_Insertion<TArray<TSubclassOf<S>>, B>
 {
-	TArray<S*> Collection;
+	TArray<TObjectPtr<S>> Collection;
 
 	bool Contains(const S* Content) const
 	{
@@ -208,7 +208,7 @@ struct CTGOR_Insertion<TArray<TSubclassOf<S>>, B>
 template<typename S, bool B>
 struct CTGOR_Insertion<TSet<TSubclassOf<S>>, B>
 {
-	TSet<S*> Collection;
+	TSet<TObjectPtr<S>> Collection;
 
 	bool Contains(const S* Content) const
 	{
@@ -316,7 +316,7 @@ struct CTGOR_Insertion<TSet<TSubclassOf<S>>, B>
 template<typename S, typename R, bool B>
 struct CTGOR_Insertion<TMap<TSubclassOf<S>, R>, B>
 {
-	TMap<S*, R> Collection;
+	TMap<TObjectPtr<S>, R> Collection;
 
 	bool Contains(const S* Content) const
 	{

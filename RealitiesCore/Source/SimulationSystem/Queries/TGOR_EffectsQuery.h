@@ -20,11 +20,11 @@ struct FTGOR_EffectOutput
 
 	/** Effect content. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		UTGOR_Effect* Effect;
+		UTGOR_Effect* Effect = nullptr;
 
 	/** Effect value within range in [0, 1]. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		float Value;
+		float Value = 0.0f;
 };
 
 /**

@@ -16,7 +16,7 @@ struct FTGOR_UGCPackage
 		FTGOR_UGCPackage();
 
 	UPROPERTY(BlueprintReadOnly, Category = "RealitiesUGC")
-		FString PackagePath;
+		FName PackagePath;
 
 	UPROPERTY(BlueprintReadOnly, Category = "RealitiesUGC")
 		FString EngineVersion;
@@ -26,6 +26,9 @@ struct FTGOR_UGCPackage
 
 	UPROPERTY(BlueprintReadOnly, Category = "RealitiesUGC")
 		FString Description;
+
+	UPROPERTY(BlueprintReadOnly, Category = "RealitiesUGC")
+		bool IsCorePackage;
 };
 
 UCLASS(BlueprintType)

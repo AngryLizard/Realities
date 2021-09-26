@@ -58,10 +58,9 @@ void UTGOR_DimensionEditorFunctionLibrary::AssignCurrentWorldToDimension(UObject
 		{
 			// Get dimension
 			UTGOR_Dimension* Dimension = WorldSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
-			if (IsValid(Dimension))
+			if (IsValid(Dimension) && !Dimension->IsAbstract())
 			{
 				Dimension->World = World;
-				Dimension->SetIsAbstract(false);
 				Dimension->MarkPackageDirty();
 			}
 		}
@@ -78,16 +77,20 @@ void UTGOR_DimensionEditorFunctionLibrary::AssignCurrentBoundsToDimension(UObjec
 		{
 			// Get dimension
 			UTGOR_Dimension* Dimension = WorldSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
-			if (IsValid(Dimension))
+			if (IsValid(Dimension) && !Dimension->IsAbstract())
 			{
-				FVector Origin, Extend;
+				FBox Box = FBox(FVector::ZeroVector, FVector::ZeroVector);
 				if (IsValid(Volume))
 				{
+					FVector Origin, Extend;
 					Volume->GetActorBounds(false, Origin, Extend);
+					Box += FBox(Origin - Extend, Origin + Extend);
 				}
 				else if (IsValid(World->PersistentLevel) && World->PersistentLevel->LevelBoundsActor.IsValid())
 				{
+					FVector Origin, Extend;
 					World->PersistentLevel->LevelBoundsActor->GetActorBounds(false, Origin, Extend);
+					Box += FBox(Origin - Extend, Origin + Extend);
 				}
 				else
 				{
@@ -96,11 +99,21 @@ void UTGOR_DimensionEditorFunctionLibrary::AssignCurrentBoundsToDimension(UObjec
 					{
 						if (Its->IsA(ATGOR_LevelVolume::StaticClass()))
 						{
+							FVector Origin, Extend;
 							Cast<ATGOR_LevelVolume>(*Its)->GetActorBounds(false, Origin, Extend);
+							Box += FBox(Origin - Extend, Origin + Extend);
 						}
 					}
 				}
-				Dimension->Bounds = (Extend + Origin.GetAbs()) * 2;
+				
+				const FVector Extend = Box.GetExtent();
+				if(Extend.IsNearlyZero())
+				{
+					FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("Error_NoVolumeFound", "No valid volume found."));
+				}
+
+				Dimension->Offset = Box.GetCenter();
+				Dimension->Bounds = Extend * 2;
 				Dimension->MarkPackageDirty();
 			}
 		}
@@ -117,7 +130,7 @@ void UTGOR_DimensionEditorFunctionLibrary::UpdateConnectionList(UObject* WorldCo
 		{
 			// Get dimension
 			UTGOR_Dimension* Dimension = WorldSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
-			if (IsValid(Dimension))
+			if (IsValid(Dimension) && !Dimension->IsAbstract())
 			{
 				// Get all portal names
 				Dimension->PublicConnections.Empty();

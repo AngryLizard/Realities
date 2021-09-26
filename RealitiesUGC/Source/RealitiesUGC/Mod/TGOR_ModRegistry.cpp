@@ -3,7 +3,9 @@
 #include "TGOR_ModRegistry.h"
 #include "AssetRegistryModule.h"
 #include "ARFilter.h"
+#include "ProjectDescriptor.h"
 #include "Interfaces/IPluginManager.h"
+#include "Interfaces/IProjectManager.h"
 #include "Misc/PackageName.h"
 #include "RealitiesUGC/RealitiesUGC.h"
 
@@ -22,21 +24,33 @@ FTGOR_UGCPackage::FTGOR_UGCPackage()
 
 bool UTGOR_ModRegistry::FindUGCPackages()
 {
+	const FProjectDescriptor* Project = IProjectManager::Get().GetCurrentProject();
+
+	FTGOR_UGCPackage CorePackage;
+	CorePackage.PackagePath = FName("/Game");
+	CorePackage.EngineVersion = *Project->EngineAssociation; //FEngineVersion::Current();
+	CorePackage.Author = TEXT("TGOR");
+	CorePackage.Description = *Project->Description;
+	CorePackage.IsCorePackage = true;
+	UGCPackages.Add(CorePackage);
+
 	TArray<TSharedRef<IPlugin>> EnabledPlugins = IPluginManager::Get().GetEnabledPlugins();
 	for (const TSharedRef<IPlugin>& Plugin : EnabledPlugins)
 	{
 		const FPluginDescriptor& Descriptor = Plugin->GetDescriptor();
-		if (Plugin->GetLoadedFrom() == EPluginLoadedFrom::Project && Descriptor.Category == "TGOR_Mod")
+		const bool IsCorePackage = Descriptor.Category == "TGOR_Core";
+		if (Plugin->GetLoadedFrom() == EPluginLoadedFrom::Project && (Descriptor.Category == "TGOR_Mod" || IsCorePackage))
 		{
 			FTGOR_UGCPackage Package;
-			Package.PackagePath = *Plugin->GetMountedAssetPath().LeftChop(1);
+			Package.PackagePath = FName(*Plugin->GetMountedAssetPath().LeftChop(1));
 			Package.EngineVersion = *Descriptor.EngineVersion;
 			Package.Author = *Descriptor.CreatedBy;
 			Package.Description = *Descriptor.Description;
+			CorePackage.IsCorePackage = IsCorePackage;
 			UGCPackages.Add(Package);
 		}
 	}
-
+	
 	return UGCPackages.Num() > 0;
 }
 
@@ -55,7 +69,7 @@ bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 	// Go through all packages
 	for (const FTGOR_UGCPackage& Package : UGCPackages)
 	{
-		ARFilter.PackagePaths.Add(FName(*Package.PackagePath));
+		ARFilter.PackagePaths.Add(Package.PackagePath);
 	}
 
 	// Get all mod classes
@@ -93,6 +107,17 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 	ARFilter.bRecursiveClasses = true;
 	ARFilter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
 	ARFilter.PackagePaths.Add(Mod->PackagePath);
+
+	if (Mod->CoreOnly)
+	{
+		for (const FTGOR_UGCPackage& Package : UGCPackages)
+		{
+			if (Package.IsCorePackage)
+			{
+				ARFilter.PackagePaths.Add(Package.PackagePath);
+			}
+		}
+	}
 
 	// Get all mod classes
 	AssetRegistry.GetAssets(ARFilter, AssetList);

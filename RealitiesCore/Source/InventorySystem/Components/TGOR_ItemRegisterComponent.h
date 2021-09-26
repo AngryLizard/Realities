@@ -63,8 +63,7 @@ struct FTGOR_ItemContainers
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		TMap<int32, FTGOR_ItemInstance> Slots;
+	TMap<int32, FTGOR_ItemInstance> Slots;
 };
 
 template<>

@@ -38,7 +38,7 @@ struct FTGOR_StatProperties
 
 	/** Whether the buffer has been updated externally. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		bool HadBufferUpdate;
+		bool HadBufferUpdate = false;
 
 	/** Last time this stat got updated. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
@@ -60,19 +60,19 @@ struct FTGOR_StatOutput
 
 	/** Stat content. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		UTGOR_Stat* Stat;
+		UTGOR_Stat* Stat = nullptr;
 
 	/** Current stat value in [0, 1]. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		float Current;
+		float Current = 0.0f;
 
 	/** Current stat value in [0, 1] with current buffer state. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		float Buffered;
+		float Buffered = 0.0f;
 
 	/** Whether this given stat has had external stat changes. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		bool HadBufferUpdate;
+		bool HadBufferUpdate = false;
 
 	/** Currently active effects. */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
@@ -95,8 +95,7 @@ struct FTGOR_StatState
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context);
 
 	/** Current stat values. */
-	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Stats")
-		TMap<UTGOR_Stat*, FTGOR_Percentage> Stats;
+	TMap<UTGOR_Stat*, FTGOR_Percentage> Stats;
 };
 
 template<>

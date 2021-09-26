@@ -499,9 +499,9 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 		float Inertial = ComputeInertial(Hit.ImpactPoint, Hit.ImpactNormal);
 		FVector WorldVelocity = FVector::ZeroVector;
 		UTGOR_MobilityComponent* Other = nullptr;
-		if (Hit.Actor.IsValid() && Hit.Actor != Actor)
+		if (Hit.Component.IsValid() && Hit.Component->GetOwner() != Actor)
 		{
-			Other = Cast<UTGOR_MobilityComponent>(Hit.Actor->GetComponentByClass(UTGOR_MobilityComponent::StaticClass()));
+			Other = Cast<UTGOR_MobilityComponent>(Hit.Component->GetOwner()->GetComponentByClass(UTGOR_MobilityComponent::StaticClass()));
 			if (IsValid(Other))
 			{
 				const FTGOR_MovementSpace MovementSpace = Other->ComputeSpace();

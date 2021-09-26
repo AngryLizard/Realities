@@ -24,15 +24,15 @@ struct FTGOR_ChildListEntry
 
 	/** Bodypart index */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		int32 Index;
+		int32 Index = -1;
 
 	/** Whether this entry is currently active */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		bool IsActive;
+		bool IsActive = false;
 
 	/** Whether this entry is currently required by parent */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		bool IsRequired;
+		bool IsRequired = false;
 };
 
 
@@ -54,7 +54,7 @@ public:
 protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Bodypart")
-		UTGOR_BodypartListWidget* CallbackWidget;
+		UTGOR_BodypartListWidget* CallbackWidget = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Bodypart")
 		TArray<FTGOR_ChildListEntry> ConnectedChildren;

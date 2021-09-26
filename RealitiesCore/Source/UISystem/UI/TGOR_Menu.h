@@ -42,10 +42,10 @@ struct UISYSTEM_API FTGOR_MenuAnimation
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Interface")
-		UWidgetAnimation* Expand;
+		UWidgetAnimation* Expand = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Interface")
-		UWidgetAnimation* Retract;
+		UWidgetAnimation* Retract = nullptr;
 };
 
 /**

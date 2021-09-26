@@ -23,11 +23,11 @@ struct SIMULATIONSYSTEM_API FTGOR_ModifierFloatPair
 
 	/** */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Attributes")
-		UTGOR_Modifier* Content;
+		UTGOR_Modifier* Content = nullptr;
 
 	/** */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Attributes")
-		float Value;
+		float Value = 0.0f;
 
 };
 
@@ -51,5 +51,5 @@ public:
 		TArray<FTGOR_ModifierFloatPair> Instances;
 
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Attributes")
-		UTGOR_Attribute* Owner;
+		UTGOR_Attribute* Owner = nullptr;
 };

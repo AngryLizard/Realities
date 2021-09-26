@@ -44,7 +44,7 @@ struct FTGOR_ContentLink
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETGOR_ModActionEnumeration Action;
+		ETGOR_ModActionEnumeration Action = ETGOR_ModActionEnumeration::Add;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<UTGOR_Content> Content;
@@ -59,7 +59,7 @@ struct FTGOR_ContentInsertion
 	GENERATED_USTRUCT_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ETGOR_ModActionEnumeration Action;
+		ETGOR_ModActionEnumeration Action = ETGOR_ModActionEnumeration::Add;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<UTGOR_Content> Content;
@@ -78,10 +78,10 @@ struct FTGOR_ModEntry
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString Name;
+		FString Name = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Version;
+		int32 Version = -1;
 };
 
 /**
@@ -114,5 +114,5 @@ public:
 		FText Status;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System")
-		ETGOR_SetupStateEnumeration State;
+		ETGOR_SetupStateEnumeration State = ETGOR_SetupStateEnumeration::Pending;
 };

@@ -22,11 +22,11 @@ struct ANIMATIONSYSTEM_API FTGOR_HandleTraceOutput : public FTGOR_MovementDynami
 
 	/** Handle to cone delta */
 	UPROPERTY()
-		FVector Delta;
+		FVector Delta = FVector::ZeroVector;
 
 	/** Trace direction */
 	UPROPERTY()
-		FVector Direction;
+		FVector Direction = FVector::ZeroVector;
 };
 
 /**

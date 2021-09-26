@@ -137,13 +137,13 @@ void FRawIndexBuffer::InitRHI()
 	if (Size > 0)
 	{
 		// Create the index buffer.
-		FRHIResourceCreateInfo CreateInfo;
+		FRHIResourceCreateInfo CreateInfo(TEXT("RawIndexBuffer"));
 		void* Buffer = nullptr;
 		IndexBufferRHI = RHICreateAndLockIndexBuffer(sizeof(uint16), Size, BUF_Static, CreateInfo, Buffer);
 
 		// Initialize the buffer.		
 		FMemory::Memcpy(Buffer, Indices.GetData(), Size);
-		RHIUnlockIndexBuffer(IndexBufferRHI);
+		RHIUnlockBuffer(IndexBufferRHI);
 	}
 }
 #endif
@@ -176,7 +176,8 @@ void FTGOR_TriangleRenderData::RenderTriangles(
 
 	InitTriangleMesh(View, bNeedsToSwitchVerticalAxis);
 
-	SCOPED_DRAW_EVENTF(RHICmdList, CanvasDrawTriangles, *InMaterialRenderProxy->GetMaterial(GMaxRHIFeatureLevel)->GetFriendlyName());
+	const FMaterial& Material = InMaterialRenderProxy->GetIncompleteMaterialWithFallback(GMaxRHIFeatureLevel);
+	SCOPED_DRAW_EVENTF(RHICmdList, CanvasDrawTriangles, *Material.GetFriendlyName());
 
 	
 	FMeshBatch& MeshBatch = TriMesh.MeshBatch;
@@ -185,25 +186,14 @@ void FTGOR_TriangleRenderData::RenderTriangles(
 	MeshBatch.Elements[0].FirstIndex = 0;
 	MeshBatch.Elements[0].NumPrimitives = Triangles.Num();
 
-	GetRendererModule().DrawTileMesh(RHICmdList, DrawRenderState, View, MeshBatch, bIsHitTesting, HitProxyId);
-
-	/*
-	for (int32 TriIdx = 0; TriIdx < Triangles.Num(); TriIdx++)
-	{
-		FMeshBatch& MeshBatch = TriMesh.MeshBatch;
-		MeshBatch.VertexFactory = &VertexFactory;
-		MeshBatch.MaterialRenderProxy = InMaterialRenderProxy;
-		MeshBatch.Elements[0].FirstIndex = 3 * TriIdx;
-
-		GetRendererModule().DrawTileMesh(RHICmdList, DrawRenderState, View, MeshBatch, bIsHitTesting, HitProxyId);
-	}
-	*/
+	//GetRendererModule().DrawTileMesh(RHICmdList, DrawRenderState, View, MeshBatch, bIsHitTesting, HitProxyId);
 
 	ReleaseTriangleMesh();
 }
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 bool FTGOR_TriangleRendererItem::Render_RenderThread(FRHICommandListImmediate& RHICmdList, FMeshPassProcessorRenderState& DrawRenderState, const FCanvas* Canvas)
 {
 	float CurrentRealTime = 0.f;
@@ -253,7 +243,9 @@ bool FTGOR_TriangleRendererItem::Render_RenderThread(FRHICommandListImmediate& R
 
 	return true;
 }
+*/
 
+/*
 bool FTGOR_TriangleRendererItem::Render_GameThread(const FCanvas* Canvas, FRenderThreadScope& RenderScope)
 {
 	float CurrentRealTime = 0.f;
@@ -321,6 +313,7 @@ bool FTGOR_TriangleRendererItem::Render_GameThread(const FCanvas* Canvas, FRende
 
 	return true;
 }
+*/
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -378,8 +371,8 @@ void FTGOR_TriangleItem::Draw(FCanvas* InCanvas)
 			if (RenderBatch == nullptr || !RenderBatch->IsMatch(MaterialRenderProxy, TopTransformEntry))
 			{
 				FHitProxyId HitProxyId = InCanvas->GetHitProxyId();
-				RenderBatch = new FTGOR_TriangleRendererItem(InCanvas->GetFeatureLevel(), MaterialRenderProxy, TopTransformEntry, HitProxyId, Data.ToSharedRef(), bFreezeTime);
-				SortElement.RenderBatchArray.Add(RenderBatch);
+				//RenderBatch = new FTGOR_TriangleRendererItem(InCanvas->GetFeatureLevel(), MaterialRenderProxy, TopTransformEntry, HitProxyId, Data.ToSharedRef(), bFreezeTime);
+				//SortElement.RenderBatchArray.Add(RenderBatch);
 			}
 		}
 	}

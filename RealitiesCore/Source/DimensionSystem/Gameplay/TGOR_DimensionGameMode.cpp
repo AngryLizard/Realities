@@ -30,7 +30,6 @@ APawn* ATGOR_DimensionGameMode::SpawnDefaultPawnAtTransform_Implementation(ACont
 
 			ETGOR_FetchEnumeration State;
 			UTGOR_DimensionData* PersistentDimension = WorldData->GetDimension(PersistentIdentifier, State);
-
 			if (IsValid(PersistentDimension))
 			{
 				UTGOR_Spawner* Spawner = ContentManager->GetTFromType<UTGOR_Spawner>(PlayerSpawner);

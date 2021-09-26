@@ -85,14 +85,14 @@ public:
 protected:
 	
 	/** Actor identification in current dimension */
-	UPROPERTY(ReplicatedUsing = OnIdentityRepNotify)
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnIdentityRepNotify, Category = "!TGOR Dimension")
 		FTGOR_SpawnIdentity DimensionIdentity;
 
 	UFUNCTION()
 		void OnIdentityRepNotify(const FTGOR_SpawnIdentity& Old);
 
 	/** Actor identification in current world (or -1 if not tracked) */
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleAnywhere, Replicated, Category = "!TGOR Dimension")
 		int32 WorldIdentity;
 
 	/** Associated Dimension objects */

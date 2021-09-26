@@ -626,50 +626,6 @@ public:
 	}
 };
 
-/*
-template<typename S>
-class CTGOR_Arch<S*, typename std::enable_if_t<std::is_base_of<UTGOR_Content, S>::value>>
-{
-public:
-	static void DataWrite(UTGOR_Context* Context, CTGOR_Archive* Archive, S* const& In)
-	{
-		const bool Valid = IsValid(In);
-		CTGOR_Arch<bool>::DataWrite(Context, Archive, Valid);
-		if (Valid)
-		{
-			UTGOR_ContentManager* ContentManager = Context->GetContentManager();
-			const int Size = ContentManager->GetTCapacity<S>();
-
-			// Compress by number of bits required for specific type
-			const int16 Serial = ContentManager->GetTIndex<S>(In);
-			const uint32 Bits = FMath::Max<uint32>(FMath::CeilLogTwo(Size), 1);
-			Archive->WriteBits((const uint8*)&Serial, Bits);
-		}
-	}
-	static bool DataRead(UTGOR_Context* Context, const CTGOR_Archive* Archive, S*& Out)
-	{
-		bool Valid = false;
-		CTGOR_Arch<bool>::DataRead(Context, Archive, Valid);
-		if (Valid)
-		{
-			UTGOR_ContentManager* ContentManager = Context->GetContentManager();
-			const int Size = ContentManager->GetTCapacity<S>();
-
-			// Decompress by number of bits required for specific type
-			int16 Serial;
-			const uint32 Bits = FMath::Max<uint32>(FMath::CeilLogTwo(Size), 1);
-			Archive->ReadBits((uint8*)&Serial, Bits);
-			Out = ContentManager->GetTFromIndex<S>(Serial);
-		}
-		else
-		{
-			Out = nullptr;
-		}
-		return true;
-	}
-};
-*/
-
 template<typename S>
 class CTGOR_Arch<S*, typename std::enable_if_t<std::is_base_of<UTGOR_Content, S>::value>>
 {
@@ -690,6 +646,100 @@ public:
 		}
 	}
 	static bool DataRead(UTGOR_Context* Context, const CTGOR_Archive* Archive, S*& Out)
+	{
+		bool Valid = false;
+		CTGOR_Arch<bool>::DataRead(Context, Archive, Valid);
+		if (Valid)
+		{
+			UTGOR_ContentManager* ContentManager = Context->GetContentManager();
+			const int Size = ContentManager->GetTCapacity<S>();
+			const uint32 Bits = FMath::Max<uint32>(FMath::CeilLogTwo(Size), 1);
+
+			int16 Serial = 0;
+			//CTGOR_Arch<int16>::DataRead(Context, Archive, Serial);
+			Archive->ReadBits((uint8*)&Serial, Bits);
+			Out = ContentManager->GetTFromIndex<S>(Serial);
+		}
+		else
+		{
+			Out = nullptr;
+		}
+		return true;
+	}
+};
+
+
+template<typename S>
+class CTGOR_Pack<TObjectPtr<S>, typename std::enable_if_t<std::is_base_of<UTGOR_Content, S>::value>>
+{
+public:
+	static FString DataType() { return "Content"; }
+	static void DataWrite(UTGOR_Context* Context, CTGOR_Database* Database, uint32 Position, uint32& Size, const TObjectPtr<S>& In)
+	{
+		if (IsValid(In))
+		{
+			// Serialise identifier and mod
+			const FString Identifier = In->GetDefaultName();
+			const uint32 IdentifierSerial = Database->SerializeIdentifier(Identifier);
+			const FString Mod = In->GetModIdentifier();
+			const uint32 ModSerial = Database->SerializeIdentifier(Identifier);
+
+			// Write to buffer
+			Database->Write(Position, (const uint8*)&IdentifierSerial, sizeof(uint32));
+			Database->Write(Position + sizeof(uint32), (const uint8*)&ModSerial, sizeof(uint32));
+			Size = 2 * sizeof(uint32);
+		}
+		else
+		{
+			Size = 0;
+		}
+	}
+	static bool DataRead(UTGOR_Context* Context, const CTGOR_Database* Database, uint32 Position, uint32 Size, TObjectPtr<S>& Out)
+	{
+		if (Size <= 0)
+		{
+			Out = nullptr;
+			return true;
+		}
+		else if (Size == 2 * sizeof(uint32))
+		{
+			// Read from buffer
+			uint32 IdentifierSerial, ModSerial;
+			Database->Read(Position, (uint8*)&IdentifierSerial, sizeof(uint32));
+			Database->Read(Position + sizeof(uint32), (uint8*)&ModSerial, sizeof(uint32));
+
+			// Serialise identifier and mod
+			const FString Identifier = Database->GetIdentifier(IdentifierSerial);
+			const FString Mod = Database->GetIdentifier(ModSerial);
+
+			UTGOR_ContentManager* ContentManager = Context->GetContentManager();
+			Out = ContentManager->GetTFromName<S>(Identifier);
+			return IsValid(Out);
+		}
+		return false;
+	}
+};
+
+template<typename S>
+class CTGOR_Arch<TObjectPtr<S>, typename std::enable_if_t<std::is_base_of<UTGOR_Content, S>::value>>
+{
+public:
+	static void DataWrite(UTGOR_Context* Context, CTGOR_Archive* Archive, const TObjectPtr<S>& In)
+	{
+		const bool Valid = IsValid(In);
+		CTGOR_Arch<bool>::DataWrite(Context, Archive, Valid);
+		if (Valid)
+		{
+			UTGOR_ContentManager* ContentManager = Context->GetContentManager();
+			const int Size = ContentManager->GetTCapacity<S>();
+			const uint32 Bits = FMath::Max<uint32>(FMath::CeilLogTwo(Size), 1);
+
+			const int16 Serial = ContentManager->GetTIndex<S>(In);
+			//CTGOR_Arch<int16>::DataWrite(Context, Archive, Serial);
+			Archive->WriteBits((const uint8*)&Serial, Bits);
+		}
+	}
+	static bool DataRead(UTGOR_Context* Context, const CTGOR_Archive* Archive, TObjectPtr<S>& Out)
 	{
 		bool Valid = false;
 		CTGOR_Arch<bool>::DataRead(Context, Archive, Valid);
@@ -756,6 +806,48 @@ public:
 	}
 };
 
+template<typename S>
+class CTGOR_Pack<TObjectPtr<S>, typename std::enable_if_t<!std::is_base_of<UTGOR_Content, S>::value && !std::is_base_of<ITGOR_SaveInterface, S>::value>>
+{
+public:
+	static FString DataType() { return CTGOR_Pack<S>::DataType() + "Pointer"; }
+	static void DataWrite(UTGOR_Context* Context, CTGOR_Database* Database, uint32 Position, uint32& Size, const TObjectPtr<S>& In)
+	{
+		if (In)
+		{
+			CTGOR_Pack<S>::DataWrite(Context, Database, Position, Size, *In);
+		}
+	}
+	static bool DataRead(UTGOR_Context* Context, const CTGOR_Database* Database, uint32 Position, uint32 Size, TObjectPtr<S>& Out)
+	{
+		if (Out)
+		{
+			return CTGOR_Pack<S>::DataRead(Context, Database, Position, Size, *Out);
+		}
+		return false;
+	}
+};
+
+template<typename S>
+class CTGOR_Arch<TObjectPtr<S>, typename std::enable_if_t<!std::is_base_of<UTGOR_Content, S>::value && !std::is_base_of<ITGOR_NetInterface, S>::value>>
+{
+public:
+	static void DataWrite(UTGOR_Context* Context, CTGOR_Archive* Archive, const TObjectPtr<S>& In)
+	{
+		if (In)
+		{
+			CTGOR_Arch<S>::DataWrite(Context, Archive, *In);
+		}
+	}
+	static bool DataRead(UTGOR_Context* Context, const CTGOR_Archive* Archive, TObjectPtr<S>& Out)
+	{
+		if (Out)
+		{
+			return CTGOR_Arch<S>::DataRead(Context, Archive, *Out);
+		}
+		return false;
+	}
+};
 
 // Object pointer mapping
 // WEAK POINTER ONLY SUPPORTED FOR FILE STORAGE IF OWNER HAS AN IDENTITY

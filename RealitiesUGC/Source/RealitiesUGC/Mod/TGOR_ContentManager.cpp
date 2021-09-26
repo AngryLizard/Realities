@@ -126,7 +126,7 @@ void UTGOR_ContentManager::PostLoadContent()
 	ContentRoot->ForAllContent([](UTGOR_Content* Content)->bool
 	{
 		Content->PostBuildResource();
-		return(true);
+		return true;
 	});
 }
 
@@ -169,7 +169,7 @@ UTGOR_Content* UTGOR_ContentManager::FindFirstOfType(TSubclassOf<UTGOR_Content> 
 		}
 		return(ContentRoot->FindFirstOfType(Type));
 	}
-	return(nullptr);
+	return nullptr;
 }
 
 TArray<UTGOR_Content*> UTGOR_ContentManager::FindAllOfType(TSubclassOf<UTGOR_Content> Type) const
@@ -180,11 +180,11 @@ TArray<UTGOR_Content*> UTGOR_ContentManager::FindAllOfType(TSubclassOf<UTGOR_Con
 		{
 			TArray<UTGOR_Content*> Out;
 			Out.Emplace(ContentRoot);
-			return(Out);
+			return Out;
 		}
-		return(ContentRoot->FindAllOfType(Type));
+		return ContentRoot->FindAllOfType(Type);
 	}
-	return(TArray<UTGOR_Content*>());
+	return TArray<UTGOR_Content*>();
 }
 
 UTGOR_Content* UTGOR_ContentManager::GetContentFromType(TSubclassOf<UTGOR_Content> Type) const
@@ -198,14 +198,14 @@ UTGOR_Content* UTGOR_ContentManager::GetContentFromType(TSubclassOf<UTGOR_Conten
 			ContentStorage.IsValidIndex(Content->StorageIndex))
 		{
 			// Grab from storage system
-			return(ContentStorage[Content->StorageIndex]);
+			return ContentStorage[Content->StorageIndex];
 		}
 	}
 	else if (*Type)
 	{
-		ERRET(Type->GetName() + " not found in content system", Error, nullptr)
+		ERRET(Type->GetName() + " not found in content system", Info, nullptr);
 	}
-	return(nullptr);
+	return nullptr;
 }
 
 TArray<UTGOR_Content*> UTGOR_ContentManager::GetContentListFromType(TSubclassOf<UTGOR_Content> Type) const
@@ -227,13 +227,13 @@ TArray<UTGOR_Content*> UTGOR_ContentManager::GetContentListFromType(TSubclassOf<
 				Out.Append(Data, Content->StorageSize);
 			}
 		}
-		return(Out);
+		return Out;
 	}
 	else if(*Type)
 	{
-		ERRET(Type->GetName() + " not found in content system", Error, TArray<UTGOR_Content*>())
+		ERRET(Type->GetName() + " not found in content system", Info, TArray<UTGOR_Content*>());
 	}
-	return(TArray<UTGOR_Content*>());
+	return TArray<UTGOR_Content*>();
 }
 
 UTGOR_Content* UTGOR_ContentManager::GetContentFromIndex(TSubclassOf<UTGOR_Content> Type, int32 Index) const
@@ -252,14 +252,14 @@ UTGOR_Content* UTGOR_ContentManager::GetContentFromIndex(TSubclassOf<UTGOR_Conte
 		}
 		else
 		{
-			ERRET("Index out of range", Error, nullptr)
+			ERRET("Index out of range", Error, nullptr);
 		}
 	}
 	else if (*Type)
 	{
-		ERRET(Type->GetName() + " not found in content system", Error, nullptr)
+		ERRET(Type->GetName() + " not found in content system", Info, nullptr);
 	}
-	return(nullptr);
+	return nullptr;
 }
 
 int32 UTGOR_ContentManager::GetContentIndex(TSubclassOf<UTGOR_Content> Type, UTGOR_Content* Content) const
@@ -277,12 +277,12 @@ int32 UTGOR_ContentManager::GetContentIndex(TSubclassOf<UTGOR_Content> Type, UTG
 		}
 		else
 		{
-			ERRET("Index out of range", Error, INDEX_NONE)
+			ERRET("Index out of range", Error, INDEX_NONE);
 		}
 	}
 	else if (*Type)
 	{
-		ERRET(Type->GetName() + " not found in content system", Error, INDEX_NONE)
+		ERRET(Type->GetName() + " not found in content system", Info, INDEX_NONE);
 	}
 	return INDEX_NONE;
 }
@@ -297,9 +297,9 @@ int32 UTGOR_ContentManager::GetContentCapacity(TSubclassOf<UTGOR_Content> Type) 
 	}
 	else if (*Type)
 	{
-		ERRET(Type->GetName() + " not found in content system", Error, -1)
+		ERRET(Type->GetName() + " not found in content system", Info, INDEX_NONE);
 	}
-	return(-1);
+	return INDEX_NONE;
 }
 
 UTGOR_Content* UTGOR_ContentManager::GetContentFromName(TSubclassOf<UTGOR_Content> Type, const FString& Name) const
@@ -308,9 +308,9 @@ UTGOR_Content* UTGOR_ContentManager::GetContentFromName(TSubclassOf<UTGOR_Conten
 	const int32* Index = ContentDictionary.Find(Name);
 	if (Index && ContentStorage.IsValidIndex(*Index))
 	{
-		return(ContentStorage[*Index]);
+		return ContentStorage[*Index];
 	}
-	return(nullptr);
+	return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,7 +440,6 @@ TArray<FTGOR_ContentLink> UTGOR_ContentManager::LoadCore()
 			Links.Add(Link);
 		}
 	}
-
 	return Links;
 }
 
@@ -489,7 +488,6 @@ FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Regi
 			ModSetup.ActiveMods.Add(Mod->Entry);
 		}
 	}
-
 	return ModSetup;
 }
 

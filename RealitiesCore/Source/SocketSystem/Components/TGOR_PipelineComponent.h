@@ -24,13 +24,13 @@ struct SOCKETSYSTEM_API FTGOR_PipelineHitResult
 		FTGOR_Index Index;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Pipeline")
-		float Distance;
+		float Distance = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Pipeline")
-		float Depth;
+		float Depth = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Pipeline")
-		float Normal;
+		float Normal = 0.0f;
 };
 
 

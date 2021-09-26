@@ -52,7 +52,7 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_CustomisationInstance
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Customisation* Content;
+		UTGOR_Customisation* Content = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FTGOR_CustomisationPayload Payload;
@@ -88,10 +88,10 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartInstance
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Bodypart* Content;
+		UTGOR_Bodypart* Content = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 Depth;
+		uint8 Depth = 0;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +164,7 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartChild
 
 	/** Loading behaviour of this child */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Bodypart")
-		ETGOR_BodypartChildType Type;
+		ETGOR_BodypartChildType Type = ETGOR_BodypartChildType::Optional;
 };
 
 // Holds a specific window on a rendertarget
@@ -224,19 +224,19 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartPlacement
 
 	/** */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		int32 PosX;
+		int32 PosX = 0;
 
 	/** */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		int32 PosY;
+		int32 PosY = 0;
 
 	/** */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		int32 SizeX;
+		int32 SizeX = 0;
 
 	/** */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		int32 SizeY;
+		int32 SizeY = 0;
 };
 
 // Merged section output
@@ -247,7 +247,7 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartSectionOutput
 
 	/**  */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		UTGOR_Section* Section;
+		UTGOR_Section* Section = nullptr;
 
 	/**  */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
@@ -262,7 +262,7 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartMergeOutput
 
 	/**  */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
-		USkeletalMesh* Mesh;
+		USkeletalMesh* Mesh = nullptr;
 
 	/**  */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Bodypart")
@@ -326,7 +326,7 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_CustomisationMeshTexture
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Bodypart")
 		UTextureRenderTarget2D* RenderTarget = nullptr;
 
-	FCanvas* Canvas;
+	FCanvas* Canvas = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Bodypart")
 		FDrawToRenderTargetContext Context;

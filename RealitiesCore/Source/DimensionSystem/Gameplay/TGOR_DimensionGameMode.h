@@ -23,7 +23,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/* Spawner being created when a player connects */
+	/* Spawner being created when a player connects, defaults to default behaviour if none */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
 		TSubclassOf<UTGOR_Spawner> PlayerSpawner;
 

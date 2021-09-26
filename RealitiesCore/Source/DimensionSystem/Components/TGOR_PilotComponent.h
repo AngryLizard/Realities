@@ -24,15 +24,15 @@ struct DIMENSIONSYSTEM_API FTGOR_PrimitiveSlot
 
 	/** Pilot task primitive is attached to */
 	UPROPERTY()
-		int32 Index;
+		int32 Index = -1;
 
 	/** Primitive radius */
 	UPROPERTY()
-		float Radius;
+		float Radius = 0.0f;
 
 	/** Primitive local offset */
 	UPROPERTY()
-		FVector Offset;
+		FVector Offset = FVector::ZeroVector;
 };
 
 

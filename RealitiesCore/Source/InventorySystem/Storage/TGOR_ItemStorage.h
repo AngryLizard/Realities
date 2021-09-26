@@ -70,5 +70,5 @@ protected:
 
 	/** Current matter composition (non-defined matter is assumed to be fully present). */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Storage")
-		TMap<UTGOR_Matter*, int32> CompositionChangeList;
+		TMap<TObjectPtr<UTGOR_Matter>, int32> CompositionChangeList;
 };

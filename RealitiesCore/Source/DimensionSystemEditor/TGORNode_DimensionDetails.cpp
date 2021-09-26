@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TGORNode_DimensionDetails.h"
-
 #include "Engine/World.h"
 #include "Engine.h"
 #include "EngineUtils.h"
@@ -13,6 +12,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailCategoryBuilder.h"
+#include "Misc/MessageDialog.h"
 
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 #include "DimensionSystem/Volumes/TGOR_LevelVolume.h"
@@ -21,8 +21,8 @@
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 #include "DimensionSystem/Gameplay/TGOR_DimensionWorldSettings.h"
 
+#include "DimensionSystemEditor/TGOR_DimensionEditorFunctionLibrary.h"
 #include "Editor/PropertyEditor/Public/PropertyCustomizationHelpers.h"
-
 
 #define LOCTEXT_NAMESPACE "DimensionDetails"
 
@@ -33,112 +33,190 @@ TSharedRef<IDetailCustomization> FTGORNode_DimensionDetails::MakeInstance()
 
 void FTGORNode_DimensionDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 {
-	IDetailCategoryBuilder& ProcMeshCategory = DetailBuilder.EditCategory("SkeletalMesh");
-	SelectedObjectsList = DetailBuilder.GetSelectedObjects();
+	IDetailCategoryBuilder& Category = DetailBuilder.EditCategory("!TGOR Dimension");
 
-	ProcMeshCategory.AddCustomRow(LOCTEXT("DetailsCategory", "Dimension"), false)
-		.NameContent()
-		[
-			SNullWidget::NullWidget
-		]
-		.ValueContent()
-		.VAlign(VAlign_Center)
-		.MaxDesiredWidth(250)
-		[
-			SNew(SVerticalBox)
-			+ SVerticalBox::Slot()
+	TArray<TWeakObjectPtr<UObject>> SelectedObjectsList = DetailBuilder.GetSelectedObjects();
+	if (SelectedObjectsList.Num() > 0)
+	{
+		SelectedSettings = Cast<ATGOR_DimensionWorldSettings>(SelectedObjectsList[0].Get());
+	}
+
+	if (SelectedSettings.IsValid())
+	{
+		Category.AddCustomRow(LOCTEXT("DetailsCategoryButtons", "Dimension"), false)
+			.NameContent()
 			[
-				SNew(SButton)
-				.VAlign(VAlign_Center)
-				.ToolTipText(LOCTEXT("UpdateTooltip", "Bake vertex data from mesh patch into UserData if available."))
-				.OnClicked(this, &FTGORNode_DimensionDetails::ClickedOnUpdate)
-				.IsEnabled(this, &FTGORNode_DimensionDetails::UpdateEnabled)
-				.Content()
-				[
-					SNew(STextBlock)
-					.Text(LOCTEXT("UpdateButton", "Update"))
-				]
+				SNew(STextBlock).Text(LOCTEXT("DetailsButtonsName", "Dimension"))
 			]
-		];
+			.ValueContent()
+			.VAlign(VAlign_Center)
+			.MaxDesiredWidth(250)
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot() [ CreateUpdateDetailsMenu() ]
+				+ SHorizontalBox::Slot() [ CreateValidateDetailsMenu() ]
+			];
+
+		if (*SelectedSettings->Dimension)
+		{
+			// Get dimension
+			UTGOR_Dimension* Dimension = SelectedSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
+			if (IsValid(Dimension))
+			{
+				TArray<FName> ConnectionNames = UTGOR_DimensionEditorFunctionLibrary::GetConnectionListFromWorld(SelectedSettings.Get());
+
+				Category.AddCustomRow(LOCTEXT("DetailsCategoryConnections", "Connections"), false)
+					.NameContent()
+					[
+						SNew(STextBlock).Text(LOCTEXT("DetailsConnectionsName", "Connections"))
+					]
+					.ValueContent()
+					.VAlign(VAlign_Center)
+					.MaxDesiredWidth(250)
+					[
+						SNew(SComboButton)
+						.OnGetMenuContent(this, &FTGORNode_DimensionDetails::CreateConnectionDetailsMenu, ConnectionNames)
+						.ContentPadding(FMargin(2.0f, 2.0f))
+						.ToolTipText(LOCTEXT("DetailsConnectionsTooltip", "Available connections"))
+						.ButtonContent()
+						[
+							SNew(STextBlock).Text(LOCTEXT("DetailsConnectionsButton", "Select"))
+						]
+					];
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
+TSharedRef<SWidget> FTGORNode_DimensionDetails::CreateUpdateDetailsMenu()
+{
+	return SNew(SButton)
+		.ToolTipText(LOCTEXT("UpdateTooltip", "Bake vertex data from mesh patch into UserData if available."))
+		.OnClicked(this, &FTGORNode_DimensionDetails::ClickedOnUpdate)
+		.IsEnabled(this, &FTGORNode_DimensionDetails::UpdateEnabled)
+		.Content()
+		[
+			SNew(STextBlock)
+			.Text(LOCTEXT("UpdateButton", "Update"))
+		];
+}
+
 FReply FTGORNode_DimensionDetails::ClickedOnUpdate()
 {
-	UWorld* World = GEditor->EditorWorld;
-	if (IsValid(World))
+	if (SelectedSettings.IsValid())
 	{
-		ATGOR_DimensionWorldSettings* WorldSettings = Cast<ATGOR_DimensionWorldSettings>(World->PersistentLevel->GetWorldSettings());
-		if (IsValid(WorldSettings) && *WorldSettings->Dimension)
+		if(*SelectedSettings->Dimension)
 		{
-			// Get dimension
-			UTGOR_Dimension* Dimension = WorldSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
-			if (IsValid(Dimension))
+			UTGOR_Dimension* Dimension = SelectedSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
+			if (IsValid(Dimension) && Dimension->IsAbstract())
 			{
-				// Set world settings
-				Dimension->World = World;
-				Dimension->SetIsAbstract(false);
-
-				// Set dimension bounds
-				FVector Origin, Extend;
-				if (IsValid(World->PersistentLevel) && World->PersistentLevel->LevelBoundsActor.IsValid())
-				{
-					World->PersistentLevel->LevelBoundsActor->GetActorBounds(false, Origin, Extend);
-				}
-				else
-				{
-					// Find level volume
-					for (FActorIterator Its(World); Its; ++Its)
-					{
-						if (Its->IsA(ATGOR_LevelVolume::StaticClass()))
-						{
-							Cast<ATGOR_LevelVolume>(*Its)->GetActorBounds(false, Origin, Extend);
-						}
-					}
-				}
-				Dimension->Bounds = (Extend + Origin.GetAbs()) * 2;
-
-
-				// Refresh portal list
-				Dimension->PublicConnections.Empty();
-				for (FActorIterator Its(World); Its; ++Its)
-				{
-					TArray<UTGOR_ConnectionComponent*> Components;
-					Its->GetComponents(Components);
-					for (UTGOR_ConnectionComponent* Component : Components)
-					{
-						if (Component->IsPublic)
-						{
-							Dimension->PublicConnections.Emplace(Component->GetConnectionName());
-						}
-					}
-				}
-
-				Dimension->MarkPackageDirty();
+				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("Error_WrongDimension", "Assigned dimension needs to be abstract."));
+				return FReply::Handled();
 			}
 		}
+
+		UTGOR_DimensionEditorFunctionLibrary::AssignCurrentWorldToDimension(SelectedSettings.Get());
+		UTGOR_DimensionEditorFunctionLibrary::AssignCurrentBoundsToDimension(SelectedSettings.Get());
+		UTGOR_DimensionEditorFunctionLibrary::EnsureUniqeIdentifiers(SelectedSettings.Get());
+		UTGOR_DimensionEditorFunctionLibrary::UpdateConnectionList(SelectedSettings.Get());
 	}
 	return FReply::Handled();
 }
 
 bool FTGORNode_DimensionDetails::UpdateEnabled() const
 {
-	UWorld* World = GEditor->EditorWorld;
-	if (IsValid(World))
+	if (SelectedSettings.IsValid() && *SelectedSettings->Dimension)
 	{
-		ATGOR_DimensionWorldSettings* WorldSettings = Cast<ATGOR_DimensionWorldSettings>(World->PersistentLevel->GetWorldSettings());
-		if (IsValid(WorldSettings) && *WorldSettings->Dimension)
+		// Get dimension
+		UTGOR_Dimension* Dimension = SelectedSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
+		if (IsValid(Dimension))
 		{
-			// Get dimension
-			UTGOR_Dimension* Dimension = WorldSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
-			if (IsValid(Dimension))
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TSharedRef<SWidget> FTGORNode_DimensionDetails::CreateValidateDetailsMenu()
+{
+	return SNew(SBox)
+		.WidthOverride(280)
+		[
+			SNew(SButton)
+			.ToolTipText(LOCTEXT("ValidateTooltip", "Validate all dimension components"))
+			.OnClicked(this, &FTGORNode_DimensionDetails::ClickedOnValidate)
+			.Content()
+			[
+				SNew(STextBlock)
+				.Text(LOCTEXT("ValidateButton", "Validate"))
+			]
+		];
+}
+
+FReply FTGORNode_DimensionDetails::ClickedOnValidate()
+{
+	if (SelectedSettings.IsValid())
+	{
+		TArray<AActor*> Actors = UTGOR_DimensionEditorFunctionLibrary::GetMissingIdentifierComponent(SelectedSettings.Get());
+
+		if (Actors.Num() > 0)
+		{
+			EAppReturnType::Type ReturnType = FMessageDialog::Open(EAppMsgType::OkCancel, LOCTEXT("Error_MissingIdentifierFound", "Not all dimension interfaces are owned by an actor without identity component. Bad actors will be selected."));
+			if (ReturnType == EAppReturnType::Ok)
+			{
+				for (AActor* Actor : Actors)
+				{
+					GEditor->SelectActor(Actor, true, true);
+				}
+			}
+		}
+	}
+	return FReply::Handled();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TSharedRef<SWidget> FTGORNode_DimensionDetails::CreateConnectionDetailsMenu(TArray<FName> ConnectionNames)
+{
+	TSharedRef<SVerticalBox> ConnectionBox = SNew(SVerticalBox);
+	for (const FName& ConnectionName : ConnectionNames)
+	{
+		ConnectionBox->AddSlot()
+		[
+			SNew(SButton)
+			.ToolTipText(LOCTEXT("ConnectionTooltip", "Select Connection."))
+			.OnClicked(this, &FTGORNode_DimensionDetails::ClickedOnConnection, ConnectionName)
+			.Content()
+			[
+				SNew(STextBlock)
+				.Text(FText::FromName(ConnectionName))
+			]
+		];
+	}
+
+	return SNew(SBorder)
+		.Padding(FMargin(2.f, 2.f, 2.f, 2.f))
+		[
+			ConnectionBox
+		];
+}
+
+FReply FTGORNode_DimensionDetails::ClickedOnConnection(FName ConnectionName)
+{
+	if (SelectedSettings.IsValid())
+	{
+		UTGOR_ConnectionComponent* Component = UTGOR_DimensionEditorFunctionLibrary::GetConnectionFromWorld(ConnectionName, SelectedSettings.Get());
+		if (IsValid(Component))
+		{
+			GEditor->SelectActor(Component->GetOwner(), true, true);
+		}
+	}
+
+	return FReply::Handled();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

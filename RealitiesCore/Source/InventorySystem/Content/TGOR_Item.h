@@ -135,7 +135,7 @@ public:
 
 	/** */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		const TMap<UTGOR_Matter*, int32>& GetComponentCapacity() const;
+		const TMap<TObjectPtr<UTGOR_Matter>, int32>& GetComponentCapacity() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

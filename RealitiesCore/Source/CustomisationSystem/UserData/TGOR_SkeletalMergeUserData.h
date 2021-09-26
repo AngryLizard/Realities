@@ -15,27 +15,27 @@ struct FTGOR_SkeletalMergeVertex
 
 	// Source index
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		uint32 Index;
+		uint32 Index = -1;
 
 	// Source UVs
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		FVector2D Point;
+		FVector2D Point = FVector2D::ZeroVector;
 
 	// Reference UVs
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		FVector2D UV;
+		FVector2D UV = FVector2D::ZeroVector;
 
 	// Reference UV tangent
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		FVector4 Tangent;
+		FVector4 Tangent = FVector4(0, 0, 0, 0);
 
 	// Reference UV bitangent
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		FVector Bitangent;
+		FVector Bitangent = FVector::ZeroVector;
 
 	// Target tangent (same normal)
 	UPROPERTY(EditAnywhere, Category = "MeshMerge")
-		FVector4 Target;
+		FVector4 Target = FVector4(0, 0, 0, 0);
 };
 
 USTRUCT(BlueprintType)

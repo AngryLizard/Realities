@@ -20,26 +20,19 @@ const TArray<TSharedRef<FPluginTemplateDescription>>& FRealitiesUGCPluginWizardD
 	return TemplateDefinitions;
 }
 
-void FRealitiesUGCPluginWizardDefinition::OnTemplateSelectionChanged(TArray<TSharedRef<FPluginTemplateDescription>> InSelectedItems, ESelectInfo::Type SelectInfo)
+void FRealitiesUGCPluginWizardDefinition::OnTemplateSelectionChanged(TSharedPtr<FPluginTemplateDescription> InSelectedItem, ESelectInfo::Type SelectInfo)
 {
-	SelectedTemplates = InSelectedItems;
+	SelectedTemplate = InSelectedItem;
 }
 
-TArray<TSharedPtr<FPluginTemplateDescription>> FRealitiesUGCPluginWizardDefinition::GetSelectedTemplates() const
+TSharedPtr<FPluginTemplateDescription> FRealitiesUGCPluginWizardDefinition::GetSelectedTemplate() const
 {
-	TArray<TSharedPtr<FPluginTemplateDescription>> SelectedTemplatePtrs;
-
-	for (TSharedRef<FPluginTemplateDescription> Ref : SelectedTemplates)
-	{
-		SelectedTemplatePtrs.Add(Ref);
-	}
-
-	return SelectedTemplatePtrs;
+	return SelectedTemplate;
 }
 
 void FRealitiesUGCPluginWizardDefinition::ClearTemplateSelection()
 {
-	SelectedTemplates.Empty();
+	SelectedTemplate;
 }
 
 bool FRealitiesUGCPluginWizardDefinition::HasValidTemplateSelection() const
@@ -48,40 +41,16 @@ bool FRealitiesUGCPluginWizardDefinition::HasValidTemplateSelection() const
 	return true;
 }
 
-bool FRealitiesUGCPluginWizardDefinition::CanContainContent() const 
-{
-	bool bHasContent = SelectedTemplates.Num() == 0;	// if no templates are selected, by default it is a content mod
-
-	if (!bHasContent)
-	{
-		for (TSharedPtr<FPluginTemplateDescription> Template : SelectedTemplates)
-		{
-			// If at least one module can contain content, it's a content mod. Otherwise, it's a pure code mod.
-			if (Template->bCanContainContent)
-			{
-				bHasContent = true;
-				break;
-			}
-		}
-	}
-
-	return bHasContent;
-}
-
 bool FRealitiesUGCPluginWizardDefinition::HasModules() const
 {
-	bool bHasModules = false;
-
-	for (TSharedPtr<FPluginTemplateDescription> Template : SelectedTemplates)
+	if (SelectedTemplate.IsValid())
 	{
-		if (FPaths::DirectoryExists(PluginBaseDir / TEXT("Templates") / Template->OnDiskPath / TEXT("Source")))
+		if (FPaths::DirectoryExists(PluginBaseDir / TEXT("Templates") / SelectedTemplate->OnDiskPath / TEXT("Source")))
 		{
-			bHasModules = true;
-			break;
+			return true;
 		}
 	}
-
-	return bHasModules;
+	return false;
 }
 
 bool FRealitiesUGCPluginWizardDefinition::IsMod() const
@@ -182,9 +151,9 @@ TArray<FString> FRealitiesUGCPluginWizardDefinition::GetFoldersForSelection() co
 	TArray<FString> SelectedFolders;
 	SelectedFolders.Add(BackingTemplatePath);	// This will always be a part of the mod plugin
 
-	for (TSharedPtr<FPluginTemplateDescription> Template : SelectedTemplates)
+	if (SelectedTemplate.IsValid())
 	{
-		SelectedFolders.AddUnique(PluginBaseDir / TEXT("Templates") / Template->OnDiskPath);
+		SelectedFolders.AddUnique(PluginBaseDir / TEXT("Templates") / SelectedTemplate->OnDiskPath);
 	}
 
 	return SelectedFolders;

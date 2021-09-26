@@ -22,6 +22,7 @@
 #include "ProceduralMeshComponent/Public/ProceduralMeshComponent.h"
 #include "RealitiesProcedural/Actors/TGOR_ProceduralActor.h"
 #include "EditorScriptingUtilities/Public/EditorLevelLibrary.h"
+#include "Subsystems/EditorActorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "RealitiesProceduralDetails"
 
@@ -168,7 +169,7 @@ FMeshDescription BuildMeshDescription(UProceduralMeshComponent* ProcMeshComp)
 	MeshDescription.ReserveNewVertexInstances(VertexInstanceCount);
 	MeshDescription.ReserveNewPolygons(PolygonCount);
 	MeshDescription.ReserveNewEdges(PolygonCount * 2);
-	UVs.SetNumIndices(4);
+	UVs.SetNumChannels(4);
 
 	// Create the Polygon Groups
 	for (int32 SectionIdx = 0; SectionIdx < NumSections; SectionIdx++)
@@ -295,7 +296,7 @@ UStaticMesh* FRealitiesProceduralDetails::CreateStaticMesh(ATGOR_ProceduralActor
 				UStaticMesh* StaticMesh = NewObject<UStaticMesh>(Package, MeshName, RF_Public | RF_Standalone);
 				StaticMesh->InitResources();
 
-				StaticMesh->LightingGuid = FGuid::NewGuid();
+				StaticMesh->SetLightingGuid(FGuid::NewGuid());
 
 				int32 Count = 0;
 				for (int32 LOD = 0; LOD <= ProceduralActor->MaxLOD; LOD++)
@@ -331,7 +332,7 @@ UStaticMesh* FRealitiesProceduralDetails::CreateStaticMesh(ATGOR_ProceduralActor
 					if (ProceduralMesh->bUseComplexAsSimpleCollision)
 					{
 						StaticMesh->CreateBodySetup();
-						UBodySetup* NewBodySetup = StaticMesh->BodySetup;
+						UBodySetup* NewBodySetup = StaticMesh->GetBodySetup();
 						NewBodySetup->BodySetupGuid = FGuid::NewGuid();
 						NewBodySetup->bGenerateMirroredCollision = false;
 						NewBodySetup->bDoubleSidedGeometry = true;
@@ -341,7 +342,7 @@ UStaticMesh* FRealitiesProceduralDetails::CreateStaticMesh(ATGOR_ProceduralActor
 					else
 					{
 						StaticMesh->CreateBodySetup();
-						UBodySetup* NewBodySetup = StaticMesh->BodySetup;
+						UBodySetup* NewBodySetup = StaticMesh->GetBodySetup();
 						NewBodySetup->BodySetupGuid = FGuid::NewGuid();
 						NewBodySetup->AggGeom.ConvexElems = ProceduralMesh->ProcMeshBodySetup->AggGeom.ConvexElems;
 						NewBodySetup->bGenerateMirroredCollision = false;
@@ -360,9 +361,10 @@ UStaticMesh* FRealitiesProceduralDetails::CreateStaticMesh(ATGOR_ProceduralActor
 						UniqueMaterials.Add(Material);
 					}
 					// Copy materials to new mesh
+					TArray<FStaticMaterial>& StaticMaterials = StaticMesh->GetStaticMaterials();
 					for (auto* Material : UniqueMaterials)
 					{
-						StaticMesh->StaticMaterials.Add(FStaticMaterial(Material, Material->GetFName(), Material->GetFName()));
+						StaticMaterials.Add(FStaticMaterial(Material, Material->GetFName(), Material->GetFName()));
 					}
 
 					//Set the Imported version before calling the build
@@ -409,20 +411,25 @@ FReply FRealitiesProceduralDetails::ClickedOnReplaceToStaticMesh()
 		{
 			const FTransform ActorTransform = ProceduralActor->GetTransform();
 			const FTransform ComponentTransform = Procedural->GetComponentTransform();
-			AActor* MeshActor = UEditorLevelLibrary::SpawnActorFromClass(AStaticMeshActor::StaticClass(), ActorTransform.GetLocation(), ActorTransform.GetRotation().Rotator());
-			if (MeshActor != nullptr)
+
+			UEditorActorSubsystem* ActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
+			if (ActorSubsystem)
 			{
-				MeshActor->SetActorTransform(ActorTransform);
-				UStaticMeshComponent* MeshComponent = MeshActor->FindComponentByClass<UStaticMeshComponent>();
-				if (MeshComponent != nullptr)
+				AActor* MeshActor = ActorSubsystem->SpawnActorFromClass(AStaticMeshActor::StaticClass(), ActorTransform.GetLocation(), ActorTransform.GetRotation().Rotator());
+				if (MeshActor != nullptr)
 				{
-					MeshComponent->SetStaticMesh(StaticMesh);
-					MeshComponent->SetWorldTransform(ComponentTransform);
+					MeshActor->SetActorTransform(ActorTransform);
+					UStaticMeshComponent* MeshComponent = MeshActor->FindComponentByClass<UStaticMeshComponent>();
+					if (MeshComponent != nullptr)
+					{
+						MeshComponent->SetStaticMesh(StaticMesh);
+						MeshComponent->SetWorldTransform(ComponentTransform);
+					}
+					TArray<AActor*> Selected;
+					Selected.Emplace(MeshActor);
+					ActorSubsystem->SetSelectedLevelActors(Selected);
+					ActorSubsystem->DestroyActor(ProceduralActor);
 				}
-				TArray<AActor*> Selected;
-				Selected.Emplace(MeshActor);
-				UEditorLevelLibrary::SetSelectedLevelActors(Selected);
-				UEditorLevelLibrary::DestroyActor(ProceduralActor);
 			}
 		}
 	}

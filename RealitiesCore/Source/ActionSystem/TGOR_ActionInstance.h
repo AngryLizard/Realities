@@ -153,10 +153,10 @@ struct ACTIONSYSTEM_API FTGOR_ActionLog
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString Domain;
+		FString Domain = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString Message;
+		FString Message = "";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FTGOR_Time Timestamp;
@@ -171,7 +171,7 @@ struct ACTIONSYSTEM_API FTGOR_ActionDebugInfo
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Action* Action;
+		UTGOR_Action* Action = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TMap<UTGOR_Input*, float> Inputs;
@@ -183,20 +183,20 @@ struct ACTIONSYSTEM_API FTGOR_ActionDebugInfo
 		TArray<FString> Logs;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool HasNoCooldown;
+		bool HasNoCooldown = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool HasValidTarget;
+		bool HasValidTarget = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool HasValidMovement;
+		bool HasValidMovement = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool IsInRange;
+		bool IsInRange = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool HasCondition;
+		bool HasCondition = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool IsRunning;
+		bool IsRunning = false;
 };

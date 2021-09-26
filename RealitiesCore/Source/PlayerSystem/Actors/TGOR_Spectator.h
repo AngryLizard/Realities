@@ -40,7 +40,7 @@ struct TStructOpsTypeTraits<FTGOR_CreateBodySetup> : public TStructOpsTypeTraits
 };
 
 UCLASS()
-class PLAYERSYSTEM_API ATGOR_Spectator : public ASpectatorPawn, public ITGOR_SingletonInterface, public ITGOR_DimensionInterface
+class PLAYERSYSTEM_API ATGOR_Spectator : public APawn, public ITGOR_SingletonInterface, public ITGOR_DimensionInterface
 {
 	GENERATED_BODY()
 

@@ -5,25 +5,32 @@
 #include "CoreMinimal.h"
 #include "Input/Reply.h"
 #include "IDetailCustomization.h"
+#include "UObject/WeakObjectPtrTemplates.h"
 
 class IDetailLayoutBuilder;
-class UTGOR_GeometryUserData;
+class ATGOR_DimensionWorldSettings;
 
 class FTGORNode_DimensionDetails : public IDetailCustomization
 {
 public:
-	/** Makes a new instance of this detail layout class for a specific detail view requesting it */
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
 	/** IDetailCustomization interface */
 	virtual void CustomizeDetails( IDetailLayoutBuilder& DetailBuilder ) override;
 
+	virtual TSharedRef<SWidget> CreateUpdateDetailsMenu();
 	FReply ClickedOnUpdate();
 	bool UpdateEnabled() const;
 
-	/** Cached array of selected objects */
-	TArray< TWeakObjectPtr<UObject> > SelectedObjectsList;
+	virtual TSharedRef<SWidget> CreateValidateDetailsMenu();
+	FReply ClickedOnValidate();
 
-private:
+	virtual TSharedRef<SWidget> CreateConnectionDetailsMenu(TArray<FName> ConnectionNames);
+	FReply ClickedOnConnection(FName ConnectionName);
+
+protected:
+
+	/** Cached selected settings */
+	TWeakObjectPtr<ATGOR_DimensionWorldSettings> SelectedSettings;
 	
 };

@@ -20,6 +20,8 @@ UTGOR_CoreMod::UTGOR_CoreMod(const FObjectInitializer& ObjectInitializer)
 	Entry.Name = L"Core_C";
 	Entry.Version = 0;
 
+	CoreOnly = true;
+
 	Setups.Emplace(UTGOR_PossessionSetup::StaticClass());
 	Setups.Emplace(UTGOR_ConfigSetup::StaticClass());
 	Setups.Emplace(UTGOR_AccountSetup::StaticClass());

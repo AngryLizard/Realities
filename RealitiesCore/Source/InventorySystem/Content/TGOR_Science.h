@@ -51,7 +51,7 @@ protected:
 
 	/** */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		const TMap<UTGOR_Matter*, int32>& GetInputCapacity() const;
+		const TMap<TObjectPtr<UTGOR_Matter>, int32>& GetInputCapacity() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

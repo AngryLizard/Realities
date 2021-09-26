@@ -13,13 +13,13 @@ struct REALITIESPROCEDURAL_API FTGOR_RidgeCurvePoint
 	GENERATED_USTRUCT_BODY()
 
 		UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		float Ratio;
+		float Ratio = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		float Value;
+		float Value = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		float Slope;
+		float Slope = 0.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -28,10 +28,10 @@ struct REALITIESPROCEDURAL_API FTGOR_RidgeSplinePoint
 	GENERATED_USTRUCT_BODY()
 
 		UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		int32 LeftIndex;
+		int32 LeftIndex = -1;
 
 	UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		int32 RightIndex;
+		int32 RightIndex = -1;
 };
 
 USTRUCT(BlueprintType)
@@ -40,10 +40,10 @@ struct REALITIESPROCEDURAL_API FTGOR_RidgeSegmentPoint
 	GENERATED_USTRUCT_BODY()
 
 		UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		float LeftDistance;
+		float LeftDistance = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Procedural Mesh")
-		float RightDistance;
+		float RightDistance = 0.0f;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

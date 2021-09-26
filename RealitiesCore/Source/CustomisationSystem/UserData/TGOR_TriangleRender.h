@@ -126,8 +126,8 @@ public:
 	* @param Canvas - canvas currently being rendered
 	* @param RHICmdList - command list to use
 	* @return true if anything rendered
-	*/
 	virtual bool Render_RenderThread(FRHICommandListImmediate& RHICmdList, FMeshPassProcessorRenderState& DrawRenderState, const FCanvas* Canvas) override;
+	*/
 
 	/**
 	* Renders the canvas item.
@@ -135,8 +135,8 @@ public:
 	*
 	* @param Canvas - canvas currently being rendered
 	* @return true if anything rendered
-	*/
 	virtual bool Render_GameThread(const FCanvas* Canvas, FRenderThreadScope& RenderScope) override;
+	*/
 
 	/**
 	* Determine if this is a matching set by comparing material,transform. All must match

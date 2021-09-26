@@ -452,11 +452,6 @@ void UTGOR_ReplicationGraph::InitGlobalActorClassSettings()
 
 void UTGOR_ReplicationGraph::InitGlobalGraphNodes()
 {
-	// Preallocate some replication lists.
-	PreAllocateRepList(3, 12);
-	PreAllocateRepList(6, 12);
-	PreAllocateRepList(128, 64);
-
 	// -----------------------------------------------
 	//	Spatial Actors
 	// -----------------------------------------------

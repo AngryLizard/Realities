@@ -61,9 +61,10 @@ void GetSectionFromStaticMesh(const FMatrix& Transform, UStaticMesh* InMesh, int
 {
 	if (InMesh != nullptr)
 	{
-		if (InMesh->RenderData != nullptr && InMesh->RenderData->LODResources.IsValidIndex(LODIndex))
+		FStaticMeshRenderData* RenderData = InMesh->GetRenderData();
+		if (RenderData != nullptr && RenderData->LODResources.IsValidIndex(LODIndex))
 		{
-			const FStaticMeshLODResources& LOD = InMesh->RenderData->LODResources[LODIndex];
+			const FStaticMeshLODResources& LOD = RenderData->LODResources[LODIndex];
 			if (LOD.Sections.IsValidIndex(SectionIndex))
 			{
 				// Empty output buffers
@@ -160,18 +161,19 @@ void UTGOR_SkewLibrary::GenerateSkew(
 
 			//// SIMPLE COLLISION
 
-			if (StaticMesh->BodySetup != nullptr)
+			UBodySetup* BodySetup = StaticMesh->GetBodySetup();
+			if (BodySetup != nullptr)
 			{
 				// Just shove everything into the first mesh
 				FTGOR_TriangleMesh& Mesh = Meshes[0];
 
 				// Iterate over all convex hulls on static mesh..
-				const int32 NumConvex = StaticMesh->BodySetup->AggGeom.ConvexElems.Num();
+				const int32 NumConvex = BodySetup->AggGeom.ConvexElems.Num();
 				for (int ConvexIndex = 0; ConvexIndex < NumConvex; ConvexIndex++)
 				{
 
 					// Copy convex verts to ProcMesh
-					FKConvexElem MeshConvex = StaticMesh->BodySetup->AggGeom.ConvexElems[ConvexIndex];
+					FKConvexElem MeshConvex = BodySetup->AggGeom.ConvexElems[ConvexIndex];
 
 					for (FVector& Vertex : MeshConvex.VertexData)
 					{
@@ -184,7 +186,8 @@ void UTGOR_SkewLibrary::GenerateSkew(
 
 			//// MATERIALS
 
-			for (int32 MatIndex = 0; MatIndex < StaticMesh->StaticMaterials.Num(); MatIndex++)
+			TArray<FStaticMaterial>& StaticMaterials = StaticMesh->GetStaticMaterials();
+			for (int32 MatIndex = 0; MatIndex < StaticMaterials.Num(); MatIndex++)
 			{
 				if (Meshes.IsValidIndex(MatIndex))
 				{

@@ -96,9 +96,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Content", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		TArray<UTGOR_Content*> GetContentListFromType(TSubclassOf<UTGOR_Content> Type) const;
 		template<typename T>
-		TArray<T*> GetTListFromType(TSubclassOf<T> Type) const
+		TArray<TObjectPtr<T>> GetTListFromType(TSubclassOf<T> Type) const
 		{
-			TArray<T*> Out;
+			TArray<TObjectPtr<T>> Out;
 			TArray<UTGOR_Content*> List = GetContentListFromType(*Type);
 			for (UTGOR_Content* Content : List)
 			{
@@ -107,7 +107,7 @@ public:
 			return(Out);
 		}
 		template<typename T>
-		TArray<T*> GetTListFromType() const
+		TArray<TObjectPtr<T>> GetTListFromType() const
 		{
 			return(GetTListFromType<T>(T::StaticClass()));
 		}
@@ -116,12 +116,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Content", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		UTGOR_Content* GetContentFromIndex(TSubclassOf<UTGOR_Content> Type, int32 Index) const;
 		template<typename T>
-		T* GetTFromIndex(TSubclassOf<T> Type, int32 Index) const
+		TObjectPtr<T> GetTFromIndex(TSubclassOf<T> Type, int32 Index) const
 		{
 			return(Cast<T>(GetContentFromIndex(Type, Index)));
 		}
 		template<typename T>
-		T* GetTFromIndex(int32 Index) const
+		TObjectPtr<T> GetTFromIndex(int32 Index) const
 		{
 			return(GetTFromIndex<T>(T::StaticClass(), Index));
 		}

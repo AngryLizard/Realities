@@ -122,8 +122,7 @@ bool UTGOR_UnlockComponent::CheckPendingKnowledges(const FTGOR_TrackerData& Trac
 			Unlocked.Add(*Itr);
 
 			// Set children pending
-			const TArray<UTGOR_Knowledge*>& Children = (*Itr)->Instanced_ChildInsertions.Collection;
-			Pending.Data.Append(Children);
+			Pending.Data.Append((*Itr)->Instanced_ChildInsertions.Collection);
 
 			// Remove from pending
 			Itr.RemoveCurrent();

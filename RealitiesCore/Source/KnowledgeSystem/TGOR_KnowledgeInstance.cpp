@@ -21,9 +21,9 @@ void FTGOR_KnowledgeCollection::Write(FTGOR_GroupWritePackage& Package, UTGOR_Si
 
 void FTGOR_KnowledgeCollection::Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context)
 {
-	TArray<UTGOR_Knowledge*> Knowledges;
+	TArray<TObjectPtr<UTGOR_Knowledge>> Knowledges;
 	Package.ReadEntry("Data", Knowledges);
-	Data = TSet<UTGOR_Knowledge*>(Knowledges);
+	Data = TSet<TObjectPtr<UTGOR_Knowledge>>(Knowledges);
 }
 
 

@@ -37,11 +37,11 @@ struct FTGOR_BrushPoint
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Variance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Variance = 0.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector2D Position;
+		FVector2D Position = FVector2D::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FTGOR_BrushData Data;

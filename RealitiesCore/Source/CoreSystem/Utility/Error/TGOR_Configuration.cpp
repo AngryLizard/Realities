@@ -12,10 +12,10 @@ FString UTGOR_Configuration::loadConfig(FString Filename, FString Section, ETGOR
 	FString Name = Filename + ".ini";
 	FString ConfigsPath;
 	// Search default paths for file
-	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::EngineConfigDir() + Name,		false)) == nullptr)
-	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::SourceConfigDir() + Name,		false)) == nullptr)
-	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::GeneratedConfigDir() + Name,	false)) == nullptr)
-	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::ProjectConfigDir() + Name,		false)) == nullptr)
+	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::EngineConfigDir() + Name)) == nullptr)
+	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::SourceConfigDir() + Name)) == nullptr)
+	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::GeneratedConfigDir() + Name)) == nullptr)
+	if ((ConfigFile = GConfig->Find(ConfigsPath = FPaths::ProjectConfigDir() + Name)) == nullptr)
 	{ return(L"File not found."); }
 	// Check if section exists
 	if (!ConfigFile->Contains(Section)) { return(ConfigsPath + L" Section not found."); }
@@ -41,7 +41,7 @@ FString UTGOR_Configuration::loadDefaultConfig(ETGOR_ConfigType Type, FString Se
 		default: return(L"Default not found.");
 	}
 	// Make sure file exists
-	if ((ConfigFile = GConfig->Find(ConfigsPath, false)) == nullptr)
+	if ((ConfigFile = GConfig->Find(ConfigsPath)) == nullptr)
 	{ return(L"File not found."); }
 	// Check if section exists
 	if (!ConfigFile->Contains(Section)) { return(ConfigsPath + L" Section not found."); }

@@ -127,10 +127,10 @@ bool UTGOR_AimComponent::UpdateCandidatesNearby()
 		for (const FOverlapResult& Result : Results)
 		{
 			UTGOR_InteractableComponent* Interactable = Cast<UTGOR_InteractableComponent>(Result.GetComponent());
-			if (IsValid(Interactable))
+			if (IsValid(Interactable) && Result.Component.IsValid())
 			{
 				// Ignoring attached actors
-				if (!IgnoreSelf || !Result.Actor->IsAttachedTo(Actor))
+				if (!IgnoreSelf || !Result.Component->GetOwner()->IsAttachedTo(Actor))
 				{
 					Candidates.Emplace(Interactable);
 				}

@@ -48,7 +48,7 @@ void FTGOR_ProceduralGradientResource::InitRHI()
 	// Set the greyscale format flag appropriately.
 	bGreyScaleFormat = (EffectiveFormat == PF_G8) || (EffectiveFormat == PF_BC4);
 
-	FRHIResourceCreateInfo CreateInfo;
+	FRHIResourceCreateInfo CreateInfo(TEXT("ProceduralGradientResource"));
 	//CreateInfo.ExtData = Owner->PlatformData->GetExtData();
 	const FTexture2DRHIRef Texture2DRHI = RHICreateTexture2D(Width, Height, EffectiveFormat, 1, 1, TexCreateFlags, CreateInfo);
 	TextureRHI = Texture2DRHI;

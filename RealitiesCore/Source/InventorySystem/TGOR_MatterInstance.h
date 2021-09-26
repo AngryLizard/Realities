@@ -26,7 +26,7 @@ struct FTGOR_MatterContainer
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		UTGOR_Segment* Segment;
+		UTGOR_Segment* Segment = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		TMap<UTGOR_Matter*, int32> Slots;

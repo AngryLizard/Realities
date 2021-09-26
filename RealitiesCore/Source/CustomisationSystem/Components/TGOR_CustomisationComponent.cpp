@@ -85,7 +85,7 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 	USkeletalMesh* TargetMesh = NewObject<USkeletalMesh>();
 	if (IsValid(TargetMesh) && IsValid(Modular) && IsValid(Modular->Skeleton))
 	{
-		TargetMesh->Skeleton = Modular->Skeleton;
+		TargetMesh->SetSkeleton(Modular->Skeleton);
 
 		// Establish order of sections
 		TArray<UTGOR_Section*> Sections;
@@ -137,7 +137,7 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 
 					// Section remapping
 					const int32 MaterialIndex = Instance.Content->Instanced_SectionInsertions.Collection[Section];
-					const int32 MaterialNum = Instance.Content->Mesh->Materials.Num();
+					const int32 MaterialNum = Instance.Content->Mesh->GetMaterials().Num();
 					FTGOR_SkelMeshMergeSectionMapping& Mapping = Mappings[MeshIndex];
 					Mapping.SectionIDs.SetNumZeroed(MaterialNum);
 					if (Mapping.SectionIDs.IsValidIndex(MaterialIndex))
@@ -153,7 +153,7 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 		UVTransforms.UVTransformsPerMesh.SetNum(MeshNum);
 		for (int32 MeshIndex = 0; MeshIndex < MeshNum; MeshIndex++)
 		{
-			const int32 MaterialNum = Meshes[MeshIndex]->Materials.Num();
+			const int32 MaterialNum = Meshes[MeshIndex]->GetMaterials().Num();
 			UVTransforms.UVTransformsPerMesh[MeshIndex].SetNum(MaterialNum);
 			for (int32 MaterialIndex = 0; MaterialIndex < MaterialNum; MaterialIndex++)
 			{
@@ -259,9 +259,11 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 		FTGOR_SkeletalMeshMerge Merge(TargetMesh, Meshes, Mappings, 0, EMeshBufferAccess::Default, UVTransforms, LocalSpaceTransforms, TargetRigBoneMapping);
 		if (Merge.DoMerge())
 		{
+			TArray<FSkeletalMaterial>& MeshMaterials = TargetMesh->GetMaterials();
+
 			// Create textures
 			const int32 Num = Sections.Num();
-			TargetMesh->Materials.SetNum(Num);
+			MeshMaterials.SetNum(Num);
 			for (int32 Index = 0; Index < Num; Index++)
 			{
 				UTGOR_Section* Section = Sections[Index];
@@ -273,7 +275,7 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 						(*MaterialPtr)->SetTextureParameterValue(Canvas->ParameterName, Output.Textures[Canvas]);
 					}
 
-					TargetMesh->Materials[Index].MaterialInterface = (*MaterialPtr);
+					MeshMaterials[Index].MaterialInterface = (*MaterialPtr);
 				}
 			}
 			Output.Mesh = TargetMesh;
@@ -667,13 +669,14 @@ int32 UTGOR_CustomisationComponent::ConstructTree(int32 NodeIndex)
 			UMaterialInstanceDynamic*& Material = CustomisationMaterials.FindOrAdd(Pair.Key, nullptr);
 			if (!IsValid(Material))
 			{
+				const TArray<FSkeletalMaterial>& MeshMaterials = Bodypart->Mesh->GetMaterials();
 				if (IsValid(Pair.Key->Material))
 				{
 					Material = UMaterialInstanceDynamic::Create(Pair.Key->Material, this);
 				}
-				else if (Bodypart->Mesh->Materials.IsValidIndex(Pair.Value))
+				else if (MeshMaterials.IsValidIndex(Pair.Value))
 				{
-					Material = UMaterialInstanceDynamic::Create(Bodypart->Mesh->Materials[Pair.Value].MaterialInterface, this);
+					Material = UMaterialInstanceDynamic::Create(MeshMaterials[Pair.Value].MaterialInterface, this);
 				}
 			}
 		}

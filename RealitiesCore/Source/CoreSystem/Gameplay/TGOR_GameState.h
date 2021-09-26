@@ -26,7 +26,7 @@ struct FTGOR_LoadInformation
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System")
-		bool HasLoaded;
+		bool HasLoaded = false;
 
 	/** Server's mod setup */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System")

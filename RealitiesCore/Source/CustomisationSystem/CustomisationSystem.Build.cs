@@ -13,7 +13,6 @@ public class CustomisationSystem : ModuleRules
 			{
 				"RealitiesUGC",
 				"RealitiesUtility",
-				"RealitiesAnimation",
 
 				"CoreSystem",
 				"DimensionSystem",

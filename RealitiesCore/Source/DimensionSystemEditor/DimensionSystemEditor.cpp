@@ -14,8 +14,8 @@ void FDimensionSystemEditorModule::StartupModule()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	PropertyModule.RegisterCustomPropertyTypeLayout("TGOR_ConnectionSelection", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FTGORNode_ConnectionSelection::MakeInstance));
-	PropertyModule.RegisterCustomClassLayout(ATGOR_DimensionWorldSettings::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTGORNode_DimensionDetails::MakeInstance));
 
+	PropertyModule.RegisterCustomClassLayout(ATGOR_DimensionWorldSettings::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FTGORNode_DimensionDetails::MakeInstance));
 
 }
 

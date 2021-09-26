@@ -220,9 +220,9 @@ bool ATGOR_NpcController::SamplePerception(UTGOR_ColliderComponent* Collider, FV
 			FHitResult Hit;
 			if (Collider->MovementSphereTraceSweep(Radius, Position.Linear, Delta, Hit))
 			{
-				if (Hit.Actor.IsValid())
+				if (Hit.Component.IsValid())
 				{
-					UTGOR_MobilityComponent* Base = Hit.Actor->FindComponentByClass<UTGOR_MobilityComponent>();
+					UTGOR_MobilityComponent* Base = Hit.Component->GetOwner()->FindComponentByClass<UTGOR_MobilityComponent>();
 					if (IsValid(Base))
 					{
 						ParentBase = Base;

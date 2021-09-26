@@ -31,11 +31,11 @@ struct FTGOR_PerceptionPoint
 
 	/** Perceived position */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR NPC")
-		FVector Point;
+		FVector Point = FVector::ZeroVector;
 
 	/** Perceived direction */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR NPC")
-		FVector Normal;
+		FVector Normal = FVector::ForwardVector;
 };
 
 USTRUCT(BlueprintType)

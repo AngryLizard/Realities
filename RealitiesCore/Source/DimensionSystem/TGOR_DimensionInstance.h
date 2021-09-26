@@ -159,8 +159,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName Owner;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<FName, FTGOR_DimensionRequestEntry> Dimensions;
+	TMap<FName, FTGOR_DimensionRequestEntry> Dimensions;
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
@@ -186,8 +185,7 @@ struct DIMENSIONSYSTEM_API FTGOR_DimensionRequestState
 public:
 	FTGOR_DimensionRequestState();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<FName, FVector> Dimensions;
+	TMap<FName, FVector> Dimensions;
 
 	bool NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess);
 };
@@ -215,8 +213,7 @@ public:
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const;
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context);
 
-	UPROPERTY()
-		TMap<FName, TWeakObjectPtr<UTGOR_ConnectionComponent>> Components;
+	TMap<FName, TWeakObjectPtr<UTGOR_ConnectionComponent>> Components;
 
 };
 

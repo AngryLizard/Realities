@@ -6,13 +6,21 @@
 #include "Engine/NetConnection.h"
 #include "Net/DataChannel.h"
 
+#include "CoreSystem/Gameplay/TGOR_GameSession.h"
+#include "CoreSystem/Gameplay/TGOR_GameState.h"
+#include "CoreSystem/Gameplay/TGOR_PlayerState.h"
+
 #include "RealitiesUGC/Mod/TGOR_Mod.h"
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 
 ATGOR_GameMode::ATGOR_GameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	bStartPlayersAsSpectators = true;
+	GameSessionClass = ATGOR_GameSession::StaticClass();
+	GameStateClass = ATGOR_GameState::StaticClass();
+	PlayerStateClass = ATGOR_PlayerState::StaticClass();
+
+	bStartPlayersAsSpectators = false;
 }
 
 void ATGOR_GameMode::GameWelcomePlayer(UNetConnection* Connection, FString& RedirectURL)

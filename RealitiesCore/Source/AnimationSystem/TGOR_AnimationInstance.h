@@ -36,8 +36,7 @@ struct FTGOR_AnimationInstance
 		UTGOR_Archetype* Archetype;
 
 	/** Current rig parameters */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Animation")
-		TMap<UTGOR_RigParam*, FTGOR_Normal> Params;
+	TMap<UTGOR_RigParam*, FTGOR_Normal> Params;
 };
 
 template<>

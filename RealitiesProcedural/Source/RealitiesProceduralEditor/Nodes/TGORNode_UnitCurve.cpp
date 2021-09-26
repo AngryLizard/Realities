@@ -161,7 +161,7 @@ void FTGORNode_UnitCurve::MakeTransactional()
 
 void FTGORNode_UnitCurve::OnCurveChanged(const TArray<FRichCurveEditInfo>& ChangedCurveEditInfos)
 {
-	UnitCurveUPropertyHandle->NotifyPostChange();
+	UnitCurveUPropertyHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 }
 
 bool FTGORNode_UnitCurve::IsValidCurve(FRichCurveEditInfo CurveInfo)

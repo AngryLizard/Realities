@@ -46,7 +46,7 @@ void UTGOR_Science::BuildStorage(UTGOR_ProcessStorage* Storage)
 
 	UTGOR_MatterModule* Module = Storage->GetModule<UTGOR_MatterModule>();
 
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
+	const TMap<TObjectPtr<UTGOR_Matter>, int32>& Capacity = Instanced_MatterInsertions.Collection;
 	for (const auto& Pair : Capacity)
 	{
 		Module->AddStorageCapacity(Pair.Key, Pair.Value);
@@ -90,10 +90,9 @@ TArray<UTGOR_ItemComponent*> UTGOR_Science::FilterInput(const TArray<UTGOR_ItemC
 	return UsableItems;
 }
 
-const TMap<UTGOR_Matter*, int32>& UTGOR_Science::GetInputCapacity() const
+const TMap<TObjectPtr<UTGOR_Matter>, int32>& UTGOR_Science::GetInputCapacity() const
 {
-	const TMap<UTGOR_Matter*, int32>& Capacity = Instanced_MatterInsertions.Collection;
-	return Capacity;
+	return Instanced_MatterInsertions.Collection;
 }
 
 void UTGOR_Science::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success)
