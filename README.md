@@ -71,12 +71,12 @@ There are two types of mods:
 
 #### Core Mod:
 
-```
 Every mod that has "CoreOnly" set to true is a Core Mod (inherit from TGOR_CoreMod for an easy template). There can only be one Core Mod per project and it automatically loads all content in the project's content folder as well as all plugins with the category "TGOR_Core".
 
 You can define which Core Mod is loaded in the world settings, which is how you can easily test dimensions from the editor:
-Create a debug Core Mod with setups that e.g. automatically spawns the avatar (inherit from *TGOR_TestMod* for an easy template).
-```
+- Create a debug Core Mod with setups that e.g. automatically spawns the avatar (inherit from *TGOR_TestMod* for an easy template).
+- Or add mods with dependency on *TGOR_TestMod*.
+
 
 #### Content Mod:
 ```
@@ -86,8 +86,7 @@ Content Mods are plugins that have the category "TGOR_Mod" and are loaded in the
 ---
 ### 4. Default pawns
 
-Our API does not currently support true SpectatorPawns, instead all connecting players should spawn as a TGOR_Spectator. TGOR_Spectator pawns act as spectators but exist on both server and client. This is needed for interactions with the dimension and action system. Make sure "StartPlayersAsSpectators" is disabled in your GameMode and your DefaultPawn is set to a base of TGOR_Spectator.
-
-This spectator is also meant to spawn/possess the player's avatar. You can automatically spawn an avatar (especially useful for testing) by adding a custom SpawnSetup to your debug mod.
+Our API doesn't change default pawn/spectator behaviour, though client-only pawns (such as spectators) don't have access to several gameplay elements such as dimensions and actions.
+It is recommended to use a pawn class deriving from *TGOR_Spectator* as the default pawn and to disable "StartPlayersAsSpectators". You can automatically spawn an avatar from this spectator (especially useful for testing) by adding a custom SpawnSetup to your debug mod.
 
 

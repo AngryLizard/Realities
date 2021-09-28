@@ -224,8 +224,7 @@ void UTGOR_DimensionData::AssembleDimension()
 void UTGOR_DimensionData::AssembleActors()
 {
 	SINGLETON_CHK;
-	REGIONCONTROLLER_CHK;
-	
+
 	// Assemble objects in stages
 	for (auto Itr = DimensionObjects.CreateIterator(); Itr; ++Itr)
 	{

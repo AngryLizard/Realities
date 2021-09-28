@@ -21,10 +21,4 @@ public:
 
 	APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/* Spawner being created when a player connects, defaults to default behaviour if none */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
-		TSubclassOf<UTGOR_Spawner> PlayerSpawner;
-
 };

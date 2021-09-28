@@ -26,7 +26,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Task type to be spawned by this action */
+	/** Task type to be spawned by this Pilot */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<UTGOR_PilotTask> TaskType;
 

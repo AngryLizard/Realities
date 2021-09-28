@@ -28,7 +28,7 @@ struct DIMENSIONSYSTEM_API FTGOR_LinearParenting
 /**
 *
 */
-UCLASS(Blueprintable)
+UCLASS(Abstract, Blueprintable)
 class DIMENSIONSYSTEM_API UTGOR_LinearPilotTask : public UTGOR_PilotTask
 {
 	GENERATED_BODY()

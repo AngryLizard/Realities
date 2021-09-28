@@ -7,7 +7,7 @@
 #include "TGOR_AttachedPilotTask.generated.h"
 
 /**
-*
+* Position
 */
 UCLASS(Blueprintable)
 class DIMENSIONSYSTEM_API UTGOR_AttachedPilotTask : public UTGOR_LinearPilotTask

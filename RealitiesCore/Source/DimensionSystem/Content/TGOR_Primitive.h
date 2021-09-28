@@ -19,10 +19,10 @@ class DIMENSIONSYSTEM_API UTGOR_Primitive : public UTGOR_SpawnModule
 public:
 	UTGOR_Primitive();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Creature")
-		float Weight = 120.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Dimension")
+		float Weight = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Creature")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Dimension")
 		FVector SurfaceArea = FVector(0.5f, 0.5f, 0.5f);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

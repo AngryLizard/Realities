@@ -306,7 +306,8 @@ void ATGOR_OnlineController::PossessSpectator()
 
 	// Spawn new spectator if not already spectating
 	APawn* Previous = GetPawn();
-	if (!IsValid(Previous) || !Previous->IsA(ATGOR_Spectator::StaticClass()))
+	AGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode();
+	if (!IsValid(Previous) || Previous->GetClass() != GameModeBase->DefaultPawnClass)
 	{
 		// Get persistent dimension to spawn spectator into
 		UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
@@ -319,15 +320,19 @@ void ATGOR_OnlineController::PossessSpectator()
 			{
 				// Create new spectator and go into spectator state
 				AActor* PlayerStart = StartSpot.Get();
-				AGameModeBase* GameModeBase = GetWorld()->GetAuthGameMode();
 				if (!PlayerStart) PlayerStart = GameModeBase->FindPlayerStart(this);
-				ATGOR_Spectator* Spectator = Cast<ATGOR_Spectator>(GameModeBase->SpawnDefaultPawnFor(this, PlayerStart));
-				if (IsValid(Spectator))
+				APawn* NewPawn = Cast<APawn>(GameModeBase->SpawnDefaultPawnFor(this, PlayerStart));
+				if (IsValid(NewPawn))
 				{
-					Persistent->RegisterDimensionObject(Spectator->GetIdentity());
-					Possess(Spectator);
+					UTGOR_IdentityComponent* Identity = NewPawn->FindComponentByClass<UTGOR_IdentityComponent>();
+					if (IsValid(Identity))
+					{
+						Persistent->RegisterDimensionObject(Identity);
+					}
+
+					Possess(NewPawn);
 					UTGOR_WorldComponent* WorldManager = GetWorldManager();
-					WorldManager->UpdateDimensionRequestsFromPawn(GetPawn());
+					WorldManager->UpdateDimensionRequestsFromPawn(NewPawn);
 					//SetDimensionOwner(PersistentIdentifier);
 					UpdateBodyDisplay();
 

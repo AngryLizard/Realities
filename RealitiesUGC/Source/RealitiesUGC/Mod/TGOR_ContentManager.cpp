@@ -443,6 +443,28 @@ TArray<FTGOR_ContentLink> UTGOR_ContentManager::LoadCore()
 	return Links;
 }
 
+bool CheckDependency(const TArray<UTGOR_Mod*>& UsedMods, UTGOR_Mod* Mod)
+{
+	// Check whether all dependencies are present
+	for (TSubclassOf<UTGOR_Mod> Dependency : Mod->Dependencies)
+	{
+		bool HasDependency = false;
+		for (UTGOR_Mod* UsedMod : UsedMods)
+		{
+			if (UsedMod->IsA(Dependency))
+			{
+				HasDependency = true;
+			}
+		}
+
+		if (!HasDependency)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Registry, TSubclassOf<UTGOR_Mod> CoreModType)
 {
 	FTGOR_ModInstance ModSetup;
@@ -466,26 +488,34 @@ FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Regi
 	}
 
 	// Sort mods by dependencies
-	Mods.Sort([](const UTGOR_Mod& A, const UTGOR_Mod& B) -> bool { return !A.HasDependency(&B); });
+	Mods.Sort([](const UTGOR_Mod& A, const UTGOR_Mod& B) -> bool { return A.HasDependency(&B); });
+	Algo::Reverse(Mods);
 
 	// Make sure there is only one core
 	bool HasCore = false;
 
 	// Create entry list
+	TArray<UTGOR_Mod*> UsedMods;
 	ModSetup.ActiveMods.Reset();
 	for (UTGOR_Mod* Mod : Mods)
 	{
-		if (Mod->CoreOnly)
+		// Make sure mod actually exists
+		if (CheckDependency(UsedMods, Mod))
 		{
-			if (*CoreModType && Mod->IsA(CoreModType) && !HasCore)
+			if (Mod->CoreOnly)
 			{
-				ModSetup.ActiveMods.Add(Mod->Entry);
-				HasCore = true;
+				if (*CoreModType && Mod->IsA(CoreModType) && !HasCore)
+				{
+					ModSetup.ActiveMods.Add(Mod->Entry);
+					UsedMods.Add(Mod);
+					HasCore = true;
+				}
 			}
-		}
-		else
-		{
-			ModSetup.ActiveMods.Add(Mod->Entry);
+			else
+			{
+				UsedMods.Add(Mod);
+				ModSetup.ActiveMods.Add(Mod->Entry);
+			}
 		}
 	}
 	return ModSetup;

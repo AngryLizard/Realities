@@ -50,7 +50,7 @@ TSet<UTGOR_CoreContent*> UTGOR_TrackerComponent::GetContext() const
 	// Preassemble all associated components
 	for (const TScriptInterface<ITGOR_RegisterInterface>& RegisterObject : RegisterObjects)
 	{
-		ContentContext.Append(RegisterObject->GetActiveContent());
+		ContentContext.Append(RegisterObject->Execute_GetActiveContent(RegisterObject.GetObject()));
 	}
 	return ContentContext;
 }

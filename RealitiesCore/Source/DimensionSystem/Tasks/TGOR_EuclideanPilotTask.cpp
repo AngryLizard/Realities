@@ -18,7 +18,6 @@ void UTGOR_EuclideanPilotTask::GetLifetimeReplicatedProps(TArray< FLifetimePrope
 	DOREPLIFETIME_CONDITION(UTGOR_EuclideanPilotTask, Local, COND_None);
 }
 
-
 FTGOR_MovementPosition UTGOR_EuclideanPilotTask::ComputePosition() const
 {
 	return Local.BaseToPosition(ComputeParentPosition());
@@ -40,7 +39,6 @@ void UTGOR_EuclideanPilotTask::SimulatePosition(const FTGOR_MovementPosition& Po
 	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
 	Local.PositionToBase(ParentPosition, Position);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

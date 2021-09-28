@@ -8,7 +8,7 @@
 
 
 /**
-*
+* Position, velocity and acceleration
 */
 UCLASS(Blueprintable)
 class DIMENSIONSYSTEM_API UTGOR_EuclideanPilotTask : public UTGOR_LinearPilotTask

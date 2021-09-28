@@ -182,7 +182,7 @@ protected:
 		void RepNotifyPilotState(const FTGOR_PilotState& Old);
 
 	/** Current physics volume */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY()
 		TWeakObjectPtr<ATGOR_PhysicsVolume> SurroundingVolume;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
