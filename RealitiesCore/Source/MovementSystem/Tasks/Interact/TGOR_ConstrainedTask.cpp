@@ -2,7 +2,7 @@
 
 
 #include "TGOR_ConstrainedTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "RealitiesUtility/Utility/TGOR_Math.h"
@@ -27,17 +27,17 @@ void UTGOR_ConstrainedTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty
 
 void UTGOR_ConstrainedTask::Initialise()
 {
-
+	Super::Initialise();
 }
 
 bool UTGOR_ConstrainedTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
-	return !IsValid(RigidComponent->GetPilotOfType(UTGOR_NamedSocketTask::StaticClass()));
+	return Super::Invariant(Space, External) && !IsValid(RootComponent->GetPilotOfType(UTGOR_NamedSocketTask::StaticClass()));
 }
 
 void UTGOR_ConstrainedTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
-
+	Super::Reset(Space, External);
 }
 
 void UTGOR_ConstrainedTask::QueryInput(FVector& OutInput, FVector& OutView) const
@@ -53,7 +53,7 @@ void UTGOR_ConstrainedTask::Update(FTGOR_MovementSpace& Space, const FTGOR_Movem
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	Out.Force = State.Input * InputForce * Frame.Strength - External.Force.GetClampedToMaxSize(MaxForce * Frame.Strength);
 	Out.Torque = FVector::ZeroVector - External.Torque.GetClampedToMaxSize(MaxTorque * Frame.Strength);

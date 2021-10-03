@@ -8,6 +8,7 @@
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
 #include "CoreSystem/Components/TGOR_Component.h"
 #include "DimensionSystem/Interfaces/TGOR_DimensionInterface.h"
+#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "TGOR_IdentityComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIdentityDelegate, UTGOR_Spawner*, Spawner);

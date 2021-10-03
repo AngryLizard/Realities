@@ -2,7 +2,7 @@
 
 
 #include "TGOR_WaterTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "Net/UnrealNetwork.h"
@@ -21,17 +21,17 @@ void UTGOR_WaterTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 
 void UTGOR_WaterTask::Initialise()
 {
-
+	Super::Initialise();
 }
 
 bool UTGOR_WaterTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
-	return CanSwimInCurrentSurroundings();
+	return Super::Invariant(Space, External) &&  CanSwimInCurrentSurroundings(External);
 }
 
 void UTGOR_WaterTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
-
+	Super::Reset(Space, External);
 }
 
 void UTGOR_WaterTask::QueryInput(FVector& OutInput, FVector& OutView) const
@@ -42,7 +42,7 @@ void UTGOR_WaterTask::QueryInput(FVector& OutInput, FVector& OutView) const
 void UTGOR_WaterTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Compute input dependent forces
 	const float SpeedRatio = GetInputForce(Tick, Space, External, Out);
@@ -53,7 +53,7 @@ void UTGOR_WaterTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExt
 	FHitResult Hit;
 	FVector RepelForce = FVector::ZeroVector;
 	//if (Component->Trace(FVector::ZeroVector, FVector::ZeroVector, 0.0f, 100.0f, Hit))
-	if (RigidComponent->Overlap(Space.Linear, Space.Angular * FQuat(FVector::RightVector, PI / 2), 75.0f, 200.0f, Hit))
+	if (RootComponent->Overlap(Space.Linear, Space.Angular * FQuat(FVector::RightVector, PI / 2), 75.0f, 200.0f, Hit))
 	{
 		const float RepelSpring = WallRepelStrength * Frame.Strength;
 		RepelForce += Hit.Normal * Hit.PenetrationDepth * RepelSpring;
@@ -77,9 +77,9 @@ void UTGOR_WaterTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExt
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_WaterTask::CanSwimInCurrentSurroundings() const
+bool UTGOR_WaterTask::CanSwimInCurrentSurroundings(const FTGOR_MovementExternal& External) const
 {
-	return RigidComponent->GetBouyancyRatio() > BouyancyThreshold;
+	return Identifier.Component->GetBouyancyRatio(External.Surroundings) > BouyancyThreshold;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,6 @@ bool UTGOR_WaterTask::CanSwimInCurrentSurroundings() const
 float UTGOR_WaterTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, FTGOR_MovementOutput& Out) const
 {
 	// Dampen to prevent oscillation
-	RigidComponent->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping, Out);
+	Identifier.Component->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping, Out);
 	return 0.0f;
 }

@@ -2,7 +2,7 @@
 
 
 #include "TGOR_SwimmingTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 
@@ -20,13 +20,11 @@ UTGOR_SwimmingTask::UTGOR_SwimmingTask()
 void UTGOR_SwimmingTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
 }
-
 
 void UTGOR_SwimmingTask::QueryInput(FVector& OutInput, FVector& OutView) const
 {
-	const FVector UpVector = RigidComponent->ComputePhysicsUpVector();
+	const FVector UpVector = Identifier.Component->ComputePhysicsUpVector();
 	const FQuat InputRotation = Identifier.Component->GetInputRotation();
 	const float InputStrength = Identifier.Component->GetInputStrength();
 	const FVector RawInput = Identifier.Component->GetRawInput();
@@ -54,10 +52,10 @@ float UTGOR_SwimmingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 	// Parent implements damping
 	Super::GetInputForce(Tick, Space, External, Out);
 
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Compute rotation towards upright rotation
 	const FVector Forward = Space.Angular.Vector();
@@ -72,7 +70,7 @@ float UTGOR_SwimmingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 		// Compute forward direction with reduction towards volume surface
 		const float UpPart = Input.Direction | External.UpVector;
 		const FVector SidePart = Input.Direction - External.UpVector * UpPart;
-		const float DepthRatio = (Capture.Surroundings.Depth - SurfaceThreshold) / SurfaceThreshold;
+		const float DepthRatio = (External.Surroundings.Depth - SurfaceThreshold) / SurfaceThreshold;
 		const FVector FinalInput = SidePart + External.UpVector * FMath::Min(UpPart, FMath::Max(UpPart * DepthRatio, 0.0f));
 		const float FinalMaximumSpeed = MaximumSpeed * GetSpeedRatio();
 		if (FinalMaximumSpeed >= SMALL_NUMBER)
@@ -95,7 +93,7 @@ float UTGOR_SwimmingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 				// Get input vector transformed to surface, move forwards if aligned, directly move towards input if not
 				const float ForwardRatio = Forward | Input.Direction;
 				const float StrengthRatio = Identifier.Component->ComputeDirectionRatio(ForwardRatio, SpeedRatio, LockMovementWithTurning);
-				const float Direct = StrengthRatio * Input.Magnitude * Capture.Surroundings.Density * SwimStrength * Frame.Strength;
+				const float Direct = StrengthRatio * Input.Magnitude * External.Surroundings.Density * SwimStrength * Frame.Strength;
 				Out.Force += Identifier.Component->ComputeForceTowards(Forward, Out.Force, Direct, SpeedRatio);
 
 				// Apply centripetal forces for nice curves
@@ -105,7 +103,6 @@ float UTGOR_SwimmingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 			// Rotate around input axis to swim upright
 			const FVector Swivel = FinalInput * (UprightAxis | FinalInput);
 			Out.Torque += Swivel * SwivelRotation * Frame.Strength;
-
 			return SpeedRatio;
 		}
 	}

@@ -15,6 +15,7 @@
 #include "TGOR_PilotInstance.generated.h"
 
 class UTGOR_Primitive;
+class UTGOR_MobilityComponent;
 
 /**
 * TGOR_PilotInstance stores pilot information
@@ -49,6 +50,7 @@ struct TStructOpsTypeTraits<FTGOR_PilotInstance> : public TStructOpsTypeTraitsBa
 	};
 };
 
+
 /**
 * TGOR_AttachInstance stores pilot information
 */
@@ -82,6 +84,7 @@ struct TStructOpsTypeTraits<FTGOR_AttachInstance> : public TStructOpsTypeTraitsB
 	};
 };
 
+
 /**
 * FTGOR_PilotState
 */
@@ -94,10 +97,6 @@ struct FTGOR_PilotState
 	FTGOR_PilotState();
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context);
-
-	/** Time of last movement update */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FTGOR_Time Timestamp;
 
 	/** Currently active slot */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -114,7 +113,6 @@ struct TStructOpsTypeTraits<FTGOR_PilotState> : public TStructOpsTypeTraitsBase2
 };
 
 
-
 USTRUCT()
 struct DIMENSIONSYSTEM_API FTGOR_PilotParamsBase
 {
@@ -126,9 +124,6 @@ struct DIMENSIONSYSTEM_API FTGOR_PilotParamsBase
 	/** Returns a debug string representation */
 	virtual FString ToString() const { return "Base"; };
 };
-
-
-
 
 
 USTRUCT(BlueprintType)
@@ -224,4 +219,47 @@ struct TStructOpsTypeTraits<FTGOR_PilotUpdate> : public TStructOpsTypeTraitsBase
 	};
 };
 
+
+/**
+*
+*/
+USTRUCT(BlueprintType)
+struct DIMENSIONSYSTEM_API FTGOR_VisualContact
+{
+	GENERATED_USTRUCT_BODY()
+
+		FTGOR_VisualContact();
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector Location;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector Normal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool Blocking;
+};
+
+/**
+*
+*/
+USTRUCT(BlueprintType)
+struct DIMENSIONSYSTEM_API FTGOR_MovementParent
+{
+	GENERATED_USTRUCT_BODY()
+
+		FTGOR_MovementParent();
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Parent mobility */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTGOR_MobilityComponent* Mobility;
+
+	/** Parent index */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Index;
+};
 

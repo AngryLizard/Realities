@@ -5,7 +5,7 @@
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 
 
-void UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
 }
 

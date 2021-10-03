@@ -71,7 +71,7 @@ public:
 	virtual bool CanStoreItemAt(int32 Identifier, UTGOR_ItemStorage* Storage) const override;
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
 
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	virtual TSubclassOf<UTGOR_Performance> GetPerformanceType() const override;
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
@@ -93,15 +93,7 @@ public:
 
 	/** Loadout type this action spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Loadout> TargetLoadout;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Loadout type to be used */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Action")
-		TSubclassOf<UTGOR_Loadout> LoadoutFilter;
-
+		TSubclassOf<UTGOR_Loadout> SpawnLoadout;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

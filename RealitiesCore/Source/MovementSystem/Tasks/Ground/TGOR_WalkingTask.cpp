@@ -2,7 +2,7 @@
 
 
 #include "TGOR_WalkingTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 
@@ -25,21 +25,21 @@ void UTGOR_WalkingTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+#pragma optimize( "", off )
 float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	// Parent implements damping
 	Super::GetInputForce(Tick, Space, Orientation, External, Contact, Repel, Out);
 
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Only worry about velocity along Frame
 	const float Speed = Contact.FrameVelocity.Size(); // (Contact.FrameVelocity - External.UpVector * (Contact.FrameVelocity | External.UpVector)).Size(); //
 
 	const FTGOR_Direction Input = Contact.FrameInput;
-	const float FinalMaximumSpeed = MaximumSpeed * GetSpeedRatio();
+	const float FinalMaximumSpeed = MaximumSpeed* GetSpeedRatio();
 	if (FinalMaximumSpeed >= SMALL_NUMBER)
 	{
 		// Rotate towards input direction
@@ -76,3 +76,4 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 	}
 	return 0.0f;
 }
+#pragma optimize( "", on ) 

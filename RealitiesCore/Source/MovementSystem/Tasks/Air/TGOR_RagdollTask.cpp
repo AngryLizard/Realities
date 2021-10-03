@@ -2,7 +2,7 @@
 
 
 #include "TGOR_RagdollTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "RealitiesUtility/Utility/TGOR_Math.h"
@@ -23,23 +23,23 @@ void UTGOR_RagdollTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& 
 
 void UTGOR_RagdollTask::Initialise()
 {
-
+	Super::Initialise();
 }
 
 bool UTGOR_RagdollTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
-	return true;
+	return Super::Invariant(Space, External);
 }
 
 void UTGOR_RagdollTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
-
+	Super::Reset(Space, External);
 }
 
 void UTGOR_RagdollTask::QueryInput(FVector& OutInput, FVector& OutView) const
 {
 	const float InputStrength = Identifier.Component->GetInputStrength();
-	const FVector UpVector = RigidComponent->ComputePhysicsUpVector();
+	const FVector UpVector = Identifier.Component->ComputePhysicsUpVector();
 	const FVector RawInput = Identifier.Component->GetRawInput();
 
 	OutInput = UpVector * FMath::Min(InputStrength * RawInput.Size() * 2.0f, 1.0f);
@@ -47,14 +47,14 @@ void UTGOR_RagdollTask::QueryInput(FVector& OutInput, FVector& OutView) const
 
 void UTGOR_RagdollTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Dampen forces
-	RigidComponent->GetDampingForce(Tick, Space.RelativeLinearVelocity, BrakeCoefficient * Frame.Strength, Out);
-	RigidComponent->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength, Out);
+	Identifier.Component->GetDampingForce(Tick, Space.RelativeLinearVelocity, BrakeCoefficient * Frame.Strength, Out);
+	Identifier.Component->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength, Out);
 
 	// Force towards upright
 	const FVector UpVector = Space.Angular.GetAxisZ();
@@ -85,9 +85,8 @@ void UTGOR_RagdollTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementE
 	FHitResult Hit;
 	const float CapsuleRadius = Body.Radius * DetectionMultiplier;
 	const float CapsuleHalfHeight = Body.Height * DetectionMultiplier / 2;
-	if (RigidComponent->Overlap(Space.Linear, Space.Angular, CapsuleRadius, CapsuleHalfHeight, Hit))
+	if (RootComponent->Overlap(Space.Linear, Space.Angular, CapsuleRadius, CapsuleHalfHeight, Hit))
 	{
-
 		// Rotate towards laying
 		const FVector SideVector = (Hit.Normal ^ UpVector) ^ UpVector;
 		const float SideNorm = SideVector.Size();

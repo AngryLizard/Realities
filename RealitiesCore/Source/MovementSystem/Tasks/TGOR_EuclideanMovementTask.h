@@ -7,7 +7,9 @@
 #include "TGOR_EuclideanMovementTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
+
 class UTGOR_EuclideanPilotTask;
+class UTGOR_PilotComponent;
 
 /**
 *
@@ -32,7 +34,7 @@ public:
 protected:
 
 	UPROPERTY(Transient)
-		UTGOR_RigidComponent* RigidComponent;
+		UTGOR_PilotComponent* RootComponent;
 
 	UPROPERTY(Transient)
 		UTGOR_EuclideanPilotTask* EuclideanTask;

@@ -12,7 +12,7 @@
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
-#include "PhysicsSystem/Components/TGOR_ArmatureComponent.h"
+#include "AnimationSystem/Components/TGOR_ArmatureComponent.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
 #include "PlayerSystem/Gameplay/TGOR_PlayerController.h"
 

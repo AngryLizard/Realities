@@ -20,7 +20,7 @@ UTGOR_HandleComponent* UTGOR_AnimationLibrary::GetHandleComponent(AActor* Owner,
 		Owner->GetComponents(Pilots);
 		for (UTGOR_HandleComponent* Pilot : Pilots)
 		{
-			if (*Pilot->TargetPrimitive && Pilot->TargetPrimitive->IsChildOf(Type))
+			if (*Pilot->SpawnPrimitive && Pilot->SpawnPrimitive->IsChildOf(Type))
 			{
 				return Pilot;
 			}
@@ -39,7 +39,7 @@ TArray<UTGOR_HandleComponent*> UTGOR_AnimationLibrary::GetHandleComponents(AActo
 		Owner->GetComponents(Pilots);
 		for (UTGOR_HandleComponent* Pilot : Pilots)
 		{
-			if (*Pilot->TargetPrimitive && Pilot->TargetPrimitive->IsChildOf(Type))
+			if (*Pilot->SpawnPrimitive && Pilot->SpawnPrimitive->IsChildOf(Type))
 			{
 				Out.Emplace(Pilot);
 			}

@@ -14,7 +14,7 @@
 #include "ActionSystem/Components/TGOR_ActionComponent.h"
 #include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
-#include "PhysicsSystem/Components/TGOR_ArmatureComponent.h"
+#include "AnimationSystem/Components/TGOR_ArmatureComponent.h"
 #include "MovementSystem/Tasks/TGOR_MovementTask.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 #include "ActionSystem/Content/TGOR_Action.h"

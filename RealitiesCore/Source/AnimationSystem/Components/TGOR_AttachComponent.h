@@ -11,7 +11,7 @@
  * UTGOR_AttachComponent allows separate attachment points.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class ANIMATIONSYSTEM_API UTGOR_AttachComponent : public UShapeComponent, public ITGOR_SpawnerInterface
+class ANIMATIONSYSTEM_API UTGOR_AttachComponent : public UShapeComponent
 {
 	GENERATED_BODY()
 

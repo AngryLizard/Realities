@@ -10,7 +10,7 @@
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "TGOR_SocketComponent.generated.h"
 
-class UTGOR_Target;
+class UTGOR_Socket;
 class UTGOR_NamedSocket;
 class UTGOR_NamedSocketTask;
 
@@ -39,7 +39,7 @@ public:
 	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component) override;
 	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
 
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -57,6 +57,12 @@ protected:
 	UPROPERTY()
 		FTGOR_AttributeInstance Attributes;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Socket types this component spawns with. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
+		TArray<TSubclassOf<UTGOR_Socket>> SpawnSockets;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

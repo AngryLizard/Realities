@@ -42,7 +42,7 @@ void UTGOR_MatterComponent::RepNotifyMatterContainers()
 	OnMatterChanged.Broadcast();
 }
 
-void UTGOR_MatterComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_MatterComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
 	SINGLETON_CHK;
 
@@ -50,7 +50,7 @@ void UTGOR_MatterComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
 
 	MatterContainers.Containers.Empty();
 
-	UTGOR_Resource* Resource = Cast<UTGOR_Resource>(Spawner);
+	UTGOR_Resource* Resource = Cast<UTGOR_Resource>(Dependencies.Spawner);
 	if (IsValid(Resource))
 	{
 		const TArray<UTGOR_Segment*>& Segments = Resource->Instanced_SegmentInsertions.Collection;// ->GetIListFromType<UTGOR_Segment>();

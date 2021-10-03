@@ -11,7 +11,6 @@
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Content/TGOR_Archetype.h"
 #include "AnimationSystem/Content/TGOR_RigParam.h"
-#include "AnimationSystem/Content/TGOR_Poser.h"
 
 #include "CoreSystem/Storage/TGOR_Package.h"
 #include "Net/UnrealNetwork.h"
@@ -22,7 +21,7 @@ UTGOR_AnimationComponent::UTGOR_AnimationComponent()
 {
 	SetIsReplicatedByDefault(true);
 
-	TargetArchetype = UTGOR_Archetype::StaticClass();
+	SpawnArchetype = UTGOR_Archetype::StaticClass();
 }
 
 void UTGOR_AnimationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -43,17 +42,13 @@ void UTGOR_AnimationComponent::GetLifetimeReplicatedProps(TArray< FLifetimePrope
 	DOREPLIFETIME_CONDITION(UTGOR_AnimationComponent, AnimationSetup, COND_None);
 }
 
-void UTGOR_AnimationComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_AnimationComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
 
-	UTGOR_Poser* Poser = Cast<UTGOR_Poser>(Spawner);
-	if (IsValid(Poser))
-	{
-		FTGOR_AnimationInstance Setup;
-		Setup.Archetype = Poser->Instanced_ArchetypeInsertions.GetOfType(TargetArchetype);
-		ApplyAnimationSetup(Setup);
-	}
+	FTGOR_AnimationInstance Setup;
+	Setup.Archetype = Dependencies.Spawner->GetMFromType<UTGOR_Archetype>(SpawnArchetype);
+	ApplyAnimationSetup(Setup);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

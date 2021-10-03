@@ -10,7 +10,6 @@
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
-#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
 #include "CoreSystem/Storage/TGOR_Package.h"
@@ -195,13 +194,16 @@ void UTGOR_IdentityComponent::SetActorSpawner(UTGOR_Spawner* Spawner, bool Force
 	{
 		DimensionIdentity.Spawner = Spawner;
 
+		FTGOR_SpawnerDependencies Dependencies;
+		Dependencies.Spawner = Spawner;
+
 		// Update ownership on all connected
 		AActor* Actor = GetOwner();
 		if (IsValid(Actor))
 		{
 			if (Actor->Implements<UTGOR_SpawnerInterface>())
 			{
-				ITGOR_SpawnerInterface::Execute_UpdateContent(Actor, Spawner);
+				Dependencies.Objects.Emplace(Actor);
 			}
 
 			// Copy instead of reference, components could be added during content update
@@ -210,10 +212,13 @@ void UTGOR_IdentityComponent::SetActorSpawner(UTGOR_Spawner* Spawner, bool Force
 			{
 				if (Component->Implements<UTGOR_SpawnerInterface>())
 				{
-					ITGOR_SpawnerInterface::Execute_UpdateContent(Component, Spawner);
+					Dependencies.Objects.Emplace(Component);
 				}
 			}
 		}
+
+		Dependencies.Pointer = Dependencies.Objects.Num() - 1;
+		Dependencies.Process<UObject>();
 
 		OnIdentityUpdate.Broadcast(Spawner);
 	}

@@ -202,6 +202,7 @@ bool ATGOR_NpcController::SamplePerception(UTGOR_ColliderComponent* Collider, FV
 {
 	if (IsValid(Collider))
 	{
+		/*
 		// Compute perception ray
 		const FTGOR_MovementPosition Position = Collider->ComputePosition();
 		UTGOR_MobilityComponent* ParentBase = Collider->GetParent();
@@ -244,6 +245,7 @@ bool ATGOR_NpcController::SamplePerception(UTGOR_ColliderComponent* Collider, FV
 			}
 
 		}
+		*/
 	}
 	return false;
 }

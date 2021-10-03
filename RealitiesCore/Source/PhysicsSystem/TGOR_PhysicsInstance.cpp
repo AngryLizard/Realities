@@ -19,7 +19,6 @@ FTGOR_MovementCapture::FTGOR_MovementCapture()
 
 void FTGOR_MovementCapture::SetLerpCapture(const FTGOR_MovementCapture& Other, float Alpha)
 {
-	Surroundings.SetLerpProperties(Other.Surroundings, Alpha);
 	UpVector = UTGOR_Math::Normalize(FMath::Lerp(UpVector, Other.UpVector, Alpha));
 }
 
@@ -60,24 +59,11 @@ FTGOR_MovementTick::FTGOR_MovementTick()
 {
 }
 
-FTGOR_MovementParent::FTGOR_MovementParent()
-	: Mobility(nullptr),
-	Index(INDEX_NONE)
-{
-}
-
 FTGOR_MovementOutput::FTGOR_MovementOutput()
 	: FTGOR_MovementForce(),
 	Orientation(FVector::UpVector),
 	MaxLinearDamping(0.0f),
 	MaxAngularDamping(0.0f)
-{
-}
-
-FTGOR_VisualContact::FTGOR_VisualContact()
-	: Location(FVector::ZeroVector),
-	Normal(FVector::UpVector),
-	Blocking(false)
 {
 }
 

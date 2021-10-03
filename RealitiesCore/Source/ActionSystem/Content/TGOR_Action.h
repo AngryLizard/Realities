@@ -101,8 +101,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UTGOR_Action();
-	virtual void BuildResource() override;
-	virtual bool Validate_Implementation() override;
 
 	/** Log a message for this given action */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -192,12 +190,6 @@ public:
 protected:
 
 	virtual void TaskInitialise(UTGOR_ActionTask* ActionTask);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Static task */
-	UPROPERTY(Transient, BlueprintReadOnly)
-		UTGOR_ActionTask* StaticTask;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -26,7 +26,7 @@ FTransform UTGOR_HandleComponent::GetControlTransform(UTGOR_ControlSkeletalMeshC
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_HandleComponent::TraceHandle(UTGOR_RigidComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output)
+bool UTGOR_HandleComponent::TraceHandle(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output)
 {
 	UTGOR_LinearPilotTask* Task = GetPOfType<UTGOR_LinearPilotTask>();
 	if (IsValid(MovementCone) && IsValid(Task))

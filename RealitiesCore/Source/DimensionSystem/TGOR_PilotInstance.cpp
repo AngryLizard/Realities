@@ -170,3 +170,16 @@ bool FTGOR_PilotUpdate::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool&
 	return true;
 
 }
+
+FTGOR_VisualContact::FTGOR_VisualContact()
+	: Location(FVector::ZeroVector),
+	Normal(FVector::UpVector),
+	Blocking(false)
+{
+}
+
+FTGOR_MovementParent::FTGOR_MovementParent()
+	: Mobility(nullptr),
+	Index(INDEX_NONE)
+{
+}

@@ -17,55 +17,6 @@ UTGOR_Movement::UTGOR_Movement()
 {
 }
 
-void UTGOR_Movement::BuildResource()
-{
-	if (!Abstract)
-	{
-		StaticTask = UTGOR_Task::CreateTask<UTGOR_MovementComponent>(this, TaskType);
-	}
-	Super::BuildResource();
-}
-
-void UTGOR_Movement::PostBuildResource()
-{
-	Super::PostBuildResource();
-
-	// Override inserted
-	TArray<UTGOR_Movement*> Movements = Instanced_OverrideInsertions.GetListOfType<UTGOR_Movement>();//GetIListFromType<UTGOR_Movement>();
-	for (UTGOR_Movement* Movement : Movements)
-	{
-		Movement->OverrideMovements(this);
-	}
-}
-
-bool UTGOR_Movement::Validate_Implementation()
-{
-	return UTGOR_Task::TaskValidation(TaskType, StaticTask) && Super::Validate_Implementation();
-}
-
-void UTGOR_Movement::OverrideMovements(UTGOR_Movement* Override)
-{
-	// Check for cycles
-	if (Override == this)
-	{
-		ERROR(FString("Movement override cycle found in ") + GetDefaultName(), Error);
-	}
-
-	// Don't need to add if already there (Should never happen with no cycles, but ye know)
-	if (!OverriddenBy.Contains(Override))
-	{
-		// Add to list
-		OverriddenBy.Emplace(Override);
-
-		// Add to children
-		TArray<UTGOR_Movement*> Movements = Instanced_OverrideInsertions.GetListOfType<UTGOR_Movement>();//GetIListFromType<UTGOR_Movement>();
-		for (UTGOR_Movement* Movement : Movements)
-		{
-			Movement->OverrideMovements(Override);
-		}
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 UTGOR_MovementTask* UTGOR_Movement::CreateMovementTask(UTGOR_MovementComponent* Component, int32 SlotIdentifier)
@@ -82,16 +33,9 @@ void UTGOR_Movement::TaskInitialise(UTGOR_MovementTask* MovementTask)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_Movement::IsOverriddenBy(UTGOR_Movement* Movement) const
-{
-	return OverriddenBy.Contains(Movement);
-}
-
-
 void UTGOR_Movement::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success)
 {
 	Super::MoveInsertion(Insertion, Action, Success);
 
-	MOV_INSERTION(OverrideInsertions);
 	MOV_INSERTION(AttributeInsertions);
 }

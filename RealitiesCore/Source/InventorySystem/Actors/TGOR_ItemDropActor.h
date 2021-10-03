@@ -3,19 +3,16 @@
 
 #include "Components/CapsuleComponent.h"
 
-
 #include "DimensionSystem/Actors/TGOR_DimensionActor.h"
 #include "TGOR_ItemDropActor.generated.h"
 
 ///////////////////////////////////////////////// DECL ///////////////////////////////////////////////////
 
-class UTGOR_LinearComponent;
 class UTGOR_ItemComponent;
-
-
+class UTGOR_PilotComponent;
 
 /**
-* TGOR_GateActor
+* 
 */
 UCLASS()
 class INVENTORYSYSTEM_API ATGOR_ItemDropActor : public ATGOR_DimensionActor
@@ -30,8 +27,6 @@ public:
 
 	ATGOR_ItemDropActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	virtual void BeginPlay() override;
-
 	//////////////////////////////////////////////// IMPLEMENTABLES /////////////////////////////////////////
 
 	/** Called after an item has been assigned to this actor. */
@@ -43,7 +38,7 @@ private:
 
 	/** Movement container */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Actor, meta = (AllowPrivateAccess = "true"))
-		UTGOR_LinearComponent* MovementComponent;
+		UTGOR_PilotComponent* PilotComponent;
 
 	/** Item container */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Actor, meta = (AllowPrivateAccess = "true"))
@@ -52,7 +47,7 @@ private:
 public:
 
 	FORCEINLINE UTGOR_ItemComponent* GetItem() const { return ItemComponent; }
-	FORCEINLINE UTGOR_LinearComponent* GetMovement() const { return MovementComponent; }
+	FORCEINLINE UTGOR_PilotComponent* GetPilot() const { return PilotComponent; }
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

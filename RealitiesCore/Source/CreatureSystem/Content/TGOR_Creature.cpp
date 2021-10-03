@@ -1,16 +1,9 @@
 // The Gateway of Realities: Planes of Existence.
 
-
 #include "TGOR_Creature.h"
 
-#include "AnimationSystem/Content/TGOR_Animation.h"
-
-#include "ActionSystem/Content/TGOR_Loadout.h"
-
-#include "CustomisationSystem/Content/TGOR_Bodypart.h"
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "KnowledgeSystem/Content/TGOR_Tracker.h"
-#include "CreatureSystem/Content/Cameras/TGOR_Camera.h"
 
 
 UTGOR_Creature::UTGOR_Creature()
@@ -39,5 +32,4 @@ void UTGOR_Creature::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActi
 
 	MOV_INSERTION(StomachInsertion);
 	MOV_INSERTION(TrackerInsertions);
-	MOV_INSERTION(CameraInsertions);
 }

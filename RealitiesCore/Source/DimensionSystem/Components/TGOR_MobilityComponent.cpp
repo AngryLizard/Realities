@@ -18,11 +18,6 @@ UTGOR_MobilityComponent::UTGOR_MobilityComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UTGOR_MobilityComponent::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void UTGOR_MobilityComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -81,21 +76,6 @@ void UTGOR_MobilityComponent::RegisterDetach(UTGOR_LinearPilotTask* Attachee)
 	LinearAttachments.Remove(Attachee);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void UTGOR_MobilityComponent::InflictPointImpact(const FVector& Point, const FVector& Impulse)
-{
-}
-
-void UTGOR_MobilityComponent::InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime)
-{
-}
-
-float UTGOR_MobilityComponent::ComputeInertial(const FVector& Point, const FVector& Normal) const
-{
-	return 0.0f;
-}
-
 bool UTGOR_MobilityComponent::UpdatesBase() const
 {
 	return !GetIsReplicated() || GetOwnerRole() == ENetRole::ROLE_Authority;
@@ -118,11 +98,6 @@ void UTGOR_MobilityComponent::SetComponentPosition(const FTGOR_MovementPosition&
 }
 
 void UTGOR_MobilityComponent::OnPositionChange(const FTGOR_MovementPosition& Position)
-{
-
-}
-
-void UTGOR_MobilityComponent::OnReparent(const FTGOR_MovementDynamic& Previous)
 {
 
 }
@@ -150,7 +125,6 @@ bool UTGOR_MobilityComponent::ParentLinear(UTGOR_PilotComponent* Attachee, int32
 		UTGOR_LinearPilotTask* Task = Attachee->GetPOfType<UTGOR_LinearPilotTask>();
 		if (IsValid(Task) && Task->CanParent(this, Index))
 		{
-			const FTGOR_MovementSpace Space = Attachee->ComputeSpace();
 			Task->Parent(this, Index);
 
 			// Set location as desired

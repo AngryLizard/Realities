@@ -8,7 +8,7 @@
 #include "../TGOR_PilotInstance.h"
 
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
-#include "TGOR_MobilityComponent.h"
+#include "TGOR_ColliderComponent.h"
 #include "TGOR_PilotComponent.generated.h"
 
 class UTGOR_PilotTask;
@@ -46,16 +46,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChangedVolumeDelegate, ATGOR_Physi
  * TGOR_PilotComponent Moves owner's root component. Actors should only have one of these.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class DIMENSIONSYSTEM_API UTGOR_PilotComponent : public UTGOR_MobilityComponent, public ITGOR_SpawnerInterface
+class DIMENSIONSYSTEM_API UTGOR_PilotComponent : public UTGOR_ColliderComponent, public ITGOR_SpawnerInterface
 {
 	GENERATED_BODY()
 	
 public:
 	UTGOR_PilotComponent();
 
-	virtual void BeginPlay() override;
-	virtual void DestroyComponent(bool bPromoteChildren) override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& Objs) override;
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
@@ -67,7 +66,7 @@ public:
 	virtual bool HasParent(const UTGOR_MobilityComponent* Component) const override;
 	virtual void OnPositionChange(const FTGOR_MovementPosition& Position) override;
 
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 	virtual bool PreAssemble(UTGOR_DimensionData* Dimension) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
@@ -88,7 +87,7 @@ public:
 
 	/** Primitive type this pilot spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Primitive> TargetPrimitive;
+		TSubclassOf<UTGOR_Primitive> SpawnPrimitive;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -108,10 +107,6 @@ protected:
 	/** Transforms a component to the current smoothdelta depending on the initial transform (transform when there is no delta) */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		void SetComponentFromSmoothDelta(USceneComponent* Component, const FTransform& InitialWorld);
-
-	/** Simulate this object over a given amount of time over the current state, is called either by replay or component tick */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		virtual float Simulate(float Time);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -181,12 +176,13 @@ protected:
 	UFUNCTION()
 		void RepNotifyPilotState(const FTGOR_PilotState& Old);
 
-	/** Current physics volume */
-	UPROPERTY()
-		TWeakObjectPtr<ATGOR_PhysicsVolume> SurroundingVolume;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
+
+	/** Current physics volume */
+	UPROPERTY(BlueprintReadOnly)
+		TWeakObjectPtr<ATGOR_PhysicsVolume> SurroundingVolume;
+
 
 	/** Applies a loadout to this component */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
@@ -209,4 +205,23 @@ public:
 	/** Threshold when comparing current state on master to a received update from slave, decides whether to send an adjust to the slave. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Internal")
 		FTGOR_MovementThreshold AdjustThreshold;
+
+	/** Finds an actor's pilot if available */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		static UTGOR_PilotComponent* FindOwningPilot(USceneComponent* Component);
+
+	/** Finds an actor's pilot if available */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		static UTGOR_PilotComponent* FindRootPilot(AActor* Actor);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Tries to find reparent to a given actor (defaults to current volume if null or invalid) */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
+		FTGOR_MovementParent FindReparentToActor(AActor* Actor, const FName& Name) const;
+
+	/** Tries to find reparent to a given component (defaults to current volume if null or invalid) */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
+		FTGOR_MovementParent FindReparentToComponent(UActorComponent* Component, const FName& Name) const;
 };

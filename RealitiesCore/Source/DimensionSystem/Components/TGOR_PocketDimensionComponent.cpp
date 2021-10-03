@@ -33,9 +33,9 @@ void UTGOR_PocketDimensionComponent::TickComponent(float DeltaTime, ELevelTick T
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_PocketDimensionComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_PocketDimensionComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
 
 	/*
 	UTGOR_Creature* OwningCreature = Cast<UTGOR_Creature>(Spawner);

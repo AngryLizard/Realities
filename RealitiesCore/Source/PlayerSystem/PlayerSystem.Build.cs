@@ -24,6 +24,7 @@ public class PlayerSystem : ModuleRules
 				"TargetSystem",
 				"ActionSystem",
 				"CustomisationSystem",
+				"CameraSystem",
 
 				"Core",
 			}

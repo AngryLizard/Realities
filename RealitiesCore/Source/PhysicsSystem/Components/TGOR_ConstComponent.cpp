@@ -3,6 +3,7 @@
 
 #include "TGOR_ConstComponent.h"
 
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "DimensionSystem/Tasks/TGOR_EuclideanPilotTask.h"
 #include "CoreSystem/TGOR_Singleton.h"
 
@@ -14,6 +15,7 @@ UTGOR_ConstComponent::UTGOR_ConstComponent()
 {
 }
 
+/*
 float UTGOR_ConstComponent::Simulate(float Time)
 {
 	FTGOR_MovementSpace Space = ComputeSpace();
@@ -85,3 +87,5 @@ void UTGOR_ConstComponent::SetAcceleration(const FVector& LinearAcc, const FVect
 		PilotTask->SimulateDynamic(Space);
 	}
 }
+
+*/

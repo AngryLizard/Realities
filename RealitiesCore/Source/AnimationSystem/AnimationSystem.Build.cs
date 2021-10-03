@@ -17,8 +17,9 @@ public class AnimationSystem : ModuleRules
 				"CoreSystem",
 				"DimensionSystem",
 				"CustomisationSystem",
-				"PhysicsSystem",
 				"InventorySystem",
+				"PhysicsSystem",
+				"SocketSystem",
 
 				"Core",
 			}

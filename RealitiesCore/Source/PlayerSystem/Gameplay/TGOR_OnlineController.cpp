@@ -13,6 +13,7 @@
 #include "CreatureSystem/Content/TGOR_Creature.h"
 #include "KnowledgeSystem/Components/TGOR_UnlockComponent.h"
 #include "CustomisationSystem/Components/TGOR_ModularSkeletalMeshComponent.h"
+#include "CameraSystem/Components/TGOR_CameraComponent.h"
 #include "DimensionSystem/Data/TGOR_WorldData.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
@@ -1396,7 +1397,7 @@ void ATGOR_OnlineController::RequestActions_Implementation(int32 Identifier, FTG
 			UTGOR_ActionComponent* Equipment = OwnPawn->FindComponentByClass<UTGOR_ActionComponent>();
 			if (IsValid(Spawner) && IsValid(Equipment))
 			{
-				Setup.Loadout = Spawner->GetMFromType<UTGOR_Loadout>(Equipment->TargetLoadout);
+				Setup.Loadout = Spawner->GetMFromType<UTGOR_Loadout>(Equipment->SpawnLoadout);
 				Equipment->ApplyActionSetup(Setup);
 			}
 		}

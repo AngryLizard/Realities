@@ -26,6 +26,7 @@ public class CreatureSystem : ModuleRules
 				"ActionSystem",
 				"KnowledgeSystem",
 				"CustomisationSystem",
+				"CameraSystem",
 
 				"Core",
 			}

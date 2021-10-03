@@ -127,14 +127,14 @@ TSet<UTGOR_CoreContent*> UTGOR_StatComponent::GetActiveContent_Implementation() 
 	return ActiveEffects;
 }
 
-void UTGOR_StatComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_StatComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
 	SINGLETON_CHK;
 	FTGOR_StatState Old = State;
 	State.Stats.Empty();
 	StatTable.Empty();
 	
-	UTGOR_Simulation* Simulation = Spawner->GetMFromType<UTGOR_Simulation>(TargetSimulation);
+	UTGOR_Simulation* Simulation = Dependencies.Spawner->GetMFromType<UTGOR_Simulation>(SpawnSimulation);
 	if (IsValid(Simulation))
 	{
 		const FTGOR_Time Timestamp = Singleton->GetGameTimestamp();

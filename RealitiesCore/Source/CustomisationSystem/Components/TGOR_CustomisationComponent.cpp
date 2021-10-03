@@ -31,11 +31,11 @@ UTGOR_CustomisationComponent::UTGOR_CustomisationComponent()
 {
 }
 
-void UTGOR_CustomisationComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_CustomisationComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
 
-	Modular = Spawner->GetMFromType<UTGOR_Modular>(TargetModular);
+	Modular = Dependencies.Spawner->GetMFromType<UTGOR_Modular>(TargetModular);
 	ApplyAndCreateMerge(CurrentAppearance);
 }
 

@@ -126,14 +126,14 @@ public:
 	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
 	virtual bool IsContentActive_Implementation(UTGOR_CoreContent* Content) const override;
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Simulation type this stat spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
-		TSubclassOf<UTGOR_Simulation> TargetSimulation;
+		TSubclassOf<UTGOR_Simulation> SpawnSimulation;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

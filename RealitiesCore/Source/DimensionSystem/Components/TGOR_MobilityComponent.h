@@ -31,7 +31,6 @@ class DIMENSIONSYSTEM_API UTGOR_MobilityComponent : public UTGOR_CapsuleComponen
 
 public:
 	UTGOR_MobilityComponent();
-	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 
@@ -88,24 +87,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		const float GetScale() const;
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Inflicts an impulse to a given location and part index (does nothing by default) */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		virtual void InflictPointImpact(const FVector& Point, const FVector& Impulse);
-
-	/** Inflicts a force to a given location (does nothing by default) */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		virtual void InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime);
-
-	/** Computes inertial torque factor along a normal (used by collision response) */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		virtual float ComputeInertial(const FVector& Point, const FVector& Normal) const;
-
 	/** Whether this movement has authority */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		virtual bool UpdatesBase() const;
+		bool UpdatesBase() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -140,10 +124,6 @@ public:
 	/** Called when this mobility changed position */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		virtual void OnPositionChange(const FTGOR_MovementPosition& Position);
-
-	/** Called when this mobility changed parent, mainly for component to transform properties that are stored in local space. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		virtual void OnReparent(const FTGOR_MovementDynamic& Previous);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

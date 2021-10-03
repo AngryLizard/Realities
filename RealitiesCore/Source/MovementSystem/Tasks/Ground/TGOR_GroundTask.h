@@ -27,9 +27,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UTGOR_GroundTask();
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	virtual bool Validate_Implementation() const;
 
 	virtual void Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;

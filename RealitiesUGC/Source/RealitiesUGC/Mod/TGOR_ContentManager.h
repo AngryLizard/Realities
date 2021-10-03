@@ -84,12 +84,12 @@ public:
 		template<typename T>
 		T* GetTFromType(TSubclassOf<T> Type) const
 		{ 
-			return(Cast<T>(GetContentFromType(Type)));
+			return Cast<T>(GetContentFromType(Type));
 		}
 		template<typename T>
 		T* GetTFromType() const
 		{
-			return(GetTFromType<T>(T::StaticClass()));
+			return GetTFromType<T>(T::StaticClass());
 		}
 
 	/** Returns all content matching type */
@@ -104,7 +104,7 @@ public:
 			{
 				Out.Emplace(Cast<T>(Content));
 			}
-			return(Out);
+			return Out;
 		}
 		template<typename T>
 		TArray<TObjectPtr<T>> GetTListFromType() const
@@ -118,12 +118,12 @@ public:
 		template<typename T>
 		TObjectPtr<T> GetTFromIndex(TSubclassOf<T> Type, int32 Index) const
 		{
-			return(Cast<T>(GetContentFromIndex(Type, Index)));
+			return Cast<T>(GetContentFromIndex(Type, Index));
 		}
 		template<typename T>
 		TObjectPtr<T> GetTFromIndex(int32 Index) const
 		{
-			return(GetTFromIndex<T>(T::StaticClass(), Index));
+			return GetTFromIndex<T>(T::StaticClass(), Index);
 		}
 
 	/** Returns index of given content relative to a content type */
@@ -132,12 +132,12 @@ public:
 		template<typename T>
 		int32 GetTIndex(TSubclassOf<T> Type, UTGOR_Content* Content) const
 		{
-			return(GetContentIndex(Type, Content));
+			return GetContentIndex(Type, Content);
 		}
 		template<typename T>
 		int32 GetTIndex(UTGOR_Content* Content) const
 		{
-			return(GetTIndex<T>(T::StaticClass(), Content));
+			return GetTIndex<T>(T::StaticClass(), Content);
 		}
 
 	/** Returns number of content classes relative to a content type */
@@ -146,12 +146,12 @@ public:
 		template<typename T>
 		int32 GetTCapacity(TSubclassOf<T> Type) const
 		{
-			return(GetContentCapacity(Type));
+			return GetContentCapacity(Type);
 		}
 		template<typename T>
 		int32 GetTCapacity() const
 		{
-			return(GetTCapacity<T>(T::StaticClass()));
+			return GetTCapacity<T>(T::StaticClass());
 		}
 
 	/** Returns content with given DefaultName (Type does nothing for now) */
@@ -160,12 +160,12 @@ public:
 		template<typename T>
 		T* GetTFromName(TSubclassOf<T> Type, const FString& Name) const
 		{
-			return(Cast<T>(GetContentFromName(Type, Name)));
+			return Cast<T>(GetContentFromName(Type, Name));
 		}
 		template<typename T>
 		T* GetTFromName(const FString& Name) const
 		{
-			return(GetTFromName<T>(T::StaticClass(), Name));
+			return GetTFromName<T>(T::StaticClass(), Name);
 		}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

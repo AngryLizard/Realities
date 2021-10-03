@@ -4,7 +4,7 @@
 #include "TGOR_GroundTask.h"
 #include "AnimationSystem/Components/TGOR_HandleComponent.h"
 #include "AnimationSystem/Components/TGOR_AttachComponent.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "RealitiesUtility/Utility/TGOR_Math.h"
@@ -19,23 +19,7 @@ UTGOR_GroundTask::UTGOR_GroundTask()
 {
 }
 
-void UTGOR_GroundTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool UTGOR_GroundTask::Validate_Implementation() const
-{
-	if (LegTypes.Num() == 0)
-	{
-		ERRET("No legs defined", Error, false);
-	}
-
-	return Super::Validate_Implementation();
-}
+#pragma optimize( "", off )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,12 +56,12 @@ bool UTGOR_GroundTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_M
 
 void UTGOR_GroundTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
-
+	Super::Reset(Space, External);
 }
 
 void UTGOR_GroundTask::QueryInput(FVector& OutInput, FVector& OutView) const
 {
-	const FVector UpVector = RigidComponent->ComputePhysicsUpVector();
+	const FVector UpVector = Identifier.Component->ComputePhysicsUpVector();
 	const FQuat InputRotation = Identifier.Component->GetInputRotation();
 	const FVector InputDirection = InputRotation.GetAxisX();
 	const float InputStrength = Identifier.Component->GetInputStrength();
@@ -122,17 +106,15 @@ void UTGOR_GroundTask::QueryInput(FVector& OutInput, FVector& OutView) const
 
 void UTGOR_GroundTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Analyze ground
 	const FVector Orientation = Space.Angular * LocalUpVector;
 
-
 	FTGOR_MovementContact Contact;
 	UpdateGroundHandles(Space, Orientation, External.UpVector, Contact);
 	TraceForGroundContact(Space, Orientation, External.UpVector, Contact);
-
 
 	// Add movement dependent external forces to total external forces
 	FTGOR_MovementRepel Repel;
@@ -140,6 +122,7 @@ void UTGOR_GroundTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementEx
 
 	// Compute input force
 	const float RawRatio = GetInputForce(Tick, Space, Orientation, External, Contact, Repel, Output);
+
 	const float SpeedRatio = FMath::Clamp(RawRatio, 0.0f, 1.0f);
 
 	// Compute force to make character stand, only take slope into consideration when moving
@@ -176,7 +159,7 @@ void UTGOR_GroundTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementEx
 
 void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector, FTGOR_MovementGround& Ground)
 {
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	float Weight = 0.0f;
 	float GroundRatio = 0.0f;
@@ -185,7 +168,7 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 	for (UTGOR_HandleComponent* Leg : Legs)
 	{
 		FTGOR_HandleTraceOutput HandleTrace;
-		if (Leg->TraceHandle(RigidComponent, Space, TraceLengthMultiplier, HandleTrace))
+		if (Leg->TraceHandle(RootComponent, Space, TraceLengthMultiplier, HandleTrace))
 		{
 			GroundRatio += -(HandleTrace.Delta | Orientation) / Leg->MovementCone->LimitRadius;
 			Normal += HandleTrace.Angular.GetAxisZ();
@@ -222,12 +205,12 @@ float UTGOR_GroundTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_M
 
 float UTGOR_GroundTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Filter sideways input
-	RigidComponent->GetDampingForce(Tick, Contact.FrameVelocity, BrakeCoefficient * Frame.Strength, Out);
-	RigidComponent->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength, Out);
+	Identifier.Component->GetDampingForce(Tick, Contact.FrameVelocity, BrakeCoefficient * Frame.Strength, Out);
+	Identifier.Component->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength, Out);
 	return 0.0f;
 }
 
@@ -293,7 +276,7 @@ float UTGOR_GroundTask::GetFrictionForce(const FTGOR_MovementOutput& Out, const 
 
 void UTGOR_GroundTask::GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	/*
 	const float CapsuleRadius = RepelRadiusMultiplier * Body.Radius;
@@ -334,13 +317,13 @@ void UTGOR_GroundTask::GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR
 void UTGOR_GroundTask::GetStandingForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FVector& Normal, const FTGOR_MovementContact& Contact, float Stretch, FTGOR_MovementOutput& Out) const
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Employ spring physics with critical damping (Qualitative with damping multiplier because of clamped downforce inaccuracies)
 	const float Spring = LegSpringCoefficient * MaximumLegStrength * Frame.Strength;
 	const float DampingCoeff = LegDampingMultiplayer * FMath::Sqrt(4.0f * Spring * Body.Mass);
 	
-	RigidComponent->GetDampingForce(Tick, Space.RelativeLinearVelocity.ProjectOnTo(Normal), DampingCoeff, Out);
+	Identifier.Component->GetDampingForce(Tick, Space.RelativeLinearVelocity.ProjectOnTo(Normal), DampingCoeff, Out);
 	Out.Force += Normal * ((Stretch - Contact.GroundRatio) * Spring);
 
 	// Jumping, apply upwards force either when already going up or when staying still enough
@@ -354,7 +337,7 @@ void UTGOR_GroundTask::GetStandingForce(const FTGOR_MovementTick& Tick, const FT
 
 void UTGOR_GroundTask::GetStandingTorque(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FVector& Normal, float SpeedRatio, FTGOR_MovementOutput& Out) const
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Dampen to prevent oscillation, correct against external torque
@@ -376,7 +359,7 @@ void UTGOR_GroundTask::GetStandingTorque(const FTGOR_MovementTick& Tick, const F
 
 void UTGOR_GroundTask::LimitForces(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, float SpeedRatio, FTGOR_MovementOutput& Out) const
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	const FVector FrameNormal = Contact.FrameNormal;
@@ -420,3 +403,4 @@ void UTGOR_GroundTask::LimitForces(const FTGOR_MovementSpace& Space, const FTGOR
 		Out.Torque = FVector::ZeroVector;
 	}
 }
+#pragma optimize( "", on ) 

@@ -8,7 +8,6 @@
 #include "TGOR_Entity.generated.h"
 
 class UTGOR_Attribute;
-class UTGOR_Target;
 
 /**
  * Entity content, identifies objects with properties and attributes that can be interacted with.
@@ -28,11 +27,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
 		TArray<TSubclassOf<UTGOR_Attribute>> AttributeInsertions;
 	DECL_INSERTION(AttributeInsertions);
-
-	/** Sockets in this spawner */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Target>> TargetInsertions;
-	DECL_INSERTION(TargetInsertions);
 
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 

@@ -7,7 +7,7 @@
 #include "DimensionSystem/TGOR_MobilityInstance.h"
 #include "TargetSystem/Content/TGOR_Target.h"
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Socket.generated.h"
 
 class UTGOR_Target;
@@ -18,7 +18,7 @@ class UTGOR_DimensionComponent;
  * 
  */
 UCLASS(Blueprintable)
-class SOCKETSYSTEM_API UTGOR_Socket : public UTGOR_CoreContent
+class SOCKETSYSTEM_API UTGOR_Socket : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 

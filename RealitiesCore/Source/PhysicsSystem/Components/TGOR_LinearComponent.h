@@ -33,7 +33,6 @@ protected:
 protected:
 
 	virtual void ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
-	virtual bool CanRotateOnImpact() const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

@@ -33,7 +33,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	virtual void FinalizeBoneTransform() override;
 
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -57,7 +57,7 @@ public:
 
 	/** Archetype this component spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Archetype> TargetArchetype;
+		TSubclassOf<UTGOR_Archetype> SpawnArchetype;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:

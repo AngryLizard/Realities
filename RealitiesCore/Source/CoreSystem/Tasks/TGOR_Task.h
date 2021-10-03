@@ -32,33 +32,6 @@ public:
 	bool CallRemoteFunction(UFunction* Function, void* Parms, FOutParmRec* OutParms, FFrame* Stack) override;
 	int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack) override;
 
-	/** Validation after initialisation of all resources to check whether all task properties are valid */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "!TGOR Content|Internal", Meta = (Keywords = "C++"))
-		bool Validate() const;
-		virtual bool Validate_Implementation() const;
-
-
-	template<typename T>
-	static bool TaskValidation(TSubclassOf<T> Type, T* StaticTask)
-	{
-		if (!*Type)
-		{
-			ERRET("No task type defined", Error, false);
-		}
-
-		if (!IsValid(StaticTask))
-		{
-			ERRET("No static task available", Error, false);
-		}
-
-		if (!StaticTask->Validate())
-		{
-			ERRET("Task Validation failed", Error, false);
-		}
-
-		return true;
-	}
-
 	template<typename S, typename T, typename F>
 	static T* CreateTask(F* Factory, TSubclassOf<T> Type, S* Component = nullptr, int32 SlotIdentifier = -1)
 	{

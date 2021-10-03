@@ -2,6 +2,7 @@
 
 
 #include "TGOR_ReachingTask.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 
 
 UTGOR_ReachingTask::UTGOR_ReachingTask()

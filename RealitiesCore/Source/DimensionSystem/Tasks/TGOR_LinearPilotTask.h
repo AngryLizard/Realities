@@ -6,6 +6,8 @@
 #include "TGOR_PilotTask.h"
 #include "TGOR_LinearPilotTask.generated.h"
 
+class UTGOR_MobilityComponent;
+
 /**
 *
 */

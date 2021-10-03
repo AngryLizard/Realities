@@ -2,13 +2,10 @@
 #pragma once
 
 #include "Components/BoxComponent.h"
-#include "Engine/Classes/GameFramework/SpringArmComponent.h"
-#include "CreatureSystem/Components/TGOR_CameraComponent.h"
-
 #include "MovementSystem/TGOR_MovementInstance.h"
 
-#include "CoreSystem/Storage/TGOR_SaveInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_DimensionInterface.h"
+#include "CoreSystem/Interfaces/TGOR_SingletonInterface.h"
 #include "GameFramework/Character.h"
 #include "TGOR_Pawn.generated.h"
 

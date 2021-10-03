@@ -7,8 +7,3 @@ UTGOR_SpawnModule::UTGOR_SpawnModule()
 	: Super()
 {
 }
-
-bool UTGOR_SpawnModule::Validate_Implementation()
-{
-	return Super::Validate_Implementation();
-}

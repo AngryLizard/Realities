@@ -65,7 +65,7 @@ public:
 	/** Traces for new handle position, relocates pilot accordingly (assumes owning cone is directly parented to root).
 		Returns true if trace was successful and hit something. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		bool TraceHandle(UTGOR_RigidComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output);
+		bool TraceHandle(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output);
 
 
 

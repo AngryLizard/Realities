@@ -14,13 +14,9 @@ UTGOR_InteractableComponent::UTGOR_InteractableComponent(const FObjectInitialize
 {
 }
 
-void UTGOR_InteractableComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_InteractableComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	UTGOR_Entity* Entity = Spawner->GetMFromType<UTGOR_Entity>(TargetEntity);
-	if (IsValid(Entity))
-	{
-		Targets = Entity->Instanced_TargetInsertions.Collection;
-	}
+	Targets = Dependencies.Spawner->GetMListFromType<UTGOR_Target>(SpawnTargets);
 }
 
 void UTGOR_InteractableComponent::Influence(const FTGOR_InfluenceInstance& Influence)

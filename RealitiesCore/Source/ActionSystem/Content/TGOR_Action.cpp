@@ -50,20 +50,6 @@ UTGOR_Action::UTGOR_Action()
 {
 }
 
-void UTGOR_Action::BuildResource()
-{
-	if (!Abstract)
-	{
-		StaticTask = UTGOR_Task::CreateTask<UTGOR_ActionComponent>(this, TaskType);
-	}
-	Super::BuildResource();
-}
-
-bool UTGOR_Action::Validate_Implementation()
-{
-	return UTGOR_Task::TaskValidation(TaskType, StaticTask) && Super::Validate_Implementation();
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 UTGOR_ActionTask* UTGOR_Action::CreateActionTask(UTGOR_ActionComponent* Component, int32 SlotIdentifier)

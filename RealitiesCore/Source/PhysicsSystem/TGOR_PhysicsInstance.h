@@ -29,10 +29,6 @@ struct PHYSICSSYSTEM_API FTGOR_MovementCapture
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/** Current surrounding physics properties */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FTGOR_PhysicsProperties Surroundings;
-
 	/** Current Up direction in world space */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector UpVector;
@@ -97,47 +93,4 @@ struct PHYSICSSYSTEM_API FTGOR_MovementOutput : public FTGOR_MovementForce
 	/** Max damping that occured this frame */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float MaxAngularDamping;
-};
-
-/**
-*
-*/
-USTRUCT(BlueprintType)
-struct PHYSICSSYSTEM_API FTGOR_MovementParent
-{
-	GENERATED_USTRUCT_BODY()
-
-		FTGOR_MovementParent();
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Parent mobility */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_MobilityComponent* Mobility;
-
-	/** Parent index */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 Index;
-};
-
-/**
-*
-*/
-USTRUCT(BlueprintType)
-struct PHYSICSSYSTEM_API FTGOR_VisualContact
-{
-	GENERATED_USTRUCT_BODY()
-
-		FTGOR_VisualContact();
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector Location;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector Normal;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool Blocking;
 };

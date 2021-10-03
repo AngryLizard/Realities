@@ -19,6 +19,7 @@ FTGOR_UGCPackage::FTGOR_UGCPackage()
 	EngineVersion = "";
 	Author = "";
 	Description = "";
+	IsCorePackage = false;
 }
 
 

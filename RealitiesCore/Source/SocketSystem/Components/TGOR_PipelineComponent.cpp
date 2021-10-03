@@ -189,6 +189,7 @@ FName UTGOR_PipelineComponent::GetNameFromIndex(int32 Index) const
 }
 */
 
+/*
 void UTGOR_PipelineComponent::InflictPointImpact(const FVector& Point, const FVector& Impulse)
 {
 	ApplyImpulseTo(Impulse * StreamPhysics, INDEX_NONE);
@@ -198,6 +199,7 @@ void UTGOR_PipelineComponent::InflictPointForce(const FVector& Point, const FVec
 {
 	ApplyImpulseTo(Force * DeltaTime * StreamPhysics, INDEX_NONE);
 }
+*/
 
 /*
 bool UTGOR_PipelineComponent::QuerySocketObjects(UTGOR_PilotComponent* Component, FTGOR_MovementVisuals& Visuals) const

@@ -4,7 +4,7 @@
 #include "TGOR_ItemDropActor.h"
 
 #include "InventorySystem/Components/TGOR_ItemComponent.h"
-#include "PhysicsSystem/Components/TGOR_LinearComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 
 #include "InventorySystem/Storage/TGOR_ItemStorage.h"
 #include "InventorySystem/Content/TGOR_Item.h"
@@ -21,20 +21,14 @@ ATGOR_ItemDropActor::ATGOR_ItemDropActor(const FObjectInitializer& ObjectInitial
 	PrimaryActorTick.bCanEverTick = true;
 	SetActorEnableCollision(true);
 
-	MovementComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_LinearComponent>(this, FName(TEXT("Movement")));
-	MovementComponent->SetIsReplicated(true);
-	SetRootComponent(MovementComponent);
+	PilotComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_PilotComponent>(this, FName(TEXT("Pilot")));
+	PilotComponent->SetIsReplicated(true);
+	SetRootComponent(PilotComponent);
 
 	ItemComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_ItemComponent>(this, FName(TEXT("Item")));
 	ItemComponent->SetIsReplicated(true);
 
 	bReplicates = true;
-}
-
-void ATGOR_ItemDropActor::BeginPlay()
-{
-	Super::BeginPlay();
-	
 }
 
 UTGOR_ItemStorage* ATGOR_ItemDropActor::AssignItem(UTGOR_ItemStorage* Storage, const FTGOR_MovementSpace& ParentSpace, const FVector& Impulse)
@@ -47,11 +41,11 @@ UTGOR_ItemStorage* ATGOR_ItemDropActor::AssignItem(UTGOR_ItemStorage* Storage, c
 	UTGOR_Item* Item = Storage->GetItem();
 	const float Mass = Storage->GetMass();
 	Body.SetFromCapsule(FVector(0.1f, 0.1f, 0.1f), Item->Radius, Item->HalfHeight, Mass);
-	MovementComponent->SetBody(Body);
+	PilotComponent->SetBody(Body);
 
 	// Set phyiscs settings
-	MovementComponent->Teleport(ParentSpace);
-	MovementComponent->InflictPointImpact(ParentSpace.Linear, Impulse * Body.Mass);
+	PilotComponent->Teleport(ParentSpace);
+	PilotComponent->InflictPointImpact(ParentSpace.Linear, Impulse * Body.Mass);
 
 	OnItemAssigned(Storage);
 	return Residual;

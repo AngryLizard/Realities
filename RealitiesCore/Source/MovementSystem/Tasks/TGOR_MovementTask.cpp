@@ -61,7 +61,7 @@ void UTGOR_MovementTask::GetHandleComponents(TArray<UTGOR_HandleComponent*>& Han
 		{
 			for (TSubclassOf<UTGOR_Primitive> Type : Types)
 			{
-				if (Component->TargetPrimitive->IsChildOf(Type))
+				if (Component->SpawnPrimitive->IsChildOf(Type))
 				{
 					Handles.Emplace(Component);
 					break;

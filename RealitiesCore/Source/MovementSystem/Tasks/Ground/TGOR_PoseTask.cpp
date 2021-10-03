@@ -2,7 +2,7 @@
 
 
 #include "TGOR_PoseTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "RealitiesUtility/Utility/TGOR_Math.h"

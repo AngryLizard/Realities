@@ -11,7 +11,7 @@
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
-#include "CoreSystem/Components/TGOR_Component.h"
+#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
 #include "TGOR_MovementComponent.generated.h"
 
 class UTGOR_Mobile;
@@ -28,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovementUpdateDelegate);
  * 
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class MOVEMENTSYSTEM_API UTGOR_MovementComponent : public UTGOR_Component, public ITGOR_AnimationInterface, public ITGOR_SpawnerInterface, public ITGOR_RegisterInterface, public ITGOR_AttributeInterface
+class MOVEMENTSYSTEM_API UTGOR_MovementComponent : public UTGOR_RigidComponent, public ITGOR_AnimationInterface, public ITGOR_SpawnerInterface, public ITGOR_RegisterInterface, public ITGOR_AttributeInterface
 {
 	GENERATED_BODY()
 
@@ -45,10 +45,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	virtual TSubclassOf<UTGOR_Performance> GetPerformanceType() const override;
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
+
+	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component) override;
+	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -62,7 +65,7 @@ public:
 
 	/** Mobile type this movement spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Mobile> TargetMobile;
+		TSubclassOf<UTGOR_Mobile> SpawnMobile;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -281,4 +284,14 @@ protected:
 	void ServerKnockout_Implementation();
 	bool ServerKnockout_Validate();
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	virtual void PreComputePhysics(const FTGOR_MovementTick& Tick) override;
+	virtual void ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
+	virtual void PostComputePhysics(const FTGOR_MovementSpace& Space, float Energy, float DeltaTime) override;
+
+	//virtual void Impact(const FTGOR_MovementDynamic& Dynamic, const FVector& Point, const FVector& Impact) override;
+	//virtual bool CanInflict() const override;
+	//virtual bool CanRotateOnImpact() const override;
 };

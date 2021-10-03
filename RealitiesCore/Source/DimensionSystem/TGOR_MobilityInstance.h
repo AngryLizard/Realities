@@ -3,6 +3,7 @@
 #pragma once
 
 #include "RealitiesUtility/Structures/TGOR_Time.h"
+#include "RealitiesUtility/Structures/TGOR_Normal.h"
 
 #include "CoreSystem/Storage/TGOR_Serialisation.h"
 #include "CoreSystem/Storage/TGOR_PackageNetwork.h"
@@ -10,8 +11,6 @@
 
 #include "Engine/UserDefinedStruct.h"
 #include "TGOR_MobilityInstance.generated.h"
-
-
 
 /**
 *
@@ -70,22 +69,6 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementForce
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector Torque;
-};
-
-/**
-*
-*/
-USTRUCT(BlueprintType)
-struct DIMENSIONSYSTEM_API FTGOR_MovementExternal : public FTGOR_MovementForce
-{
-	GENERATED_USTRUCT_BODY()
-
-	FTGOR_MovementExternal();
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector UpVector;
 };
 
 
@@ -192,7 +175,6 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementDynamic : public FTGOR_MovementPosition
 		FVector AngularAcceleration;
 };
 
-
 /**
 * Current movement situation relative to current movement base
 */
@@ -235,7 +217,6 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementSpace : public FTGOR_MovementDynamic
 		FVector RelativeAngularAcceleration;
 };
 
-
 /**
 *
 */
@@ -274,6 +255,24 @@ struct DIMENSIONSYSTEM_API FTGOR_PhysicsProperties
 		FVector Vorticity;
 };
 
+/**
+*
+*/
+USTRUCT(BlueprintType)
+struct DIMENSIONSYSTEM_API FTGOR_MovementExternal : public FTGOR_MovementForce
+{
+	GENERATED_USTRUCT_BODY()
+
+		FTGOR_MovementExternal();
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FTGOR_PhysicsProperties Surroundings;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector UpVector;
+};
 
 /**
 *
@@ -318,7 +317,6 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementDamper
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector Vector;
 };
-
 
 /**
 *
@@ -432,6 +430,14 @@ public:
 	/** Surface area from each axis in m^2 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
 		FVector Faces;
+
+	/** Core component elasticity on collision response [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
+		FTGOR_Normal Elasticity;
+
+	/** Core component friction coefficient [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
+		FTGOR_Normal Friction;
 };
 
 template<> struct TStructOpsTypeTraits<FTGOR_MovementBody> : public TStructOpsTypeTraitsBase2<FTGOR_MovementBody>

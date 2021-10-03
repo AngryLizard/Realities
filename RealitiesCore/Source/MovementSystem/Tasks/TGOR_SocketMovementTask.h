@@ -32,7 +32,7 @@ public:
 protected:
 
 	UPROPERTY(Transient)
-		UTGOR_RigidComponent* RigidComponent;
+		UTGOR_PilotComponent* RootComponent;
 
 	UPROPERTY(Transient)
 		UTGOR_SocketPilotTask* SocketTask;

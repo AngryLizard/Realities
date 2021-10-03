@@ -28,12 +28,26 @@ TSubclassOf<AActor> UTGOR_Spawner::GetSpawnClass_Implementation() const
 	return AActor::StaticClass();
 }
 
-UTGOR_Content* UTGOR_Spawner::GetModuleFromType(TSubclassOf<UTGOR_SpawnModule> Type) const
+UTGOR_SpawnModule* UTGOR_Spawner::GetModuleFromType(TSubclassOf<UTGOR_SpawnModule> Type) const
 {
 	SINGLETON_RETCHK(nullptr);
 
 	UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
 	return ContentManager->GetTFromType<UTGOR_SpawnModule>(Type);
+}
+
+TArray<UTGOR_SpawnModule*> UTGOR_Spawner::GetModuleListFromType(const TArray<TSubclassOf<UTGOR_SpawnModule>>& Types) const
+{
+	SINGLETON_RETCHK(TArray<UTGOR_SpawnModule*>());
+
+	UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
+
+	TSet<UTGOR_SpawnModule*> Out;
+	for (TSubclassOf<UTGOR_SpawnModule> Type : Types)
+	{
+		Out.Add(ContentManager->GetTFromType<UTGOR_SpawnModule>(Type));
+	}
+	return Out.Array();
 }
 
 /**

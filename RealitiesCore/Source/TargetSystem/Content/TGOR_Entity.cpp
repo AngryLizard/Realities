@@ -2,7 +2,6 @@
 
 #include "TGOR_Entity.h"
 
-#include "TGOR_Target.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
 
 UTGOR_Entity::UTGOR_Entity()
@@ -15,5 +14,4 @@ void UTGOR_Entity::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionAction
 	Super::MoveInsertion(Insertion, Action, Success);
 
 	MOV_INSERTION(AttributeInsertions);
-	MOV_INSERTION(TargetInsertions);
 }

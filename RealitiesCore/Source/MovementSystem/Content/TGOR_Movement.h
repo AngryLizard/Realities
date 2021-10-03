@@ -35,15 +35,8 @@ class MOVEMENTSYSTEM_API UTGOR_Movement : public UTGOR_CoreContent
 public:
 	
 	UTGOR_Movement();
-	virtual void BuildResource() override;
-	virtual void PostBuildResource() override;
-	virtual bool Validate_Implementation() override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Fill override lists */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void OverrideMovements(UTGOR_Movement* Override);
 
 	/** Whether angular velocity is affected by collisions */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
@@ -75,12 +68,6 @@ protected:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/** Static task */
-	UPROPERTY(Transient, BlueprintReadOnly)
-		UTGOR_MovementTask* StaticTask;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	/** Called once when this task is assigned to a component. Should usually only happen once. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void OnTaskInitialise(UTGOR_MovementTask* MovementTask);
@@ -94,25 +81,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	/** Check whether this movement is overriden by a given movement */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool IsOverriddenBy(UTGOR_Movement* Movement) const;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Which movements override this one */
-	UPROPERTY(BlueprintReadWrite)
-		TArray<UTGOR_Movement*> OverriddenBy;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Override movement insertions */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Movement>> OverrideInsertions;
-		DECL_INSERTION(OverrideInsertions);
 
 	/** Attributes supported by this movement */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")

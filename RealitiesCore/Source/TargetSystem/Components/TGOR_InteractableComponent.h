@@ -22,14 +22,14 @@ class TARGETSYSTEM_API UTGOR_InteractableComponent : public USphereComponent, pu
 
 public:	
 	UTGOR_InteractableComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	virtual void UpdateContent_Implementation(UTGOR_Spawner* Spawner) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Entity type this interactable spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
-		TSubclassOf<UTGOR_Entity> TargetEntity;
+		TArray<TSubclassOf<UTGOR_Target>> SpawnTargets;
 
 	//////////////////////////////////////////////// IMPLEMENTABLES /////////////////////////////////////////
 

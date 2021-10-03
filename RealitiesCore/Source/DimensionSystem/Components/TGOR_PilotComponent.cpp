@@ -15,6 +15,8 @@
 #include "DimensionSystem/Content/TGOR_Pilot.h"
 #include "DimensionSystem/Content/TGOR_Primitive.h"
 
+#include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
+
 #include "Engine/NetConnection.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
@@ -24,15 +26,35 @@ UTGOR_PilotComponent::UTGOR_PilotComponent()
 :	Super(),
 	AdjustThreshold()
 {
-	TargetPrimitive = UTGOR_Primitive::StaticClass();
+	SpawnPrimitive = UTGOR_Primitive::StaticClass();
 }
 
-void UTGOR_PilotComponent::BeginPlay()
+void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::BeginPlay();
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SINGLETON_CHK;
-	PilotState.Timestamp = Singleton->GetGameTimestamp();
+	// Make sure we are parented to surrounding volume if we aren't parented to anything
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (!IsValid(PilotTask) && SurroundingVolume.IsValid())
+	{
+		UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
+		if (IsValid(Movement))
+		{
+			Movement->ParentLinear(this, INDEX_NONE, ComputeSpace());
+		}
+
+		// Can't parent to myself
+		if (Movement != this)
+		{
+			// Check whether it worked
+			PilotTask = GetPilotTask();
+			if (!IsValid(PilotTask))
+			{
+				ERROR("Pilot object without task found", Warning);
+			}
+		}
+	}
+	SetComponentPosition(ComputePosition());
 }
 
 void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
@@ -44,18 +66,6 @@ void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
 	PilotSlots.Empty();
 
 	Super::DestroyComponent(bPromoteChildren);
-}
-
-void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	SINGLETON_CHK;
-	const FTGOR_Time Timestamp = Singleton->GetGameTimestamp();
-	const float Time = Simulate(Timestamp - PilotState.Timestamp);
-	PilotState.Timestamp += Time;
-
-	SetComponentPosition(ComputePosition());
 }
 
 void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -71,15 +81,13 @@ void UTGOR_PilotComponent::GetSubobjectsWithStableNamesForNetworking(TArray<UObj
 {
 	Super::GetSubobjectsWithStableNamesForNetworking(Objs);
 
-	/*
-	for (UTGOR_PilotTask* PilotTask : PilotSlots)
+	/* for (UTGOR_PilotTask* PilotTask : PilotSlots)
 	{
 		if (IsValid(PilotTask) && PilotTask->IsNameStableForNetworking())
 		{
 			Objs.Add(PilotTask);
 		}
-	}
-	*/
+	} */
 }
 
 bool UTGOR_PilotComponent::ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags)
@@ -154,27 +162,30 @@ void UTGOR_PilotComponent::OnPositionChange(const FTGOR_MovementPosition& Positi
 		// Notify owner
 		OnVolumeChanged.Broadcast(SurroundingVolume.Get(), Volume);
 		SurroundingVolume = Volume;
+
+		// Notify owner once if we are left without volume
+		if (!SurroundingVolume.IsValid())
+		{
+			OnOutOfLevel.Broadcast();
+		}
 	}
 }
 
-void UTGOR_PilotComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_PilotComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
 
-	if (IsValid(Spawner))
+	PilotSetup.Primitive = Dependencies.Spawner->GetMFromType<UTGOR_Primitive>(SpawnPrimitive);
+	ApplyPilotSetup(PilotSetup);
+
+	if (IsValid(PilotSetup.Primitive))
 	{
-		PilotSetup.Primitive = Spawner->GetMFromType<UTGOR_Primitive>(TargetPrimitive);
-		ApplyPilotSetup(PilotSetup);
+		const float Scale = GetComponentScale().GetMin();
+		const float Strength = Scale * Scale * Scale;
 
-		if (IsValid(PilotSetup.Primitive))
-		{
-			const float Scale = GetComponentScale().GetMin();
-			const float Strength = Scale * Scale * Scale;
-
-			FTGOR_MovementBody NewBody;
-			NewBody.SetFromCapsule(PilotSetup.Primitive->SurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), PilotSetup.Primitive->Weight * Strength);
-			SetBody(NewBody);
-		}
+		FTGOR_MovementBody NewBody;
+		NewBody.SetFromCapsule(PilotSetup.Primitive->SurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), PilotSetup.Primitive->Weight * Strength);
+		SetBody(NewBody);
 	}
 }
 
@@ -226,11 +237,6 @@ void UTGOR_PilotComponent::MovementAdjust(const FTGOR_MovementBase& Old, const F
 	}
 }
 */
-
-float UTGOR_PilotComponent::Simulate(float Time)
-{
-	return Time;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -471,4 +477,63 @@ bool UTGOR_PilotComponent::ApplyPilotSetup(FTGOR_PilotInstance Setup)
 void UTGOR_PilotComponent::OnReplicatePilotSetup()
 {
 	ApplyPilotSetup(PilotSetup);
+}
+
+UTGOR_PilotComponent* UTGOR_PilotComponent::FindOwningPilot(USceneComponent* Component)
+{
+	if (!IsValid(Component))
+	{
+		return nullptr;
+	}
+
+	UTGOR_PilotComponent* Pilot = Cast<UTGOR_PilotComponent>(Component);
+	if (IsValid(Pilot))
+	{
+		return Pilot;
+	}
+
+	return FindOwningPilot(Component->GetAttachParent());
+}
+
+UTGOR_PilotComponent* UTGOR_PilotComponent::FindRootPilot(AActor* Actor)
+{
+	return Cast<UTGOR_PilotComponent>(Actor->GetRootComponent());
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGOR_MovementParent UTGOR_PilotComponent::FindReparentToActor(AActor* Actor, const FName& Name) const
+{
+	FTGOR_MovementParent Parent;
+	if (IsValid(Actor))
+	{
+		// Only grab parentable components
+		// TODO: Make interface to look for specific bones
+		Parent.Mobility = Actor->FindComponentByClass<UTGOR_MobilityComponent>();
+		if (IsValid(Parent.Mobility))
+		{
+			Parent.Index = Parent.Mobility->GetIndexFromName(Name);
+			return Parent;
+		}
+	}
+
+	if (SurroundingVolume.IsValid())
+	{
+		// Assume level volume if no contact was established
+		Parent.Mobility = SurroundingVolume->GetMovement();
+		Parent.Index = Parent.Mobility->GetIndexFromName(Name);
+	}
+	return Parent;
+}
+
+FTGOR_MovementParent UTGOR_PilotComponent::FindReparentToComponent(UActorComponent* Component, const FName& Name) const
+{
+	if (IsValid(Component))
+	{
+		return FindReparentToActor(Component->GetOwner(), Name);
+	}
+	else
+	{
+		return FindReparentToActor(nullptr, Name);
+	}
 }

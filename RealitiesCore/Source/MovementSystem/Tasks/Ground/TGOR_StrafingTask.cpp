@@ -2,7 +2,7 @@
 
 
 #include "TGOR_StrafingTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 
@@ -42,7 +42,7 @@ float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 	Super::GetInputForce(Tick, Space, Orientation, External, Contact, Repel, Out);
 
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Only worry about velocity along Frame
 	const float Speed = Contact.FrameVelocity.Size();

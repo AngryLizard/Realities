@@ -59,8 +59,3 @@ bool UTGOR_Task::CallRemoteFunction(UFunction* Function, void* Parameters, FOutP
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool UTGOR_Task::Validate_Implementation() const
-{
-	return true;
-}

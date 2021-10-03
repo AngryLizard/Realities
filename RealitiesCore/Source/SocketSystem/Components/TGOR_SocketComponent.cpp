@@ -6,7 +6,6 @@
 #include "SocketSystem/Tasks/TGOR_NamedSocketTask.h"
 #include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 #include "SocketSystem/Content/TGOR_NamedSocket.h"
-#include "SocketSystem/Content/TGOR_Attachable.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
 #include "CoreSystem/Storage/TGOR_Package.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
@@ -53,31 +52,26 @@ float UTGOR_SocketComponent::GetAttribute_Implementation(UTGOR_Attribute* Attrib
 	return Attributes.GetAttribute(Attribute, Default);
 }
 
-void UTGOR_SocketComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_SocketComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	Super::UpdateContent_Implementation(Spawner);
+	Super::UpdateContent_Implementation(Dependencies);
 
 	Attachments.Empty();
 	Attributes.Values.Empty();
 
-	UTGOR_Attachable* Attachable = Cast<UTGOR_Attachable>(Spawner);
-	if (IsValid(Attachable))
+	// Get sockets from spawner
+	const TArray<TObjectPtr<UTGOR_NamedSocket>> Sockets = Dependencies.Spawner->GetMListFromType<UTGOR_NamedSocket>(SpawnSockets);
+	for (UTGOR_NamedSocket* Socket : Sockets)
 	{
-		// Get sockets from spawner
-		const TArray<UTGOR_NamedSocket*> Sockets = Attachable->Instanced_SocketInsertions.GetListOfType<UTGOR_NamedSocket>();
-		for (UTGOR_NamedSocket* Socket : Sockets)
-		{
-			Attachments.Emplace(Socket, TWeakObjectPtr<UTGOR_NamedSocketTask>());
+		Attachments.Emplace(Socket, TWeakObjectPtr<UTGOR_NamedSocketTask>());
 
-			// Add inserted attributes
-			const TArray<UTGOR_Attribute*>& AttributeQueue = Socket->Instanced_AttributeInsertions.Collection;//GetIListFromType<UTGOR_Attribute>();
-			for (UTGOR_Attribute* Attribute : AttributeQueue)
-			{
-				Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
-			}
+		// Add inserted attributes
+		const TArray<UTGOR_Attribute*>& AttributeQueue = Socket->Instanced_AttributeInsertions.Collection;//GetIListFromType<UTGOR_Attribute>();
+		for (UTGOR_Attribute* Attribute : AttributeQueue)
+		{
+			Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
 		}
 	}
-
 
 	UpdatePrimitiveCache();
 }

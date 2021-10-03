@@ -2,7 +2,7 @@
 
 
 #include "TGOR_UprightTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 
 #include "RealitiesUtility/Utility/TGOR_Math.h"
@@ -43,7 +43,7 @@ float UTGOR_UprightTask::ComputeCrouchSpeedRatio(float GroundRatio) const
 
 float UTGOR_UprightTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact) const
 {
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
 	const float X = (State.Input | External.UpVector);

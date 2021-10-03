@@ -59,7 +59,7 @@ public:
 
 	/** Whether we can swim in the current volume */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool CanSwimInCurrentSurroundings() const;
+		bool CanSwimInCurrentSurroundings(const FTGOR_MovementExternal& External) const;
 
 	/** Called every simulation tick */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Animation", Meta = (Keywords = "C++"))

@@ -1,7 +1,7 @@
 // The Gateway of Realities: Planes of Existence.
 #include "TGOR_FollowBehaviour.h"
 
-#include "PhysicsSystem/Components/TGOR_ColliderComponent.h"
+#include "DimensionSystem/Components/TGOR_ColliderComponent.h"
 
 UTGOR_FollowBehaviour::UTGOR_FollowBehaviour()
 : Super()

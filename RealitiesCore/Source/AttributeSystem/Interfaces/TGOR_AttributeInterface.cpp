@@ -7,5 +7,5 @@ void ITGOR_AttributeInterface::UpdateAttributes_Implementation(const UTGOR_Attri
 
 float ITGOR_AttributeInterface::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
 {
-	return 0.0f;
+	return Default;
 }

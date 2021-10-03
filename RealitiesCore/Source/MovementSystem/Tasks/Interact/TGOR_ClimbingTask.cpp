@@ -2,7 +2,7 @@
 
 
 #include "TGOR_ClimbingTask.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 
@@ -34,7 +34,7 @@ void UTGOR_ClimbingTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >&
 
 void UTGOR_ClimbingTask::Initialise()
 {
-
+	Super::Initialise();
 }
 
 bool UTGOR_ClimbingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
@@ -44,7 +44,7 @@ bool UTGOR_ClimbingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR
 		return false;
 	}
 
-	const FTGOR_MovementCapture& Capture = RigidComponent->GetCapture();
+	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	const FVector Forward = Space.Angular.GetAxisX();
@@ -67,7 +67,7 @@ bool UTGOR_ClimbingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR
 
 void UTGOR_ClimbingTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
-
+	Super::Reset(Space, External);
 }
 
 void UTGOR_ClimbingTask::QueryInput(FVector& OutInput, FVector& OutView) const
@@ -79,7 +79,7 @@ void UTGOR_ClimbingTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	// Remap input along capsule (up is forward, backwards is up)
 	const FVector Remapping = FVector(-RawInput.Z, RawInput.Y, RawInput.X);
 
-	const FTGOR_MovementPosition Position = RigidComponent->ComputePosition();
+	const FTGOR_MovementPosition Position = RootComponent->ComputePosition();
 
 	OutInput = Position.Angular * Remapping;
 	OutView = InputRotation.GetAxisX();
@@ -87,7 +87,7 @@ void UTGOR_ClimbingTask::QueryInput(FVector& OutInput, FVector& OutView) const
 
 void UTGOR_ClimbingTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
@@ -240,7 +240,7 @@ FVector UTGOR_ClimbingTask::ComputeInputForce(const FTGOR_MovementSpace& Space) 
 
 bool UTGOR_ClimbingTask::TraceAttachementPoint(const FTGOR_MovementSpace& Space, const FVector& Mask, TArray<FHitResult>& HitResults) const
 {
-	const FTGOR_MovementBody& Body = RigidComponent->GetBody();
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Compute point offset
 	const FVector LocalOffset = FVector(0.0f, Body.Radius * 1.5f, Body.Height * 0.5f) * Mask;
@@ -256,7 +256,7 @@ bool UTGOR_ClimbingTask::TraceAttachementPoint(const FTGOR_MovementSpace& Space,
 
 	// Trace to find maximum amount of force that can be applied
 	FHitResult Hit;
-	if (RigidComponent->CenteredTrace(Space.Linear + GlobalOffset * Bend - TraceBackward, GlobalOffset * (1.0f - Bend), Forward, TraceDistance * 2, Body.Radius / 2, Hit))
+	if (RootComponent->CenteredTrace(Space.Linear + GlobalOffset * Bend - TraceBackward, GlobalOffset * (1.0f - Bend), Forward, TraceDistance * 2, Body.Radius / 2, Hit))
 	{
 		HitResults.Add(Hit);
 		return true;

@@ -4,10 +4,10 @@
 #include "TGOR_ActionComponent.h"
 
 #include "CoreSystem/TGOR_Singleton.h"
+#include "AnimationSystem/Components/TGOR_AnimationComponent.h"
 #include "AnimationSystem/Instances/TGOR_AnimInstance.h"
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Content/TGOR_Performance.h"
-#include "AnimationSystem/Components/TGOR_AnimationComponent.h"
 #include "InventorySystem/Components/TGOR_InventoryComponent.h"
 #include "InventorySystem/Storage/TGOR_ItemStorage.h"
 #include "InventorySystem/Content/TGOR_Item.h"
@@ -16,6 +16,7 @@
 #include "ActionSystem/Content/TGOR_Action.h"
 #include "ActionSystem/Content/TGOR_Input.h"
 #include "ActionSystem/Content/Events/TGOR_Event.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 
 #include "GameFramework/PlayerState.h"
@@ -44,8 +45,6 @@ UTGOR_ActionComponent::UTGOR_ActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
-
-	LoadoutFilter = UTGOR_Loadout::StaticClass();
 }
 
 void UTGOR_ActionComponent::DestroyComponent(bool bPromoteChildren)
@@ -182,11 +181,15 @@ TSet<UTGOR_CoreContent*> UTGOR_ActionComponent::GetActiveContent_Implementation(
 	return ActiveContent;
 }
 
-void UTGOR_ActionComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_ActionComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
+
+	Dependencies.Process<UTGOR_PilotComponent>();
+	Dependencies.Process<UTGOR_AnimationComponent>();
+	Dependencies.Process<UTGOR_MovementComponent>();
 	
-	ActionSetup.Loadout = Spawner->GetMFromType<UTGOR_Loadout>(TargetLoadout);
+	ActionSetup.Loadout = Dependencies.Spawner->GetMFromType<UTGOR_Loadout>(SpawnLoadout);
 	ApplyActionSetup(ActionSetup);
 }
 

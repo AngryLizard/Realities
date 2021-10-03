@@ -15,7 +15,6 @@ class DIMENSIONSYSTEM_API UTGOR_SpawnModule : public UTGOR_CoreContent
 
 public:
 	UTGOR_SpawnModule();
-	virtual bool Validate_Implementation() override;
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

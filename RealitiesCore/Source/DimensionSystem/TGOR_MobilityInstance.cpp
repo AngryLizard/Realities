@@ -445,7 +445,9 @@ FTGOR_MovementBody::FTGOR_MovementBody()
 :	FTGOR_MovementShape(),
 	Mass(1.0f),
 	Inertia(FVector::OneVector),
-	Faces(FVector::ZeroVector)
+	Faces(FVector::ZeroVector),
+	Elasticity(0.5f),
+	Friction(0.5f)
 {
 }
 
@@ -463,6 +465,8 @@ void FTGOR_MovementBody::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleto
 	Package.WriteEntry(Mass);
 	Package.WriteEntry(Inertia);
 	Package.WriteEntry(Faces);
+	Package.WriteEntry(Elasticity);
+	Package.WriteEntry(Friction);
 }
 
 void FTGOR_MovementBody::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context)
@@ -471,6 +475,8 @@ void FTGOR_MovementBody::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton
 	Package.ReadEntry(Mass);
 	Package.ReadEntry(Inertia);
 	Package.ReadEntry(Faces);
+	Package.ReadEntry(Elasticity);
+	Package.ReadEntry(Friction);
 }
 
 void FTGOR_MovementBody::SetFromBox(const FVector& SurfaceSparsity, const FVector& Dimensions, float Weight)

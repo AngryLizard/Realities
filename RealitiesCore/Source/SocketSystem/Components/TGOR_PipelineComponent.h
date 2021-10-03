@@ -53,9 +53,6 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
-	virtual void InflictPointImpact(const FVector& Point, const FVector& Impulse) override;
-	virtual void InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime) override;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 	/** Called when an attachee hit or left pipeline start */

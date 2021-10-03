@@ -6,6 +6,7 @@
 #include "MovementSystem/Content/TGOR_Movement.h"
 #include "MovementSystem/Tasks/TGOR_MovementTask.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
+#include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Content/TGOR_Performance.h"
@@ -53,13 +54,12 @@ UTGOR_MovementComponent::UTGOR_MovementComponent()
 
 void UTGOR_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
-	/*
-	// Testing attachment points
-	FTGOR_MovementSpace Space = GetBase().ComputeParentSpace();
-	DrawDebugPoint(GetWorld(), Space.Linear, 25.0f, FColor::Blue, false, -1.0f, 0);
-	*/
-
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
+	{
+		ServerInputLight(MovementInput);
+	}
 }
 
 void UTGOR_MovementComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -86,12 +86,15 @@ TSet<UTGOR_CoreContent*> UTGOR_MovementComponent::GetActiveContent_Implementatio
 	return ContentContext;
 }
 
-void UTGOR_MovementComponent::UpdateContent_Implementation(UTGOR_Spawner* Spawner)
+void UTGOR_MovementComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ITGOR_SpawnerInterface::UpdateContent_Implementation(Spawner);
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
+
+	Dependencies.Process<UTGOR_PilotComponent>();
+	Dependencies.Process<UTGOR_AnimationComponent>();
 
 	FTGOR_MovementInstance Setup;
-	Setup.Mobile = Spawner->GetMFromType<UTGOR_Mobile>(TargetMobile);
+	Setup.Mobile = Dependencies.Spawner->GetMFromType<UTGOR_Mobile>(SpawnMobile);
 	ApplyMovementSetup(Setup);
 
 	BuildMovementFrame();
@@ -106,6 +109,17 @@ UTGOR_AnimationComponent* UTGOR_MovementComponent::GetAnimationComponent() const
 {
 	return GetOwnerComponent<UTGOR_AnimationComponent>();
 }
+
+void UTGOR_MovementComponent::UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component)
+{
+	Component->UpdateAttributes(Attributes.Values);
+}
+
+float UTGOR_MovementComponent::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
+{
+	return Attributes.GetAttribute(Attribute, Default);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -275,7 +289,6 @@ bool UTGOR_MovementComponent::ApplyMovementSetup(FTGOR_MovementInstance Setup)
 		const TArray<UTGOR_Movement*>& Movements = Setup.Mobile->Instanced_MovementInsertions.Collection;//Content->GetIListFromType<UTGOR_Movement>();
 
 		// Get all candidates that are part of the movement queue
-		TArray<UTGOR_Movement*> Candidates;
 		for (UTGOR_Movement* Movement : Movements)
 		{
 			// Add inserted attributes
@@ -286,57 +299,24 @@ bool UTGOR_MovementComponent::ApplyMovementSetup(FTGOR_MovementInstance Setup)
 				Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
 			}
 
-			Candidates.Emplace(Movement);
-		}
+			// Get slot from cache or create one
+			UTGOR_MovementTask* MovementSlot = nullptr;
 
-		// Fill movement queue until all candidates are sorted in
-		bool AnyCandidates = Candidates.Num() > 0;
-		while (AnyCandidates)
-		{
-			AnyCandidates = false;
-
-			// Try to find candidates that are not overridden by anything
-			for (int32 Index = Candidates.Num() - 1; Index >= 0; Index--)
+			TArray<UTGOR_MovementTask*>* Ptr = Previous.Find(Movement);
+			if (Ptr && Ptr->Num() > 0)
 			{
-				UTGOR_Movement* Candidate = Candidates[Index];
+				MovementSlot = Ptr->Pop();
+			}
+			else
+			{
+				// No cache was found, create a new one
+				MovementSlot = Movement->CreateMovementTask(this, MovementSlots.Num());
+			}
 
-				// See whether candidate overrides an
-				bool Overrides = false;
-				for (UTGOR_Movement* Movement : Candidates)
-				{
-					if (Movement != Candidate && Movement->IsOverriddenBy(Candidate))
-					{
-						Overrides = true;
-					}
-				}
-
-				// Add to MovementQueue if current candidate is a root
-				if (!Overrides)
-				{
-					Candidates.RemoveAt(Index);
-
-					// Get slot from cache or create one
-					UTGOR_MovementTask* MovementSlot = nullptr;
-
-					TArray<UTGOR_MovementTask*>* Ptr = Previous.Find(Candidate);
-					if (Ptr && Ptr->Num() > 0)
-					{
-						MovementSlot = Ptr->Pop();
-					}
-					else
-					{
-						// No cache was found, create a new one
-						MovementSlot = Candidate->CreateMovementTask(this, MovementSlots.Num());
-					}
-
-					// Initialise and add to slots
-					if (IsValid(MovementSlot))
-					{
-						MovementSlots.Add(MovementSlot);
-					}
-
-					AnyCandidates = true;
-				}
+			// Initialise and add to slots
+			if (IsValid(MovementSlot))
+			{
+				MovementSlots.Add(MovementSlot);
 			}
 		}
 	}
@@ -528,3 +508,104 @@ bool UTGOR_MovementComponent::ServerKnockout_Validate()
 {
 	return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_MovementComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
+{
+	// Grab input
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	if (Pawn->IsLocallyControlled())
+	{
+		GetMovementInput(MovementInput.Input, MovementInput.View);
+	}
+	Super::PreComputePhysics(Tick);
+}
+
+void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
+{
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (GetOwnerRole() != ENetRole::ROLE_SimulatedProxy)
+	{
+		// Update Movement
+		UpdateMovement(Tick, Space, External);
+	}
+	else if(IsValid(CurrentTask) && !CurrentTask->Invariant(Space, External))
+	{
+		// Invalid movement, probably currently in transition phase
+		return;
+	}
+
+	// Reset and compute force from movement
+	if (IsValid(CurrentTask))
+	{
+		SCOPE_CYCLE_COUNTER(STAT_MovementTick);
+		CurrentTask->Update(Space, External, Tick, Output);
+	}
+
+	Super::ComputePhysics(Space, External, Tick, Output);
+}
+
+void UTGOR_MovementComponent::PostComputePhysics(const FTGOR_MovementSpace& Space, float Energy, float DeltaTime)
+{
+	APawn* Pawn = Cast<APawn>(GetOwner());
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (IsValid(CurrentTask) && IsValid(Pawn))
+	{
+		UTGOR_AnimationComponent* AnimationComponent = Pawn->FindComponentByClass<UTGOR_AnimationComponent>();
+		if (IsValid(AnimationComponent))
+		{
+			AnimationComponent->SwitchAnimation(PerformanceType, CurrentTask->GetMovement()->MainAnimation);
+		}
+
+		CurrentTask->Animate(Space, DeltaTime);
+	}
+}
+
+/*
+void UTGOR_MovementComponent::Impact(const FTGOR_MovementDynamic& Dynamic, const FVector& Point, const FVector& Impact)
+{
+	Super::Impact(Dynamic, Point, Impact);
+
+	// Knock pawn out if we have movement authority
+	APawn* Pawn = GetOuterAPawn();
+	const bool HasAuthority = Pawn->HasAuthority();
+	if (HasAuthority)
+	{
+		float Threshold = KnockoutFootThreshold;
+
+		// Find threshold depending on direction
+		const FVector Diff = Point - Dynamic.Linear;
+		const float SizeSquared = Diff.SizeSquared();
+		if (SizeSquared > SMALL_NUMBER)
+		{
+			const FVector Norm = Diff / FMath::Sqrt(SizeSquared);
+			const float Dot = Norm | Dynamic.Angular.GetAxisZ();
+			Threshold = FMath::GetMappedRangeValueUnclamped(FVector2D(-1.0f, 1.0f), FVector2D(KnockoutFootThreshold, KnockoutHeadThreshold), Dot);
+		}
+
+		// Check whether threshold is reached
+		const float ImpactStrength = Impact.Size();
+		if (ImpactStrength > Threshold)
+		{
+			OnKnockout.Broadcast();
+			//Frame.Autonomy = 0.0f;
+		}
+	}
+}
+
+bool UTGOR_MovementComponent::CanInflict() const
+{
+	return true;
+}
+
+bool UTGOR_MovementComponent::CanRotateOnImpact() const
+{
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (IsValid(CurrentTask))
+	{
+		return CurrentTask->GetMovement()->CanRotateOnCollision;
+	}
+	return false;
+}
+*/

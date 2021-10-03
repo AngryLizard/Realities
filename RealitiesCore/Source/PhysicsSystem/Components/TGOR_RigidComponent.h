@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "DimensionSystem/TGOR_PilotInstance.h"
 
-#include "TGOR_ColliderComponent.h"
+#include "TGOR_PhysicsComponent.h"
 #include "TGOR_RigidComponent.generated.h"
 
 DECLARE_STATS_GROUP(TEXT("Rigid Movement"), STATGROUP_RIGID, STATCAT_Advanced);
@@ -28,15 +28,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnergyUsageDelegate, float, Energy)
 * TGOR_RigidComponent automatically integrates velocity and location
 */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class PHYSICSSYSTEM_API UTGOR_RigidComponent : public UTGOR_ColliderComponent
+class PHYSICSSYSTEM_API UTGOR_RigidComponent : public UTGOR_PhysicsComponent
 {
 	GENERATED_BODY()
 
 public:
 	UTGOR_RigidComponent();
 
-	virtual void InflictPointImpact(const FVector& Point, const FVector& Impulse) override;
-	virtual void InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime) override;
+	//virtual void InflictPointImpact(const FVector& Point, const FVector& Impulse) override;
+	//virtual void InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime) override;
 
 	virtual float TickPhysics(float Time) override;
 
@@ -81,9 +81,6 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Max collision iterations */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		int32 MaxCollisionIterations;
 
 	/** Max damping time factor */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -97,31 +94,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement|Internal")
 		bool StratisfyTimestep;
 
-	/** Speed with which up-vector is lerped */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement|Internal")
-		float OrientationSpeed;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
-
-	/** Counts collisions to temporally stratisfy collision detection */
-	UPROPERTY()
-		float CollisionWeight;
 
 	/** Inflicted movement */
 	UPROPERTY( BlueprintReadWrite, Category = "!TGOR Movement")
 		FTGOR_MovementDelta Inflicted;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Max velocity clamp to prevent NaN errors */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Internal")
-		float LinearSpeedClamp;
-
-	/** Max velocity clamp to prevent NaN errors */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Internal")
-		float AngularSpeedClamp;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -142,28 +120,5 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		virtual bool CanInflict() const;
 
-	/** Simulate symplectic integration for a given time */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		void SimulateSymplectic(FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep);
-
-	/** Simulate move for a given time */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		void SimulateMove(FTGOR_MovementSpace& Space, float Timestep, bool Sweep);
-
-	/** Translate over a given time, returns hit form last iteration */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		int32 SimulateTranslate(FTGOR_MovementSpace& Space, float Timestep, bool Sweep, float Ratio, int32 Iteration);
-
-	/** Tries to resolve a penetration */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		bool PullBack(FTGOR_MovementSpace& Space, const FHitResult& OutHit, const FVector& Translation);
-
-	/** Tries to find reparent to a given actor (defaults to current volume if null or invalid) */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		FTGOR_MovementParent FindReparentToActor(AActor* Actor, const FName& Name) const;
-
-	/** Tries to find reparent to a given component (defaults to current volume if null or invalid) */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		FTGOR_MovementParent FindReparentToComponent(UActorComponent* Component, const FName& Name) const;
 
 };
