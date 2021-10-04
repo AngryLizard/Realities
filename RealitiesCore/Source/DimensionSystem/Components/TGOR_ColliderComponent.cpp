@@ -569,11 +569,6 @@ void UTGOR_ColliderComponent::SimulateSymplectic(FTGOR_MovementSpace& Space, con
 	Space.LinearAcceleration = MovementBody.GetUnmassedLinear(Force.Force + External.Force);
 	Space.AngularAcceleration = MovementBody.GetUnmassedAngular(Space.Angular, Force.Torque + External.Torque);
 
-	RPORT(FString::Printf(TEXT("Simulate: %s"), *Space.AngularAcceleration.ToString()));
-	RPORT(FString::Printf(TEXT("Simulate: %s"), *Space.AngularVelocity.ToString()));
-	RPORT(FString::Printf(TEXT("Simulate: %s"), *Space.Angular.Rotator().ToString()));
-	RPORT("------------------------------------------------------");
-
 	// Update velocities
 	Space.AddLinearVelocity(Space.LinearAcceleration * Timestep);
 	Space.AddAngularVelocity(Space.AngularAcceleration * Timestep);

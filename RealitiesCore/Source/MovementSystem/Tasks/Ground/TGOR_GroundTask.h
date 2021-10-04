@@ -56,11 +56,11 @@ public:
 
 	/** Applied torque for upright rotation */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
-		float StandupTorque = 2000.0f;
+		float StandupTorque = 200.0f;
 
 	/** Torque damping coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
-		float AngularDamping = 300.0f;
+		float AngularDamping = 15.0f;
 
 	/** Force dropoff at the end of and relative to leg length (]0, 1], 1 for falloff range of leg length) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
@@ -68,7 +68,7 @@ public:
 
 	/** Lean torque coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
-		float LeanCoefficient = 200.0f;
+		float LeanCoefficient = 15.0f;
 
 
 

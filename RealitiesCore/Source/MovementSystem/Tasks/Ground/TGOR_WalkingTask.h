@@ -30,7 +30,7 @@ protected:
 
 	/** Max speed for ground movement */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float MaximumSpeed = 1000.0f;
+		float MaximumSpeed = 500.0f;
 
 	/** Ratio when character starts moving after turning ([0,..], 0 for off) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
@@ -43,7 +43,7 @@ protected:
 
 	/** Input torque coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float TurnTorque = 1000.0f;
+		float TurnTorque = 90.0f;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
