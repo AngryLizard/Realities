@@ -9,10 +9,10 @@
 FRealitiesUGCPluginWizardDefinition::FRealitiesUGCPluginWizardDefinition()
 {
 	PluginBaseDir = IPluginManager::Get().FindPlugin(TEXT("RealitiesUGC"))->GetBaseDir();
-	// Find the Content Only Template that ships with the plugin. 
-	// Download the Robo Recall Mod Kit and check the Plugins/OdinEditor code for how to build and use your own UGC templates from your game content
+	// Find the Content Only Template that ships with the plugin.
 	BackingTemplate = MakeShareable(new FPluginTemplateDescription(FText(), FText(), TEXT("BaseTemplate"), true, EHostType::Runtime));
 	BackingTemplatePath = PluginBaseDir / TEXT("Templates") / BackingTemplate->OnDiskPath;
+	SelectedTemplate = BackingTemplate;
 }
 
 const TArray<TSharedRef<FPluginTemplateDescription>>& FRealitiesUGCPluginWizardDefinition::GetTemplatesSource() const
