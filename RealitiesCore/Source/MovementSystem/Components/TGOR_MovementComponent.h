@@ -45,34 +45,31 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
+	
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	virtual TSubclassOf<UTGOR_Performance> GetPerformanceType() const override;
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
-
-	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component) override;
-	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
 	UPROPERTY(BlueprintAssignable, Category = "!TGOR Movement")
 		FMovementUpdateDelegate OnMovementChanged;
 
-	////////////////////////////////////////////// COMPONENTS //////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	/** Movements to this component */
+	UPROPERTY()
+		TArray<UTGOR_Movement*> Movements;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Mobile type this movement spawns with. */
+	/** Movement types this movement spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Mobile> SpawnMobile;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Current movement attributes */
-	UPROPERTY()
-		FTGOR_AttributeInstance Attributes;
+		TArray<TSubclassOf<UTGOR_Movement>> SpawnMovements;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -213,24 +210,6 @@ protected:
 	/** Update movement on replication */
 	UFUNCTION()
 		void RepNotifyMovementState(const FTGOR_MovementState& Old);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Applies a loadout to this component */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool ApplyMovementSetup(FTGOR_MovementInstance Setup);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Serverside setup information */
-	UPROPERTY(ReplicatedUsing = OnReplicateMovementSetup, BlueprintReadOnly, Category = "!TGOR Movement")
-		FTGOR_MovementInstance MovementSetup;
-
-	/** Called on each client on replication of current action setup structure. */
-	UFUNCTION()
-		void OnReplicateMovementSetup();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

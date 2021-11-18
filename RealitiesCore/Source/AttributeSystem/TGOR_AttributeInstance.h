@@ -27,7 +27,7 @@ struct ATTRIBUTESYSTEM_API FTGOR_AttributeInstance
 
 	/** List of attribute values */
 	UPROPERTY(BlueprintReadOnly)
-		TMap<UTGOR_Attribute*, float> Values;
+		TMap<TObjectPtr<UTGOR_Attribute>, float> Values;
 
 };
 

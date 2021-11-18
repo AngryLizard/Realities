@@ -12,7 +12,6 @@
 #include "InventorySystem/Storage/TGOR_ItemStorage.h"
 #include "InventorySystem/Content/TGOR_Item.h"
 #include "ActionSystem/Tasks/TGOR_ActionTask.h"
-#include "ActionSystem/Content/TGOR_Loadout.h"
 #include "ActionSystem/Content/TGOR_Action.h"
 #include "ActionSystem/Content/TGOR_Input.h"
 #include "ActionSystem/Content/Events/TGOR_Event.h"
@@ -37,6 +36,9 @@ FTGOR_ActionTrigger::FTGOR_ActionTrigger(float Value, TSubclassOf<UTGOR_Action> 
 {
 }
 
+FTGOR_ActionSlotSpot::FTGOR_ActionSlotSpot()
+{
+}
 
 UTGOR_ActionComponent::UTGOR_ActionComponent()
 	: Super(),
@@ -188,9 +190,23 @@ void UTGOR_ActionComponent::UpdateContent_Implementation(FTGOR_SpawnerDependenci
 	Dependencies.Process<UTGOR_PilotComponent>();
 	Dependencies.Process<UTGOR_AnimationComponent>();
 	Dependencies.Process<UTGOR_MovementComponent>();
-	
-	ActionSetup.Loadout = Dependencies.Spawner->GetMFromType<UTGOR_Loadout>(SpawnLoadout);
+
+	StaticActions = Dependencies.Spawner->GetMListFromType<UTGOR_Action>(SpawnStaticActions);
+	SlotActions = Dependencies.Spawner->GetMListFromType<UTGOR_Action>(SpawnSlotActions);
+
 	ApplyActionSetup(ActionSetup);
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_ActionComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	const int32 Num = ActionSlots.Num();
+	for (UTGOR_ActionTask* ActionSlot : ActionSlots)
+	{
+		Modules.Emplace(ActionSlot->Identifier.Slot, ActionSlot->Identifier.Content);
+	}
+	return Modules;
 }
 
 TSubclassOf<UTGOR_Performance> UTGOR_ActionComponent::GetPerformanceType() const
@@ -201,6 +217,18 @@ TSubclassOf<UTGOR_Performance> UTGOR_ActionComponent::GetPerformanceType() const
 UTGOR_AnimationComponent* UTGOR_ActionComponent::GetAnimationComponent() const
 {
 	return GetOwnerComponent<UTGOR_AnimationComponent>();
+}
+
+TArray<UTGOR_Modifier*> UTGOR_ActionComponent::QueryActiveModifiers_Implementation() const
+{
+	TArray<UTGOR_Modifier*> Modifiers;
+	const int32 Identifier = GetCurrentActionSlotIdentifier();
+	UTGOR_Action* Action = GetAction(Identifier);
+	if (IsValid(Action))
+	{
+		Modifiers.Emplace(Action);
+	}
+	return Modifiers;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -863,72 +891,74 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 
 	ActionSlots.Empty();
 	ActionSetup.Actions.Empty();
-	ActionSetup.Loadout = Setup.Loadout;
 
-	// Apply loadout
-	if (IsValid(Setup.Loadout))
+	// Add static slots
+	TArray<UTGOR_Action*> Actions = StaticActions;
+
+	// Add optional slots
+	const int32 SlotNum = ActionSlotSpots.Num();
+	for (int32 Slot = 0; Slot < SlotNum; Slot++)
 	{
-		// Add static slots
-		TArray<UTGOR_Action*> Actions = Setup.Loadout->Instanced_StaticActionInsertions.Collection;
+		const FTGOR_ActionSlotSpot& ActionSlotSpot = ActionSlotSpots[Slot];
 
-		// Add optional slots
-		const int32 SlotNum = Setup.Loadout->ActionSlots.Num();
-		for (int32 Slot = 0; Slot < SlotNum; Slot++)
+		UTGOR_Action* Action = nullptr;
+
+		// Set slot to setup
+		if (Setup.Actions.IsValidIndex(Slot))
 		{
-			const FTGOR_ActionSlotSpot& ActionSlotSpot = Setup.Loadout->ActionSlots[Slot];
-
-			UTGOR_Action* Action = nullptr;
-
-			// Set slot to setup
-			if (Setup.Actions.IsValidIndex(Slot))
+			Action = Setup.Actions[Slot];
+			if (!IsValid(Action) || !Action->IsA(ActionSlotSpot.Type) || !SlotActions.Contains(Action))
 			{
-				Action = Setup.Actions[Slot];
-				if (!IsValid(Action) || !Action->IsA(ActionSlotSpot.Type) || !Setup.Loadout->Instanced_SlotActionInsertions.Contains(Action))
-				{
-					Action = nullptr;
-				}
+				Action = nullptr;
 			}
-
-			// Get first valid action from insertion list if obligatory
-			if (!IsValid(Action) && *ActionSlotSpot.Obligatory)
-			{
-				Action = Setup.Loadout->Instanced_SlotActionInsertions.GetOfType(ActionSlotSpot.Obligatory);
-			}
-
-			if (IsValid(Action))
-			{
-				Actions.Emplace(Action);
-			}
-
-			// Rebuild current setup for clients
-			ActionSetup.Actions.Emplace(Action);
 		}
 
-		// Generate slots
-		for (UTGOR_Action* Action : Actions)
+		// Get first valid action from slot list if obligatory
+		if (!IsValid(Action) && *ActionSlotSpot.Obligatory)
 		{
-			if (IsValid(Action))
+			for (UTGOR_Action* SlotAction : SlotActions)
 			{
-				UTGOR_ActionTask* ActionSlot = nullptr;
-
-				TArray<TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>>* Ptr = Previous.Find(Action);
-				if (Ptr && Ptr->Num() > 0)
+				if (SlotAction->IsA(ActionSlotSpot.Obligatory))
 				{
-					TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*> Pair = Ptr->Pop();
+					Action = SlotAction;
+					continue;
+				}
+			}
+		}
 
-					DropItemStorage(Pair.Key->SwapWithCurrentItem(Pair.Value));
-					ActionSlot = Pair.Key;
-				}
-				else
-				{
-					// No cache was found, create a new one
-					ActionSlot = Action->CreateActionTask(this, ActionSlots.Num());
-				}
+		if (IsValid(Action))
+		{
+			Actions.Emplace(Action);
+		}
 
-				if (IsValid(ActionSlot))
-				{
-					ActionSlots.Add(ActionSlot);
-				}
+		// Rebuild current setup for clients
+		ActionSetup.Actions.Emplace(Action);
+	}
+
+	// Generate slots
+	for (UTGOR_Action* Action : Actions)
+	{
+		if (IsValid(Action))
+		{
+			UTGOR_ActionTask* ActionSlot = nullptr;
+
+			TArray<TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>>* Ptr = Previous.Find(Action);
+			if (Ptr && Ptr->Num() > 0)
+			{
+				TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*> Pair = Ptr->Pop();
+
+				DropItemStorage(Pair.Key->SwapWithCurrentItem(Pair.Value));
+				ActionSlot = Pair.Key;
+			}
+			else
+			{
+				// No cache was found, create a new one
+				ActionSlot = Action->CreateActionTask(this, ActionSlots.Num());
+			}
+
+			if (IsValid(ActionSlot))
+			{
+				ActionSlots.Add(ActionSlot);
 			}
 		}
 	}

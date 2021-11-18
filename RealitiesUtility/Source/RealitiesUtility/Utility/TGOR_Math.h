@@ -148,4 +148,5 @@ public:
 	/** Computes the circumcenter of a given triangle */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Math", meta = (Keywords = "C++"))
 		static bool ComputeCircumcenter2D(const FVector2D& A, const FVector2D& B, const FVector2D& C, FVector2D& Out);
+
 };

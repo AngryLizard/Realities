@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Segment.generated.h"
 
 class UTGOR_Matter;
@@ -13,7 +13,7 @@ class UTGOR_Matter;
  * 
  */
 UCLASS()
-class INVENTORYSYSTEM_API UTGOR_Segment : public UTGOR_CoreContent
+class INVENTORYSYSTEM_API UTGOR_Segment : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 	

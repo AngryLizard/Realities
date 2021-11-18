@@ -86,7 +86,7 @@ bool UTGOR_IdentityComponent::PreAssemble(UTGOR_DimensionData* Dimension)
 			// Don't create loops with myself or other identitycomponents
 			if (!Component->IsA<UTGOR_IdentityComponent>())
 			{
-				if (Component->Implements<UTGOR_DimensionInterface>())//Cast<ITGOR_DimensionInterface>(Component))
+				if (Component->Implements<UTGOR_DimensionInterface>())
 				{
 					DimensionObjects.Add(Component);
 				}
@@ -194,29 +194,31 @@ void UTGOR_IdentityComponent::SetActorSpawner(UTGOR_Spawner* Spawner, bool Force
 	{
 		DimensionIdentity.Spawner = Spawner;
 
-		FTGOR_SpawnerDependencies Dependencies;
-		Dependencies.Spawner = Spawner;
+		// TODO: Cache SpawnerObjects somewhere, can't do it in PreAssemble as currently this is called before that
+		SpawnerObjects.Reset();
 
-		// Update ownership on all connected
 		AActor* Actor = GetOwner();
 		if (IsValid(Actor))
 		{
 			if (Actor->Implements<UTGOR_SpawnerInterface>())
 			{
-				Dependencies.Objects.Emplace(Actor);
+				SpawnerObjects.Add(Actor);
 			}
 
-			// Copy instead of reference, components could be added during content update
-			const TSet<UActorComponent*> Components = Actor->GetComponents();
+			const TSet<UActorComponent*>& Components = Actor->GetComponents();
 			for (UActorComponent* Component : Components)
 			{
 				if (Component->Implements<UTGOR_SpawnerInterface>())
 				{
-					Dependencies.Objects.Emplace(Component);
+					SpawnerObjects.Add(Component);
 				}
 			}
 		}
 
+		// Process spawner dependencies
+		FTGOR_SpawnerDependencies Dependencies;
+		Dependencies.Spawner = Spawner;
+		Dependencies.Objects = GetSpawnerObjects();
 		Dependencies.Pointer = Dependencies.Objects.Num() - 1;
 		Dependencies.Process<UObject>();
 
@@ -227,6 +229,17 @@ void UTGOR_IdentityComponent::SetActorSpawner(UTGOR_Spawner* Spawner, bool Force
 UTGOR_Dimension* UTGOR_IdentityComponent::GetActorDimension() const
 {
 	return DimensionIdentity.Dimension;
+}
+
+TArray<UObject*> UTGOR_IdentityComponent::GetSpawnerObjects() const
+{
+	TArray<UObject*> Objects;
+	Objects.Reserve(SpawnerObjects.Num());
+	for (const TScriptInterface<ITGOR_SpawnerInterface>& SpawnerObject : SpawnerObjects)
+	{
+		Objects.Emplace(SpawnerObject.GetObject());
+	}
+	return Objects;
 }
 
 int32 UTGOR_IdentityComponent::GetWorldIdentifier() const

@@ -87,44 +87,6 @@ class UTGOR_Mobile;
 //	};
 //};
 
-
-
-/**
-* TGOR_MovementInstance stores movement customisation information
-*/
-USTRUCT(BlueprintType)
-struct MOVEMENTSYSTEM_API FTGOR_MovementInstance
-{
-	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-
-	FTGOR_MovementInstance();
-
-	CTGOR_GroupPackageCache LegacyCache;
-	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
-	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
-	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const;
-	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Currently linked loadout */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
-		UTGOR_Mobile* Mobile;
-
-};
-
-template<>
-struct TStructOpsTypeTraits<FTGOR_MovementInstance> : public TStructOpsTypeTraitsBase2<FTGOR_MovementInstance>
-{
-	enum
-	{
-		WithNetSerializer = true
-	};
-};
-
-
-
 /**
 * FTGOR_MovementState
 */
@@ -151,9 +113,6 @@ struct TStructOpsTypeTraits<FTGOR_MovementState> : public TStructOpsTypeTraitsBa
 		WithNetSerializer = true
 	};
 };
-
-
-
 
 /**
 *

@@ -2,7 +2,6 @@
 
 #include "TGOR_Creature.h"
 
-#include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "KnowledgeSystem/Content/TGOR_Tracker.h"
 
 
@@ -30,6 +29,5 @@ void UTGOR_Creature::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActi
 {
 	Super::MoveInsertion(Insertion, Action, Success);
 
-	MOV_INSERTION(StomachInsertion);
 	MOV_INSERTION(TrackerInsertions);
 }

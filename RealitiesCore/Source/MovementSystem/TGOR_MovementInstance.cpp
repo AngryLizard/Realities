@@ -9,7 +9,6 @@
 #include "AnimationSystem/Components/TGOR_HandleComponent.h"
 #include "PhysicsSystem/Components/TGOR_RigidComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
-#include "MovementSystem/Content/TGOR_Mobile.h"
 
 #include "CoreSystem/TGOR_Singleton.h"
 #include "CoreSystem/Gameplay/TGOR_GameInstance.h"
@@ -20,40 +19,10 @@
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 
 //SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MovementBase)
-SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MovementInstance);
 SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MovementState);
 SERIALISE_INIT_IMPLEMENT(FTGOR_MovementFrame)
 SERIALISE_INIT_IMPLEMENT(FTGOR_MovementInput)
 SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MovementContent)
-
-
-
-
-FTGOR_MovementInstance::FTGOR_MovementInstance()
-	: Mobile(nullptr)
-{
-}
-
-void FTGOR_MovementInstance::Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const
-{
-	Package.WriteEntry("Mobile", Mobile);
-}
-
-void FTGOR_MovementInstance::Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context)
-{
-	Package.ReadEntry("Mobile", Mobile);
-}
-
-void FTGOR_MovementInstance::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const
-{
-	Package.WriteEntry(Mobile);
-}
-
-void FTGOR_MovementInstance::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context)
-{
-	Package.ReadEntry(Mobile);
-}
-
 
 
 FTGOR_MovementState::FTGOR_MovementState()
@@ -70,10 +39,6 @@ void FTGOR_MovementState::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleto
 {
 	Package.ReadEntry(ActiveSlot);
 }
-
-
-
-
 
 
 //

@@ -11,8 +11,9 @@
 #include "TGOR_ColliderComponent.h"
 #include "TGOR_PilotComponent.generated.h"
 
-class UTGOR_PilotTask;
 class UTGOR_Primitive;
+class UTGOR_PilotTask;
+class UTGOR_Pilot;
 
 /**
 *
@@ -67,6 +68,8 @@ public:
 	virtual void OnPositionChange(const FTGOR_MovementPosition& Position) override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
+
 	virtual bool PreAssemble(UTGOR_DimensionData* Dimension) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
@@ -83,11 +86,24 @@ public:
 		FChangedVolumeDelegate OnVolumeChanged;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
+		float SpawnWeight = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
+		FVector SpawnSurfaceArea = FVector(0.5f, 0.5f, 0.5f);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Primitive type this pilot spawns with. */
+	/** Primitive this pilot represents */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		TSubclassOf<UTGOR_Primitive> SpawnPrimitive;
+
+	/** Pilots in this Pilot */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TArray<TSubclassOf<UTGOR_Pilot>> SpawnPilots;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -182,22 +198,6 @@ public:
 	/** Current physics volume */
 	UPROPERTY(BlueprintReadOnly)
 		TWeakObjectPtr<ATGOR_PhysicsVolume> SurroundingVolume;
-
-
-	/** Applies a loadout to this component */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool ApplyPilotSetup(FTGOR_PilotInstance Setup);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Serverside pilot setup information */
-	UPROPERTY(ReplicatedUsing = OnReplicatePilotSetup, BlueprintReadOnly, Category = "!TGOR Movement")
-		FTGOR_PilotInstance PilotSetup;
-
-	/** Called on each client on replication of current action setup structure. */
-	UFUNCTION()
-		void OnReplicatePilotSetup();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

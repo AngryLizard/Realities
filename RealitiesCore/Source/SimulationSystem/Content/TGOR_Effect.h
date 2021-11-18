@@ -30,14 +30,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Effect")
 		float Max;
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Attributes supported by this effect */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Attribute>> AttributeInsertions;
-	DECL_INSERTION(AttributeInsertions);
-
-	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
-
 };

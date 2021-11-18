@@ -1,7 +1,6 @@
 // The Gateway of Realities: Planes of Existence.
 #include "TGOR_Stat.h"
 #include "SimulationSystem/Content/TGOR_Response.h"
-#include "AttributeSystem/Content/TGOR_Attribute.h"
 
 UTGOR_Stat::UTGOR_Stat()
 	: Super(),
@@ -16,5 +15,4 @@ void UTGOR_Stat::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEn
 	Super::MoveInsertion(Insertion, Action, Success);
 
 	MOV_INSERTION(ResponseInsertions);
-	MOV_INSERTION(AttributeInsertions);
 }

@@ -7,11 +7,14 @@
 #include "PhysicsSystem/Components/TGOR_RigidComponent.h"
 #include "CustomisationSystem/Components/TGOR_ControlSkeletalMeshComponent.h"
 #include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
+#include "DimensionSystem/Content/TGOR_Pilot.h"
 
+#include "UObject/ConstructorHelpers.h"
 
 UTGOR_HandleComponent::UTGOR_HandleComponent()
 :	Super(), MovementCone(nullptr)
 {
+	SpawnPilots.Emplace(ConstructorHelpers::FClassFinder<UTGOR_Pilot>(TEXT("/RealitiesCore/Content/Core/Pilots/PLT_Attached.PLT_Attached_C")).Class);
 }
 
 FName UTGOR_HandleComponent::GetControlName() const

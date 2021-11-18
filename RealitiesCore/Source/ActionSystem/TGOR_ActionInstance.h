@@ -127,9 +127,6 @@ struct ACTIONSYSTEM_API FTGOR_LoadoutInstance
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Action")
-		UTGOR_Loadout* Loadout;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Action")
 		TArray<UTGOR_Action*> Actions;
 };

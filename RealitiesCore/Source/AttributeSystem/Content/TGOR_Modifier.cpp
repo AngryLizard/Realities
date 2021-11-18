@@ -10,21 +10,9 @@ UTGOR_Modifier::UTGOR_Modifier()
 {
 }
 
-void UTGOR_Modifier::PostBuildResource()
+void UTGOR_Modifier::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success)
 {
-	Super::PostBuildResource();
+	Super::MoveInsertion(Insertion, Action, Success);
 
-	SINGLETON_CHK;
-	UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
-
-	// Generate composition
-	AttributeValues.Reset();
-	for (auto& Pair : Attributes)
-	{
-		UTGOR_Attribute* Content = ContentManager->GetTFromType<UTGOR_Attribute>(Pair.Key);
-		if (IsValid(Content))
-		{
-			AttributeValues.Add(Content, Pair.Value);
-		}
-	}
+	MOV_INSERTION(AttributeInsertions);
 }

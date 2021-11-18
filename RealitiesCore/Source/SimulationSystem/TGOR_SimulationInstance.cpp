@@ -15,21 +15,26 @@ SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_SimulationInstance);
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGOR_SimulationInstance::FTGOR_SimulationInstance()
+	: Simulation(nullptr)
 {
 }
 
 void FTGOR_SimulationInstance::Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const
 {
+	Package.WriteEntry("Simulation", Simulation);
 }
 
 void FTGOR_SimulationInstance::Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context)
 {
+	Package.ReadEntry("Simulation", Simulation);
 }
 
 void FTGOR_SimulationInstance::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const
 {
+	Package.WriteEntry(Simulation);
 }
 
 void FTGOR_SimulationInstance::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context)
 {
+	Package.ReadEntry(Simulation);
 }

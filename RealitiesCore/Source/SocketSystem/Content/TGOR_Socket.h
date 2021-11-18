@@ -64,11 +64,6 @@ public:
 		TArray<TSubclassOf<UTGOR_Target>> TargetInsertions;
 	DECL_INSERTION(TargetInsertions);
 
-	/** Attributes in this spawner */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Attribute>> AttributeInsertions;
-	DECL_INSERTION(AttributeInsertions);
-
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 
 };

@@ -14,13 +14,13 @@ float UTGOR_Attribute::GetInstanceAttribute(const FTGOR_AttributeInstance& Insta
 	return Instance.GetAttribute(Attribute, Default);
 }
 
-FTGOR_AttributeInstance UTGOR_Attribute::UpdateInstanceAttribute(const UTGOR_AttributeComponent* Component, const TArray<UTGOR_Attribute*>& Attributes)
+float UTGOR_Attribute::ModifyValue(float Value, float Modifier) const
 {
-	FTGOR_AttributeInstance Instance;
-	for (UTGOR_Attribute* Attribute : Attributes)
+	switch (Accumulation)
 	{
-		Instance.Values.Emplace(Attribute, Attribute->DefaultValue);
+	case ETGOR_AttributeAccumulation::Add: Value += Modifier; break;
+	case ETGOR_AttributeAccumulation::Mul: Value *= Modifier; break;
+	case ETGOR_AttributeAccumulation::Max: Value = FMath::Max(Value, Modifier); break;
 	}
-	Component->UpdateAttributes(Instance.Values);
-	return Instance;
+	return Value;
 }

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Modifier.generated.h"
 
 class UTGOR_Attribute;
@@ -12,27 +12,20 @@ class UTGOR_Attribute;
  * 
  */
 UCLASS(Blueprintable)
-class ATTRIBUTESYSTEM_API UTGOR_Modifier : public UTGOR_CoreContent
+class ATTRIBUTESYSTEM_API UTGOR_Modifier : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 
 public:
 	UTGOR_Modifier();
-	virtual void PostBuildResource() override;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Defined attributes to modify */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<TSubclassOf<UTGOR_Attribute>, float> Attributes;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Modified attribute values */
-	UPROPERTY()
-		TMap<UTGOR_Attribute*, float> AttributeValues;
+	/** Attributes in this modifier */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
+		TMap<TSubclassOf<UTGOR_Attribute>, float> AttributeInsertions;
+	DECL_INSERTION(AttributeInsertions);
 
-
+	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 };

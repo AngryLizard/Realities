@@ -115,15 +115,6 @@ void UTGOR_ActionTask::PrepareStart()
 		Identifier.Component->PlayAnimation(Identifier.Content->MainAnimation);
 	}
 
-	if (Identifier.Content->AttributeValues.Num() > 0)
-	{
-		UTGOR_AttributeComponent* Handler = Identifier.Component->GetOwnerComponent<UTGOR_AttributeComponent>();
-		if (IsValid(Handler))
-		{
-			Handler->RegisterHandle(Identifier.Component, Identifier.Content);
-		}
-	}
-
 	OnPrepareStart();
 }
 
@@ -161,15 +152,6 @@ bool UTGOR_ActionTask::FinishState(float Time, float Deltatime)
 void UTGOR_ActionTask::Interrupt()
 {
 	Identifier.Component->PlayAnimation(nullptr);
-	if (Identifier.Content->AttributeValues.Num() > 0)
-	{
-		UTGOR_AttributeComponent* Handler = Identifier.Component->GetOwnerComponent<UTGOR_AttributeComponent>();
-		if (IsValid(Handler))
-		{
-			Handler->UnregisterHandle(Identifier.Content);
-		}
-	}
-
 	OnInterrupt();
 }
 

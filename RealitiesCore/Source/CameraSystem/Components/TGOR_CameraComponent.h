@@ -7,6 +7,7 @@
 #include "Engine/Classes/GameFramework/SpringArmComponent.h"
 
 #include "DimensionSystem/TGOR_PilotInstance.h"
+#include "CameraSystem/TGOR_CameraInstance.h"
 
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "CoreSystem/Interfaces/TGOR_SingletonInterface.h"
@@ -82,6 +83,7 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -106,8 +108,8 @@ public:
 		void FastForward();
 
 	/** Camera setup this component spawns with. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Stage> SpawnStage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
+		TArray<TSubclassOf<UTGOR_Camera>> SpawnCameras;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

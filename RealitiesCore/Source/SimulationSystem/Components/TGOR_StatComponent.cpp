@@ -107,16 +107,6 @@ void UTGOR_StatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 }
 
 
-void UTGOR_StatComponent::UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component)
-{
-	Component->UpdateAttributes(Attributes.Values);
-}
-
-float UTGOR_StatComponent::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
-{
-	return Attributes.GetAttribute(Attribute, Default);
-}
-
 bool UTGOR_StatComponent::IsContentActive_Implementation(UTGOR_CoreContent* Content) const
 {
 	return ActiveEffects.Contains(Content);
@@ -124,79 +114,88 @@ bool UTGOR_StatComponent::IsContentActive_Implementation(UTGOR_CoreContent* Cont
 
 TSet<UTGOR_CoreContent*> UTGOR_StatComponent::GetActiveContent_Implementation() const
 {
-	return ActiveEffects;
+	TSet<UTGOR_CoreContent*> Objects;
+	for (UTGOR_CoreContent* ActiveEffect : ActiveEffects)
+	{
+		Objects.Emplace(ActiveEffect);
+	}
+	return Objects;
 }
 
 void UTGOR_StatComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	SINGLETON_CHK;
 	FTGOR_StatState Old = State;
 	State.Stats.Empty();
 	StatTable.Empty();
-	
-	UTGOR_Simulation* Simulation = Dependencies.Spawner->GetMFromType<UTGOR_Simulation>(SpawnSimulation);
-	if (IsValid(Simulation))
+
+	SINGLETON_CHK;
+	const FTGOR_Time Timestamp = Singleton->GetGameTimestamp();
+
+	TArray<UTGOR_Stat*> StatsQueue = Dependencies.Spawner->GetMListFromType<UTGOR_Stat>(SpawnStats);
+	TArray<UTGOR_Effect*> EffectsQueue = Dependencies.Spawner->GetMListFromType<UTGOR_Effect>(SpawnEffects);
+	for (UTGOR_Stat* Stat : StatsQueue)
 	{
-		const FTGOR_Time Timestamp = Singleton->GetGameTimestamp();
-
-		const TArray<UTGOR_Stat*>& StatsQueue = Simulation->Instanced_StatInsertions.Collection;// GetIListFromType<UTGOR_Stat>();
-		for (UTGOR_Stat* Stat : StatsQueue)
+		// Add with previous value or max if not existing yet
+		FTGOR_Percentage* Ptr = Old.Stats.Find(Stat);
+		if (Ptr)
 		{
-			// Add with previous value or max if not existing yet
-			FTGOR_Percentage* Ptr = Old.Stats.Find(Stat);
-			if (Ptr)
-			{
-				State.Stats.Emplace(Stat, *Ptr);
-			}
-			else
-			{
-				State.Stats.Emplace(Stat, Stat->Initial);
-			}
-
-			// Set stat properties
-			FTGOR_StatProperties& Properties = StatTable.FindOrAdd(Stat);
-			Properties.LastUpdate = Timestamp;
-
-			// Build effects table
-			Properties.EffectTable.Empty();
-			const TArray<UTGOR_Effect*>& EffectsQueue = Simulation->Instanced_EffectInsertions.Collection;//GetIListFromType<UTGOR_Effect>();
-			for (UTGOR_Effect* Effect : EffectsQueue)
-			{
-				// Add inserted attributes
-				const TArray<UTGOR_Attribute*>& AttributeQueue = Effect->Instanced_AttributeInsertions.Collection;//GetIListFromType<UTGOR_Attribute>();
-				for (UTGOR_Attribute* Attribute : AttributeQueue)
-				{
-					Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
-				}
-
-				// Add effects
-				if (*Effect->Stat && Stat->IsA(Effect->Stat))
-				{
-					Properties.EffectTable.Emplace(Effect);
-				}
-			}
-			Properties.EffectTable.Sort([](const UTGOR_Effect& A, const UTGOR_Effect& B) -> bool { return (A.Min == B.Min) ? (A.Max < B.Max) : (A.Min < B.Min); });
-
-			// Build responses table
-			Properties.ResponseTable.Empty();
-			const TArray<UTGOR_Response*>& ResponseQueue = Stat->Instanced_ResponseInsertions.Collection; //GetIListFromType<UTGOR_Response>();
-			for (UTGOR_Response* Response : ResponseQueue)
-			{
-				// Add inserted attributes
-				const TArray<UTGOR_Attribute*>& AttributeQueue = Stat->Instanced_AttributeInsertions.Collection; //GetIListFromType<UTGOR_Attribute>();
-				for (UTGOR_Attribute* Attribute : AttributeQueue)
-				{
-					Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
-				}
-
-				// Add responses
-				Properties.ResponseTable.Emplace(Response);
-			}
+			State.Stats.Emplace(Stat, *Ptr);
+		}
+		else
+		{
+			State.Stats.Emplace(Stat, Stat->Initial);
 		}
 
-		UpdateEffects();
-		OnStatChanged.Broadcast();
+		// Set stat properties
+		FTGOR_StatProperties& Properties = StatTable.FindOrAdd(Stat);
+		Properties.LastUpdate = Timestamp;
+
+		// Build effects table
+		Properties.EffectTable.Empty();
+		for (UTGOR_Effect* Effect : EffectsQueue)
+		{
+			// Add effects
+			if (*Effect->Stat && Stat->IsA(Effect->Stat))
+			{
+				Properties.EffectTable.Emplace(Effect);
+			}
+		}
+		Properties.EffectTable.Sort([](const UTGOR_Effect& A, const UTGOR_Effect& B) -> bool { return (A.Min == B.Min) ? (A.Max < B.Max) : (A.Min < B.Min); });
+
+		// Build responses table
+		Properties.ResponseTable.Empty();
+		const TArray<UTGOR_Response*>& ResponseQueue = Stat->Instanced_ResponseInsertions.Collection; //GetIListFromType<UTGOR_Response>();
+		for (UTGOR_Response* Response : ResponseQueue)
+		{
+			// Add responses
+			Properties.ResponseTable.Emplace(Response);
+		}
 	}
+
+	UpdateEffects();
+	OnStatChanged.Broadcast();
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_StatComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	const int32 Num = ActiveEffects.Num();
+	for (int32 Index = 0; Index < Num; Index++)
+	{
+		Modules.Emplace(Index, ActiveEffects[Index]);
+	}
+	return Modules;
+}
+
+TArray<UTGOR_Modifier*> UTGOR_StatComponent::QueryActiveModifiers_Implementation() const
+{
+	TArray<UTGOR_Modifier*> Modifiers;
+	for(UTGOR_Effect* ActiveEffect : ActiveEffects)
+	{
+		Modifiers.Emplace(ActiveEffect);
+	}
+	return Modifiers;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -277,7 +276,6 @@ void UTGOR_StatComponent::UpdateEffects()
 			for (UTGOR_Effect* ActiveEffect : Current.Active)
 			{
 				ActiveEffects.Emplace(ActiveEffect);
-				AttributeComponent->RegisterHandle(this, ActiveEffect);
 			}
 		}
 	}
@@ -381,3 +379,5 @@ TMap<UTGOR_Matter*, int32> UTGOR_StatComponent::ProcessMatter(UTGOR_Segment* Seg
 	}
 	return Residual;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -9,7 +9,6 @@
 #include "Components/SphereComponent.h"
 #include "TGOR_InteractableComponent.generated.h"
 
-class UTGOR_Entity;
 class UTGOR_Target;
 
 /**
@@ -23,6 +22,7 @@ class TARGETSYSTEM_API UTGOR_InteractableComponent : public USphereComponent, pu
 public:	
 	UTGOR_InteractableComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

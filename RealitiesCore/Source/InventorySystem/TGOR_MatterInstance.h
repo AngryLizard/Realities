@@ -9,7 +9,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "TGOR_MatterInstance.generated.h"
 
-
+class UTGOR_Resource;
 
 ///////////////////////////////////////////// STRUCTS ///////////////////////////////////////////////////
 
@@ -110,4 +110,3 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		static TSet<UTGOR_Matter*> GetSupported(const FTGOR_MatterContainers& Containers, TSubclassOf<UTGOR_Segment> Filter);
 };
-

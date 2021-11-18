@@ -57,30 +57,25 @@ void FTGOR_ActionState::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton*
 
 
 FTGOR_LoadoutInstance::FTGOR_LoadoutInstance()
-	: Loadout(nullptr)
 {
 }
 
 void FTGOR_LoadoutInstance::Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const
 {
-	Package.WriteEntry("Loadout", Loadout);
 	Package.WriteEntry("Actions", Actions);
 }
 
 void FTGOR_LoadoutInstance::Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context)
 {
-	Package.ReadEntry("Loadout", Loadout);
 	Package.ReadEntry("Actions", Actions);
 }
 
 void FTGOR_LoadoutInstance::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const
 {
-	Package.WriteEntry(Loadout);
 	Package.WriteEntry(Actions);
 }
 
 void FTGOR_LoadoutInstance::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context)
 {
-	Package.ReadEntry(Loadout);
 	Package.ReadEntry(Actions);
 }

@@ -19,19 +19,5 @@ class SIMULATIONSYSTEM_API UTGOR_Simulation : public UTGOR_SpawnModule
 public:
 	UTGOR_Simulation();
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Stats in this simulator */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Stat>> StatInsertions;
-	DECL_INSERTION(StatInsertions);
-
-	/** Effects in this simulator */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Effect>> EffectInsertions;
-	DECL_INSERTION(EffectInsertions);
-
-	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 };
 

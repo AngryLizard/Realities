@@ -32,11 +32,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Stomach in this spawner */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TSubclassOf<UTGOR_Dimension> StomachInsertion;
-	DECL_INSERTION(StomachInsertion);
-
 	/** Trackers in this spawner */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
 		TArray<TSubclassOf<UTGOR_Tracker>> TrackerInsertions;

@@ -14,6 +14,7 @@
 #include "Engine/UserDefinedStruct.h"
 #include "TGOR_SimulationInstance.generated.h"
 
+class UTGOR_Simulation;
 
 /**
 *
@@ -33,6 +34,10 @@ struct SIMULATIONSYSTEM_API FTGOR_SimulationInstance
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Currently linked simulation */
+	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
+		UTGOR_Simulation* Simulation;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 };

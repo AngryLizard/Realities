@@ -23,5 +23,7 @@ class CUSTOMISATIONSYSTEM_API UTGOR_ModularSkeletalMeshComponent : public USkele
 public:
 	UTGOR_ModularSkeletalMeshComponent();
 
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 };

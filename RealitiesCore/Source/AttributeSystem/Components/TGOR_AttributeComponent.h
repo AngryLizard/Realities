@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
+#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
+#include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
 #include "CoreSystem/Components/TGOR_Component.h"
 #include "TGOR_AttributeComponent.generated.h"
 
@@ -45,61 +47,41 @@ struct FTGOR_AttributeOutput
 * TGOR_AttrbuteComponent distributes attributes to attribute interfaces
 */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class ATTRIBUTESYSTEM_API UTGOR_AttributeComponent : public UTGOR_Component
+class ATTRIBUTESYSTEM_API UTGOR_AttributeComponent : public UTGOR_Component, public ITGOR_SpawnerInterface
 {
 	GENERATED_BODY()
 
 public:	
 	UTGOR_AttributeComponent();
-	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Currently cached attribute values */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<UTGOR_Attribute*, float> AttributeValues;
-
-	/** Handles for aim suspension */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Attributes")
-		TMap<UTGOR_Modifier*, FTGOR_AttributeHandle> Handles;
+public:
 
 	/** Recompute values from handles. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void RecomputeValues();
+		float ComputeAttributeValue(TSubclassOf<UTGOR_Attribute> AttributeType, float DefaultValue) const;
 
-	/** Add values to cache (AttributeValues). */
+	template<typename T>
+	float ComputeAValue() const
+	{
+		return ComputeValues(T::StaticClass());
+	}
+
+	/** List all active attributes. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void AddValues(const TMap<UTGOR_Attribute*, float>& Values);
+		TArray<FTGOR_AttributeOutput> ComputeActiveAttributes() const;
+
+	/** Get attribute value of given actor, or default if not supported. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
+		static float GetAttributeValue(AActor* Actor, TSubclassOf<UTGOR_Attribute> AttributeType, float DefaultValue);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
-	/** Register values to go active. */
+	/** Compute currently active modifiers. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void RegisterHandle(TScriptInterface<ITGOR_RegisterInterface> Register, UTGOR_Modifier* Modifier);
-
-	/** Unregister manually. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void UnregisterHandle(UTGOR_Modifier* Content);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Get attributes of given type */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void UpdateAttributes(UPARAM(ref) TMap<UTGOR_Attribute*, float>& Attributes) const;
-
-	/** Update attribute interfaces of given actor and their components */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		void AttributeUpdate(AActor* Actor);
-
-	/** Gets current attribute state */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Attributes", Meta = (Keywords = "C++"))
-		TArray<FTGOR_AttributeOutput> GetAttributes() const;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-private:
-	
+		TArray<UTGOR_Modifier*> QueryActiveModifiers() const;
 };
