@@ -53,7 +53,10 @@ public:
 		TSet<TObjectPtr<T>> Out;
 		for (TSubclassOf<S> Type : Types)
 		{
-			Out.Add(ContentManager->GetTFromType<T>(*Type));
+			if (T* Content = ContentManager->GetTFromType<T>(*Type))
+			{
+				Out.Add(Content);
+			}
 		}
 		return Out.Array();
 	}
