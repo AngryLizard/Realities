@@ -9,3 +9,13 @@ UTGOR_ModularSkeletalMeshComponent::UTGOR_ModularSkeletalMeshComponent()
 	SetIsReplicatedByDefault(true);
 
 }
+
+void UTGOR_ModularSkeletalMeshComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
+{
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_ModularSkeletalMeshComponent::GetModuleType_Implementation() const
+{
+	return TMap<int32, UTGOR_SpawnModule*>();
+}

@@ -39,41 +39,31 @@ void UTGOR_SocketComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty
 
 }
 
-void UTGOR_SocketComponent::UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component)
-{
-	Component->UpdateAttributes(Attributes.Values);
-
-	// Attribute changes could have invalidated certain sockets
-	UpdateCurrentAttachments();
-}
-
-float UTGOR_SocketComponent::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
-{
-	return Attributes.GetAttribute(Attribute, Default);
-}
-
 void UTGOR_SocketComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
 	Super::UpdateContent_Implementation(Dependencies);
 
 	Attachments.Empty();
-	Attributes.Values.Empty();
 
 	// Get sockets from spawner
 	const TArray<TObjectPtr<UTGOR_NamedSocket>> Sockets = Dependencies.Spawner->GetMListFromType<UTGOR_NamedSocket>(SpawnSockets);
 	for (UTGOR_NamedSocket* Socket : Sockets)
 	{
 		Attachments.Emplace(Socket, TWeakObjectPtr<UTGOR_NamedSocketTask>());
-
-		// Add inserted attributes
-		const TArray<UTGOR_Attribute*>& AttributeQueue = Socket->Instanced_AttributeInsertions.Collection;//GetIListFromType<UTGOR_Attribute>();
-		for (UTGOR_Attribute* Attribute : AttributeQueue)
-		{
-			Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
-		}
 	}
 
 	UpdatePrimitiveCache();
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_SocketComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	for (const auto& Pair : Attachments)
+	{
+		Modules.Emplace(Pair.Key->GetStorageIndex(), Pair.Key);
+	}
+	return Modules;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

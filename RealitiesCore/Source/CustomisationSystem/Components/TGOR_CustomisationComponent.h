@@ -44,6 +44,7 @@ class CUSTOMISATIONSYSTEM_API UTGOR_CustomisationComponent : public UTGOR_Contro
 public:
 	UTGOR_CustomisationComponent();
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 

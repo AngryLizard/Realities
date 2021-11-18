@@ -20,8 +20,16 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 	
 	//////////////////////////////////////////////// IMPLEMENTABLES /////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Dimension spawned by this loader. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TSubclassOf<UTGOR_Dimension> SpawnDimension;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

@@ -146,5 +146,4 @@ void UTGOR_Socket::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionAction
 	Super::MoveInsertion(Insertion, Action, Success);
 
 	MOV_INSERTION(TargetInsertions);
-	MOV_INSERTION(AttributeInsertions);
 }

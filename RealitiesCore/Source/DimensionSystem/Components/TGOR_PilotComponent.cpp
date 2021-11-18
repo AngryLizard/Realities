@@ -11,9 +11,9 @@
 #include "DimensionSystem/Tasks/TGOR_PilotTask.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 
+#include "DimensionSystem/Content/TGOR_Primitive.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "DimensionSystem/Content/TGOR_Pilot.h"
-#include "DimensionSystem/Content/TGOR_Primitive.h"
 
 #include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
 
@@ -26,7 +26,6 @@ UTGOR_PilotComponent::UTGOR_PilotComponent()
 :	Super(),
 	AdjustThreshold()
 {
-	SpawnPrimitive = UTGOR_Primitive::StaticClass();
 }
 
 void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -73,7 +72,6 @@ void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSlots, COND_None); // This MUST be replicated before setup
-	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSetup, COND_None);
 	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotState, COND_None);
 }
 
@@ -175,18 +173,97 @@ void UTGOR_PilotComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencie
 {
 	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
 
-	PilotSetup.Primitive = Dependencies.Spawner->GetMFromType<UTGOR_Primitive>(SpawnPrimitive);
-	ApplyPilotSetup(PilotSetup);
-
-	if (IsValid(PilotSetup.Primitive))
+	if (Body.Volume < SMALL_NUMBER)
 	{
-		const float Scale = GetComponentScale().GetMin();
-		const float Strength = Scale * Scale * Scale;
-
-		FTGOR_MovementBody NewBody;
-		NewBody.SetFromCapsule(PilotSetup.Primitive->SurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), PilotSetup.Primitive->Weight * Strength);
-		SetBody(NewBody);
+		FVector Origin, Extend;
+		AActor* Actor = GetOwner();
+		Actor->GetActorBounds(true, Origin, Extend);
+		Body.SetFromBox(FVector(0.5f), Extend * 2, 1.0f);
 	}
+
+	UTGOR_PilotTask* CurrentTask = GetPilotTask();
+	TMap<UTGOR_Pilot*, TArray<UTGOR_PilotTask*>> Previous;
+
+	// Remove slots but cache both instances and items in case the new loadout can use them
+	for (int Slot = 0; Slot < PilotSlots.Num(); Slot++)
+	{
+		UTGOR_PilotTask* PilotSlot = PilotSlots[Slot];
+		if (IsValid(PilotSlot))
+		{
+			PilotSlot->Unparent();
+			Previous.FindOrAdd(PilotSlot->GetPilot()).Add(PilotSlot);
+		}
+	}
+	PilotSlots.Empty();
+
+	// Add static slots
+	TArray<UTGOR_Pilot*> Pilots = Dependencies.Spawner->GetMListFromType<UTGOR_Pilot>(SpawnPilots);
+
+	// Generate slots
+	for (UTGOR_Pilot* Pilot : Pilots)
+	{
+		if (IsValid(Pilot))
+		{
+			UTGOR_PilotTask* PilotSlot = nullptr;
+
+			TArray<UTGOR_PilotTask*>* Ptr = Previous.Find(Pilot);
+			if (Ptr && Ptr->Num() > 0)
+			{
+				PilotSlot = Ptr->Pop();
+			}
+			else
+			{
+				// No cache was found, create a new one
+				PilotSlot = Pilot->CreatePilotTask(this, PilotSlots.Num());
+			}
+
+			// Initialise and add to slots
+			if (IsValid(PilotSlot))
+			{
+				PilotSlots.Add(PilotSlot);
+			}
+		}
+	}
+
+	// Reparent with current (or retry euclidean if task got removed)
+	const int32 ActiveSlot = PilotSlots.Find(CurrentTask);
+	if (PilotSlots.IsValidIndex(ActiveSlot))
+	{
+		AttachWith(ActiveSlot);
+	}
+	else
+	{
+		Teleport(ComputeSpace());
+	}
+
+	// Discard tasks that got removed
+	for (const auto& Pair : Previous)
+	{
+		for (UTGOR_PilotTask* PilotSlot : Pair.Value)
+		{
+			PilotSlot->Unparent();
+			PilotSlot->MarkPendingKill();
+		}
+	}
+
+	const float Scale = GetComponentScale().GetMin();
+	const float Strength = Scale * Scale * Scale;
+
+	FTGOR_MovementBody NewBody;
+	NewBody.SetFromCapsule(SpawnSurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), SpawnWeight * Strength);
+	SetBody(NewBody);
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_PilotComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	const int32 Num = PilotSlots.Num();
+	for (UTGOR_PilotTask* PilotSlot : PilotSlots)
+	{
+		Modules.Emplace(PilotSlot->Identifier.Slot, PilotSlot->Identifier.Content);
+	}
+	return Modules;
 }
 
 bool UTGOR_PilotComponent::PreAssemble(UTGOR_DimensionData* Dimension)
@@ -387,97 +464,6 @@ void UTGOR_PilotComponent::RepNotifyPilotState(const FTGOR_PilotState& Old)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool UTGOR_PilotComponent::ApplyPilotSetup(FTGOR_PilotInstance Setup)
-{
-	// TODO: Use primitive definition to initialise body
-	if (Body.Volume < SMALL_NUMBER)
-	{
-		FVector Origin, Extend;
-		AActor* Actor = GetOwner();
-		Actor->GetActorBounds(true, Origin, Extend);
-		Body.SetFromBox(FVector(0.5f), Extend * 2, 1.0f);
-	}
-
-	SINGLETON_RETCHK(false);
-
-	UTGOR_PilotTask* CurrentTask = GetPilotTask();
-	TMap<UTGOR_Pilot*, TArray<UTGOR_PilotTask*>> Previous;
-
-	// Remove slots but cache both instances and items in case the new loadout can use them
-	for (int Slot = 0; Slot < PilotSlots.Num(); Slot++)
-	{
-		UTGOR_PilotTask* PilotSlot = PilotSlots[Slot];
-		if (IsValid(PilotSlot))
-		{
-			PilotSlot->Unparent();
-			Previous.FindOrAdd(PilotSlot->GetPilot()).Add(PilotSlot);
-		}
-	}
-
-	PilotSlots.Empty();
-	PilotSetup.Primitive = Setup.Primitive;
-
-	// Apply loadout
-	if (IsValid(Setup.Primitive))
-	{
-		// Add static slots
-		TArray<UTGOR_Pilot*> Pilots = Setup.Primitive->Instanced_PilotInsertions.Collection;
-
-		// Generate slots
-		for (UTGOR_Pilot* Pilot : Pilots)
-		{
-			if (IsValid(Pilot))
-			{
-				UTGOR_PilotTask* PilotSlot = nullptr;
-
-				TArray<UTGOR_PilotTask*>* Ptr = Previous.Find(Pilot);
-				if (Ptr && Ptr->Num() > 0)
-				{
-					PilotSlot = Ptr->Pop();
-				}
-				else
-				{
-					// No cache was found, create a new one
-					PilotSlot = Pilot->CreatePilotTask(this, PilotSlots.Num());
-				}
-
-				// Initialise and add to slots
-				if (IsValid(PilotSlot))
-				{
-					PilotSlots.Add(PilotSlot);
-				}
-			}
-		}
-	}
-
-	// Reparent with current (or retry euclidean if task got removed)
-	const int32 ActiveSlot = PilotSlots.Find(CurrentTask);
-	if (PilotSlots.IsValidIndex(ActiveSlot))
-	{
-		AttachWith(ActiveSlot);
-	}
-	else
-	{
-		Teleport(ComputeSpace());
-	}
-
-	// Discard tasks that got removed
-	for (const auto& Pair : Previous)
-	{
-		for (UTGOR_PilotTask* PilotSlot : Pair.Value)
-		{
-			PilotSlot->Unparent();
-			PilotSlot->MarkPendingKill();
-		}
-	}
-	return true;
-}
-
-void UTGOR_PilotComponent::OnReplicatePilotSetup()
-{
-	ApplyPilotSetup(PilotSetup);
-}
 
 UTGOR_PilotComponent* UTGOR_PilotComponent::FindOwningPilot(USceneComponent* Component)
 {

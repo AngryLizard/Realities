@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Stat.generated.h"
 
 class UTGOR_StatComponent;
@@ -21,7 +21,7 @@ enum class ETGOR_StatTypeEnumeration : uint8
  * 
  */
 UCLASS(Blueprintable)
-class SIMULATIONSYSTEM_API UTGOR_Stat : public UTGOR_CoreContent
+class SIMULATIONSYSTEM_API UTGOR_Stat : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 	
@@ -46,7 +46,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		float Compute(UTGOR_StatComponent* Stats, float Value, float DeltaTime) const;
 
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -54,11 +53,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
 		TArray<TSubclassOf<UTGOR_Response>> ResponseInsertions;
 	DECL_INSERTION(ResponseInsertions);
-
-	/** Attributes supported by this effect */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Attribute>> AttributeInsertions;
-	DECL_INSERTION(AttributeInsertions);
 
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 

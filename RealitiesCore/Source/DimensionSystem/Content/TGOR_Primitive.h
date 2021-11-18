@@ -18,21 +18,4 @@ class DIMENSIONSYSTEM_API UTGOR_Primitive : public UTGOR_SpawnModule
 
 public:
 	UTGOR_Primitive();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Dimension")
-		float Weight = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Dimension")
-		FVector SurfaceArea = FVector(0.5f, 0.5f, 0.5f);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Pilots in this spawner */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Pilot>> PilotInsertions;
-	DECL_INSERTION(PilotInsertions);
-
-
-	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 };

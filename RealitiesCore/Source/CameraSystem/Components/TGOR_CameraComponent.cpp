@@ -4,13 +4,13 @@
 #include "TGOR_CameraComponent.h"
 #include "GameFramework/PlayerController.h"
 
-#include "CameraSystem/Content/TGOR_Stage.h"
 #include "CameraSystem/Content/TGOR_Camera.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 
 #include "Engine.h"
+#include "Net/UnrealNetwork.h"
 
 FTGOR_CameraModifier::FTGOR_CameraModifier()
 :	Params(FVector::ZeroVector),
@@ -146,14 +146,10 @@ void UTGOR_CameraComponent::UpdateContent_Implementation(FTGOR_SpawnerDependenci
 	Handles.Empty();
 	Cameras.Empty();
 
-	UTGOR_Stage* Stage = Dependencies.Spawner->GetMFromType<UTGOR_Stage>(SpawnStage);
-	if (IsValid(Stage))
+	const TArray<UTGOR_Camera*>& List = Dependencies.Spawner->GetMListFromType<UTGOR_Camera>(SpawnCameras);
+	for (UTGOR_Camera* Camera : List)
 	{
-		const TArray<UTGOR_Camera*>& List = Stage->Instanced_CameraInsertions.Collection; // GetIListFromType<UTGOR_Camera>();
-		for (UTGOR_Camera* Camera : List)
-		{
-			Cameras.Add(Camera, Camera->Initial(this, SpringArm));
-		}
+		Cameras.Add(Camera, Camera->Initial(this, SpringArm));
 	}
 
 	// EaseOuts can be added before BeginPlay, only remove unused ones
@@ -164,6 +160,16 @@ void UTGOR_CameraComponent::UpdateContent_Implementation(FTGOR_SpawnerDependenci
 			It.RemoveCurrent();
 		}
 	}
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_CameraComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+	for (const auto& Pair : Cameras)
+	{
+		Modules.Emplace(Pair.Key->GetStorageIndex(), Pair.Key);
+	}
+	return Modules;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -425,3 +431,5 @@ void UTGOR_CameraComponent::FromLocalCameraRotation(const FTGOR_MovementPosition
 {
 	SetViewRotation(Position.Angular.Inverse() * Quat);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 
 #include "../TGOR_AimInstance.h"
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Target.generated.h"
 
 #define PARAMS_CHK check(Component && "Interactable Component invalid"); if (MaxDistance < SMALL_NUMBER) { return false; }
@@ -13,7 +13,7 @@
  * Target content, defines a target that can be aimed at. By default targets interactable component itself.
  */
 UCLASS(Blueprintable)
-class TARGETSYSTEM_API UTGOR_Target : public UTGOR_CoreContent
+class TARGETSYSTEM_API UTGOR_Target : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 		

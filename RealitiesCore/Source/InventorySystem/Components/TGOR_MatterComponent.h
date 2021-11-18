@@ -43,6 +43,7 @@ public:
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -62,6 +63,10 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
+
+	/** Segment types this component spawns with. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
+		TArray<TSubclassOf<UTGOR_Segment>> SpawnSegments;
 
 	/** Get first Segment of given type. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
@@ -93,11 +98,5 @@ public:
 	/** Add matter quantities by given composition, returns leftovers */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		TMap<UTGOR_Matter*, int32> InvestStorageMatter(TSubclassOf<UTGOR_Segment> Filter, const TMap<UTGOR_Matter*, int32>& Composition);
-
-	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
-
-protected:
-
-private:
 
 };

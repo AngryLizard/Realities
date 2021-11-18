@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Pilot.generated.h"
 
 class UTGOR_PilotTask;
@@ -12,7 +12,7 @@ class UTGOR_PilotTask;
  * 
  */
 UCLASS(Blueprintable)
-class DIMENSIONSYSTEM_API UTGOR_Pilot : public UTGOR_CoreContent
+class DIMENSIONSYSTEM_API UTGOR_Pilot : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 

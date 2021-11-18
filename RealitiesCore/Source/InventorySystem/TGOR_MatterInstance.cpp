@@ -11,8 +11,8 @@
 #include "CoreSystem/Storage/TGOR_Package.h"
 #include "Net/UnrealNetwork.h"
 
-SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MatterContainer)
-SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MatterContainers)
+SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MatterContainer);
+SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_MatterContainers);
 
 void FTGOR_MatterContainer::Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const
 {

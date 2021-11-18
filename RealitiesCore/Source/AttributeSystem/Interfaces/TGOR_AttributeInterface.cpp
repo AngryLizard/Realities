@@ -1,11 +1,7 @@
 // The Gateway of Realities: Planes of Existence.
 #include "TGOR_AttributeInterface.h"
 
-void ITGOR_AttributeInterface::UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component)
+TArray<UTGOR_Modifier*> ITGOR_AttributeInterface::QueryActiveModifiers_Implementation() const
 {
-}
-
-float ITGOR_AttributeInterface::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
-{
-	return Default;
+	return TArray<UTGOR_Modifier*>();
 }

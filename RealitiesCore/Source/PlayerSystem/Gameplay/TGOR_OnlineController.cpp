@@ -19,7 +19,6 @@
 #include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 #include "DimensionSystem/Components/TGOR_WorldComponent.h"
 #include "DimensionSystem/Content/TGOR_Dimension.h"
-#include "ActionSystem/Content/TGOR_Loadout.h"
 #include "ActionSystem/Components/TGOR_ActionComponent.h"
 #include "PlayerSystem/Data/TGOR_UserData.h"
 #include "PlayerSystem/Actors/TGOR_Spectator.h"
@@ -1397,7 +1396,6 @@ void ATGOR_OnlineController::RequestActions_Implementation(int32 Identifier, FTG
 			UTGOR_ActionComponent* Equipment = OwnPawn->FindComponentByClass<UTGOR_ActionComponent>();
 			if (IsValid(Spawner) && IsValid(Equipment))
 			{
-				Setup.Loadout = Spawner->GetMFromType<UTGOR_Loadout>(Equipment->SpawnLoadout);
 				Equipment->ApplyActionSetup(Setup);
 			}
 		}

@@ -15,6 +15,7 @@ public class DimensionSystem : ModuleRules
 				"RealitiesUtility",
 
 				"CoreSystem",
+				"UISystem",
 
 				"Core",
 			}
@@ -29,6 +30,7 @@ public class DimensionSystem : ModuleRules
 				"Slate",
 				"SlateCore",
 				"ReplicationGraph",
+				"UMG",
 			}
 			);
 		

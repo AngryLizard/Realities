@@ -39,6 +39,11 @@ void UTGOR_CustomisationComponent::UpdateContent_Implementation(FTGOR_SpawnerDep
 	ApplyAndCreateMerge(CurrentAppearance);
 }
 
+TMap<int32, UTGOR_SpawnModule*> UTGOR_CustomisationComponent::GetModuleType_Implementation() const
+{
+	return MakeModuleList(Modular);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_CustomisationComponent::ApplyAndCreateMerge(const FTGOR_AppearanceInstance& Instance)

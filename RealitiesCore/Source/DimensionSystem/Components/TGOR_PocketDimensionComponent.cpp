@@ -47,6 +47,11 @@ void UTGOR_PocketDimensionComponent::UpdateContent_Implementation(FTGOR_SpawnerD
 	*/
 }
 
+TMap<int32, UTGOR_SpawnModule*> UTGOR_PocketDimensionComponent::GetModuleType_Implementation() const
+{
+	return MakeModuleList(PocketDimension);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_PocketDimensionComponent::SetExternal(const FVector& Force)

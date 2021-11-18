@@ -51,6 +51,11 @@ void UTGOR_AnimationComponent::UpdateContent_Implementation(FTGOR_SpawnerDepende
 	ApplyAnimationSetup(Setup);
 }
 
+TMap<int32, UTGOR_SpawnModule*> UTGOR_AnimationComponent::GetModuleType_Implementation() const
+{
+	return MakeModuleList(AnimationSetup.Archetype);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool UTGOR_AnimationComponent::ApplyAnimationSetup(FTGOR_AnimationInstance Setup)

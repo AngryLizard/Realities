@@ -8,6 +8,7 @@
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
+#include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
 #include "AnimationSystem/Interfaces/TGOR_AnimationInterface.h"
 #include "InventorySystem/Components/TGOR_ItemRegisterComponent.h"
 #include "TGOR_ActionComponent.generated.h"
@@ -38,6 +39,24 @@ struct FTGOR_ActionTrigger
 		TSubclassOf<UTGOR_Action> Trigger;
 };
 
+
+USTRUCT(BlueprintType)
+struct FTGOR_ActionSlotSpot
+{
+	GENERATED_USTRUCT_BODY()
+		FTGOR_ActionSlotSpot();
+
+	/** Action type */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Action")
+		TSubclassOf<UTGOR_Action> Type;
+
+	/** Default action type if empty (None for optional) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Action")
+		TSubclassOf<UTGOR_Action> Obligatory;
+};
+
+/////////////////////////////////////////////// DELEGATES ///////////////////////////////////////////////
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FActionUpdateDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActionScheduleDelegate, UTGOR_ActionTask*, ActionSlot);
 
@@ -45,7 +64,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActionScheduleDelegate, UTGOR_Actio
  * TGOR_ActionComponent allows equipment of actions
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_ItemRegisterComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface
+class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_ItemRegisterComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface, public ITGOR_AttributeInterface
 {
 	GENERATED_BODY()
 
@@ -72,9 +91,12 @@ public:
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	virtual TSubclassOf<UTGOR_Performance> GetPerformanceType() const override;
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
+
+	TArray<UTGOR_Modifier*> QueryActiveModifiers_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -91,9 +113,25 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Loadout type this action spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Loadout> SpawnLoadout;
+		TArray<FTGOR_ActionSlotSpot> ActionSlotSpots;
+
+	/** Mandatory actions in this spawner */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TArray<TSubclassOf<UTGOR_Action>> SpawnStaticActions;
+
+	/** Slot actions in this spawner */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TArray<TSubclassOf<UTGOR_Action>> SpawnSlotActions;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+
+	UPROPERTY()
+		TArray<UTGOR_Action*> StaticActions;
+
+	UPROPERTY()
+		TArray<UTGOR_Action*> SlotActions;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

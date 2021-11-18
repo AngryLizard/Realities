@@ -6,7 +6,7 @@
 #include "Animation/InputScaleBias.h"
 #include "TGORRigUnit_Utility.generated.h"
 
-
+#define SQRT_THREE 1.73205f
 
 UENUM(BlueprintType)
 enum class ETGOR_Propagation : uint8
@@ -151,7 +151,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 
 	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
 
-	static void PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren);
+	static void PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
 
 	/**
 	 */
@@ -162,6 +162,11 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 	 */
 	UPROPERTY(meta = (Input, ExpandByDefault))
 		FRigElementKey NextKey;
+
+	/**
+	 */
+	UPROPERTY(meta = (Input, ExpandByDefault))
+		float Alpha = 1.0f;
 
 	/**
 	 */
@@ -301,6 +306,55 @@ struct REALITIESANIMATION_API FTGORRigUnit_TransformToPlane : public FRigUnit
 	 */
 	UPROPERTY(meta = (Output))
 		FPlane Output = FPlane(FVector::ZeroVector, FVector::UpVector);
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Limit an input quaternion along a given axis
+ */
+USTRUCT(meta = (DisplayName = "Limit Rotation", Keywords = "TGOR,Utility", PrototypeName = "LimitRotation", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_LimitRotation : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_LimitRotation() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+	static FQuat LimitRotation(const FQuat& Quat, const FVector& Axis, float Min, float Max);
+	static FQuat SoftLimitRotation(const FQuat& Quat, float Limit);
+	static FQuat LimitRotation(const FQuat& Quat, float Limit);
+
+	/**
+	 */
+	UPROPERTY(meta = (Input))
+		FQuat Quat = FQuat::Identity;
+
+	/**
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Axis = FVector::ZeroVector;
+
+	/**
+	 */
+	UPROPERTY(meta = (Input))
+		float Min = 0.0f;
+
+	/**
+	 */
+	UPROPERTY(meta = (Input))
+		float Max = 0.0f;
+
+	/**
+	 * Aligned rotation
+	 */
+	UPROPERTY(meta = (Output))
+		FQuat Output = FQuat::Identity;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -638,7 +692,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Rotation to align forward and up direction
+ * Scale value from scale vector
  */
 USTRUCT(meta = (DisplayName = "Get Scale Length", Keywords = "TGOR,Utility", PrototypeName = "GetScaleLength", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_GetScaleLength : public FRigUnit
@@ -664,7 +718,7 @@ public:
 	 * Scale axis
 	 */
 	UPROPERTY(meta = (Input, DetailsOnly))
-		TEnumAsByte<EAxis::Type> Axis = EAxis::X;
+		TEnumAsByte<EAxis::Type> Axis = EAxis::None;
 
 	/**
 	 * Output length
@@ -675,6 +729,45 @@ public:
 	// Cache
 	UPROPERTY(Transient)
 		FCachedRigElement ConeCache;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Scale value from scale vector
+ */
+USTRUCT(meta = (DisplayName = "Soft Boundaries", Keywords = "TGOR,Utility", PrototypeName = "SoftBoundaries", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_SoftBoundaries : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_SoftBoundaries() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+	static float SoftBoundaries(float Value, float Max);
+
+	/**
+	 * Value to limit
+	 */
+	UPROPERTY(meta = (Input))
+		float Value = 0.0f;
+
+	/**
+	 * Limit magnitude
+	 */
+	UPROPERTY(meta = (Input))
+		float Limit = 1.0f;
+
+	/**
+	 * Output value
+	 */
+	UPROPERTY(meta = (Output))
+		float Output = 0.0f;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

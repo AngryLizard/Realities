@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Camera.generated.h"
 
 class UTGOR_CameraComponent;
@@ -11,7 +11,7 @@ class UTGOR_CameraComponent;
  * 
  */
 UCLASS()
-class CAMERASYSTEM_API UTGOR_Camera : public UTGOR_CoreContent
+class CAMERASYSTEM_API UTGOR_Camera : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 	

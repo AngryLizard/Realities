@@ -14,76 +14,7 @@
 #include "Engine/UserDefinedStruct.h"
 #include "TGOR_PilotInstance.generated.h"
 
-class UTGOR_Primitive;
 class UTGOR_MobilityComponent;
-
-/**
-* TGOR_PilotInstance stores pilot information
-*/
-USTRUCT(BlueprintType)
-struct FTGOR_PilotInstance
-{
-	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-
-	FTGOR_PilotInstance();
-
-	CTGOR_GroupPackageCache LegacyCache;
-	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
-	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
-	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const;
-	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Currently linked primitive */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
-		UTGOR_Primitive* Primitive;
-};
-
-template<>
-struct TStructOpsTypeTraits<FTGOR_PilotInstance> : public TStructOpsTypeTraitsBase2<FTGOR_PilotInstance>
-{
-	enum
-	{
-		WithNetSerializer = true
-	};
-};
-
-
-/**
-* TGOR_AttachInstance stores pilot information
-*/
-USTRUCT(BlueprintType)
-struct FTGOR_AttachInstance
-{
-	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-
-	FTGOR_AttachInstance();
-
-	CTGOR_GroupPackageCache LegacyCache;
-	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
-	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
-	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Context* Context) const;
-	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* Context);
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Currently linked primitive */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
-		UTGOR_Primitive* Primitive;
-};
-
-template<>
-struct TStructOpsTypeTraits<FTGOR_AttachInstance> : public TStructOpsTypeTraitsBase2<FTGOR_AttachInstance>
-{
-	enum
-	{
-		WithNetSerializer = true
-	};
-};
-
 
 /**
 * FTGOR_PilotState

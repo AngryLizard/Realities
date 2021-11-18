@@ -2,6 +2,7 @@
 
 #include "TGOR_SpawnerInterface.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 
 void FTGOR_SpawnerDependencies::Process(TSubclassOf<UObject> Class)
 {
@@ -38,3 +39,10 @@ void FTGOR_SpawnerDependencies::Process(TSubclassOf<UObject> Class)
 void ITGOR_SpawnerInterface::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
 }
+
+/*
+TSubclassOf<UTGOR_SpawnModule> ITGOR_SpawnerInterface::GetModuleType_Implementation() const
+{
+	return UTGOR_SpawnModule::StaticClass();
+}
+*/

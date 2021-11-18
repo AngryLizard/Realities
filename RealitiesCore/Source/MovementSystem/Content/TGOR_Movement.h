@@ -3,7 +3,7 @@
 
 #include "../TGOR_MovementInstance.h"
 
-#include "CoreSystem/Content/TGOR_CoreContent.h"
+#include "DimensionSystem/Content/TGOR_SpawnModule.h"
 #include "TGOR_Movement.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ enum class ETGOR_MovementEnumeration : uint8
 * TGOR_Movement is a movement mode the MovementComponent activates and ticks
 */
 UCLASS()
-class MOVEMENTSYSTEM_API UTGOR_Movement : public UTGOR_CoreContent
+class MOVEMENTSYSTEM_API UTGOR_Movement : public UTGOR_SpawnModule
 {
 	GENERATED_BODY()
 
@@ -78,18 +78,7 @@ public:
 	/** Maximum speed ratio attribute */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		TSubclassOf<UTGOR_Attribute> SpeedAttribute;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Attributes supported by this movement */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Attribute>> AttributeInsertions;
-		DECL_INSERTION(AttributeInsertions);
-
-		virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
-
-	
+		
 protected:
 
 private:

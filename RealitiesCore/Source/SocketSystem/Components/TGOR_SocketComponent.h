@@ -22,7 +22,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNamedSocketDelegate, UTGOR_NamedSoc
  * TGOR_SocketComponent allows parenting to sockets of attached primitives.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class SOCKETSYSTEM_API UTGOR_SocketComponent : public UTGOR_PilotComponent, public ITGOR_AttributeInterface
+class SOCKETSYSTEM_API UTGOR_SocketComponent : public UTGOR_PilotComponent
 {
 	GENERATED_BODY()
 
@@ -36,10 +36,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component) override;
-	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
-
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -52,10 +50,6 @@ protected:
 	/** Attachments to this component */
 	UPROPERTY()
 		TMap<UTGOR_NamedSocket*, TWeakObjectPtr<UTGOR_NamedSocketTask>> Attachments;
-
-	/** Current socket attributes */
-	UPROPERTY()
-		FTGOR_AttributeInstance Attributes;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

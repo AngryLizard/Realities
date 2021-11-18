@@ -4,6 +4,7 @@
 #include "AnimationSystem/Components/TGOR_HandleComponent.h"
 #include "AnimationSystem/Components/TGOR_AttachComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
+#include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
 #include "DimensionSystem/Content/TGOR_Primitive.h"
@@ -48,8 +49,7 @@ float UTGOR_MovementTask::GetSpeedRatio() const
 
 float UTGOR_MovementTask::GetAttribute(TSubclassOf<UTGOR_Attribute> Type, float Default) const
 {
-	UTGOR_Attribute* Attribute = Identifier.Content->Instanced_AttributeInsertions.GetOfType(Type);//GetIFromType<UTGOR_Attribute>(Type);
-	return Identifier.Component->Execute_GetAttribute(Identifier.Component, Attribute, Default);
+	return UTGOR_AttributeComponent::GetAttributeValue(Identifier.Component->GetOwner(), Type, Default);
 }
 
 void UTGOR_MovementTask::GetHandleComponents(TArray<UTGOR_HandleComponent*>& Handles, const TSet<TSubclassOf<UTGOR_Primitive>>& Types, bool EnforceCone) const

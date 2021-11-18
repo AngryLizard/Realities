@@ -3,7 +3,7 @@
 #include "TGOR_MatterComponent.h"
 
 #include "InventorySystem/Content/TGOR_Segment.h"
-#include "InventorySystem/Content/TGOR_Resource.h"
+#include "DimensionSystem/Content/TGOR_Spawner.h"
 
 #include "CoreSystem/TGOR_Singleton.h"
 #include "CoreSystem/Gameplay/TGOR_GameState.h"
@@ -44,38 +44,44 @@ void UTGOR_MatterComponent::RepNotifyMatterContainers()
 
 void UTGOR_MatterComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	SINGLETON_CHK;
-
 	FTGOR_MatterContainers Old = MatterContainers;
-
 	MatterContainers.Containers.Empty();
 
-	UTGOR_Resource* Resource = Cast<UTGOR_Resource>(Dependencies.Spawner);
-	if (IsValid(Resource))
+	const TArray<TObjectPtr<UTGOR_Segment>> Segments = Dependencies.Spawner->GetMListFromType<UTGOR_Segment>(SpawnSegments);
+	for (UTGOR_Segment* Segment : Segments)
 	{
-		const TArray<UTGOR_Segment*>& Segments = Resource->Instanced_SegmentInsertions.Collection;// ->GetIListFromType<UTGOR_Segment>();
-		for (UTGOR_Segment* Segment : Segments)
-		{
-			FTGOR_MatterContainer Container;
-			Container.Segment = Segment;
+		FTGOR_MatterContainer Container;
+		Container.Segment = Segment;
 
-			// Move matter from old container if available
-			// TODO: Do we want that?
-			for (const FTGOR_MatterContainer& OldContainer : Old.Containers)
+		// Move matter from old container if available
+		// TODO: Do we want that?
+		for (const FTGOR_MatterContainer& OldContainer : Old.Containers)
+		{
+			if (OldContainer.Segment == Segment)
 			{
-				if (OldContainer.Segment == Segment)
+				for (const auto& Pair : OldContainer.Slots)
 				{
-					for (const auto& Pair : OldContainer.Slots)
-					{
-						Container.AddMatter(Pair.Key, Pair.Value);
-					}
+					Container.AddMatter(Pair.Key, Pair.Value);
 				}
 			}
-
-			MatterContainers.Containers.Emplace(Container);
 		}
+
+		MatterContainers.Containers.Emplace(Container);
 	}
+
 	OnMatterChanged.Broadcast();
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_MatterComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+	Modules.Reserve(MatterContainers.Containers.Num());
+
+	for (const FTGOR_MatterContainer& Container : MatterContainers.Containers)
+	{
+		Modules.Emplace(Container.Segment->GetStorageIndex(), Container.Segment);
+	}
+	return Modules;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

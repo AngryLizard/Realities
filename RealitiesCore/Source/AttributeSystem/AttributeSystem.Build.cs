@@ -15,6 +15,7 @@ public class AttributeSystem : ModuleRules
 				"RealitiesUtility",
 
 				"CoreSystem",
+				"DimensionSystem",
 				"UISystem",
 
 				"Core",

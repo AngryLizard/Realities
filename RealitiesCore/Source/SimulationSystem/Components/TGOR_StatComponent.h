@@ -16,6 +16,7 @@
 #include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
 #include "CoreSystem/Components/TGOR_Component.h"
 #include "DimensionSystem/Content/TGOR_Energy.h"
+#include "SimulationSystem/TGOR_SimulationInstance.h"
 
 #include "TGOR_StatComponent.generated.h"
 
@@ -122,18 +123,24 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component) override;
-	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const override;
 	virtual bool IsContentActive_Implementation(UTGOR_CoreContent* Content) const override;
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
+
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
+
+	TArray<UTGOR_Modifier*> QueryActiveModifiers_Implementation() const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Simulation type this stat spawns with. */
+	/** Stats in this simulator */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
-		TSubclassOf<UTGOR_Simulation> SpawnSimulation;
+		TArray<TSubclassOf<UTGOR_Stat>> SpawnStats;
+
+	/** Effects in this simulator */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
+		TArray<TSubclassOf<UTGOR_Effect>> SpawnEffects;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -158,13 +165,6 @@ protected:
 	/** Update effects */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Stats", Meta = (Keywords = "C++"))
 		void UpdateEffects();
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Current stat attributes */
-	UPROPERTY()
-		FTGOR_AttributeInstance Attributes;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -205,5 +205,5 @@ private:
 
 	/** Currently active effects */
 	UPROPERTY()
-		TSet<UTGOR_CoreContent*> ActiveEffects;
+		TArray<UTGOR_Effect*> ActiveEffects;
 };

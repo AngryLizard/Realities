@@ -28,19 +28,19 @@ FVector ComputeScaleBetween(const FVector& S, const FVector& A, const FVector& B
 	return Scale;
 }
 
-void FTGORRigUnit_Propagate::PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren)
+void FTGORRigUnit_Propagate::PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
 {
 	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
 	const FTransform Local = Hierarchy->GetLocalTransform(Next);
 
 	// Rotate to match
 	const FVector CurrentDelta = Transform.TransformVectorNoScale(Local.GetLocation());
-	const FVector TargetDelta = Target - Transform.GetLocation();
+	const FVector TargetDelta = FMath::Lerp(CurrentDelta, Target - Transform.GetLocation(), Intensity);
 	const FQuat Rotation = FQuat::FindBetweenVectors(CurrentDelta, TargetDelta);
 	Transform.SetRotation(Rotation * Transform.GetRotation());
 
 	// Scale to match
-	Transform.SetScale3D(ComputeScaleBetween(Transform.GetScale3D(), Local.GetLocation(), Transform.InverseTransformVectorNoScale(TargetDelta)));
+	//Transform.SetScale3D(ComputeScaleBetween(Transform.GetScale3D(), Local.GetLocation(), Transform.InverseTransformVectorNoScale(TargetDelta)));
 
 	// Update chain element
 	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
@@ -62,7 +62,7 @@ FTGORRigUnit_Propagate_Execute()
 	}
 	else
 	{
-		PropagateChainTorwards(Key, NextKey, TargetLocation, Hierarchy, PropagateToChildren != ETGOR_Propagation::Off);
+		PropagateChainTorwards(Key, NextKey, TargetLocation, Hierarchy, PropagateToChildren != ETGOR_Propagation::Off, Alpha);
 	}
 }
 
@@ -235,6 +235,87 @@ FTGORRigUnit_TransformToPlane_Execute()
 }
 
 FString FTGORRigUnit_TransformToPlane::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FQuat FTGORRigUnit_LimitRotation::LimitRotation(const FQuat& Quat, const FVector& Axis, float Min, float Max)
+{
+	// Compute acceptable W
+	const FVector A = FVector(Quat.X, Quat.Y, Quat.Z);
+	const float Sq = A.SizeSquared();
+	const float Lr = (Axis | (A / FMath::Sqrt(Sq)));
+
+	const float L = FMath::Lerp(Min, Max, (1.0f + Lr) * 0.5f);
+	const float W = FMath::Max(FMath::Cos(L * 0.5f), Quat.W);
+	const float V = 1.0f - W * W;
+
+	if (!FMath::IsNearlyZero(V))
+	{
+		const float InvS = FMath::Sqrt(V / Sq);
+		return FQuat(A.X * InvS, A.Y * InvS, A.Z * InvS, W);
+	}
+	return FQuat::Identity;
+}
+
+FQuat FTGORRigUnit_LimitRotation::SoftLimitRotation(const FQuat& Quat, float Limit)
+{
+	// Compute acceptable W
+	const FVector A = FVector(Quat.X, Quat.Y, Quat.Z);
+	const float Sq = A.SizeSquared();
+
+	const float Ls = 1.0f - FMath::Cos(Limit * 0.5f);
+	const float W = 1.0f - FTGORRigUnit_SoftBoundaries::SoftBoundaries(1.0f - Quat.W, Ls);
+	const float V = 1.0f - W * W;
+
+	if (!FMath::IsNearlyZero(Sq))
+	{
+		const float InvS = FMath::Sqrt(V / Sq);
+		return FQuat(A.X * InvS, A.Y * InvS, A.Z * InvS, W);
+	}
+	return FQuat::Identity;
+}
+
+FQuat FTGORRigUnit_LimitRotation::LimitRotation(const FQuat& Quat, float Limit)
+{
+	// Compute acceptable W
+	const FVector A = FVector(Quat.X, Quat.Y, Quat.Z);
+	const float Sq = A.SizeSquared();
+
+	const float W = FMath::Max(FMath::Cos(Limit * 0.5f), Quat.W);
+	const float V = 1.0f - W * W;
+
+	if (!FMath::IsNearlyZero(V))
+	{
+		const float InvS = FMath::Sqrt(V / Sq);
+		return FQuat(A.X * InvS, A.Y * InvS, A.Z * InvS, W);
+	}
+	return FQuat::Identity;
+}
+
+FTGORRigUnit_LimitRotation_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		Output = LimitRotation(Quat, Axis, Min, Max);
+
+		const float Length = Output.SizeSquared();
+
+		UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Square length %f."), Length);
+
+	}
+}
+
+FString FTGORRigUnit_LimitRotation::ProcessPinLabelForInjection(const FString& InLabel) const
 {
 	FString Formula;
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);
@@ -583,12 +664,46 @@ FTGORRigUnit_GetScaleLength_Execute()
 		else
 		{
 			const FTransform Transform = Hierarchy->GetGlobalTransform(ConeCache);
-			Output = Transform.GetScale3D().GetComponentForAxis(Axis) * 100.0f;
+			if (Axis == EAxis::None)
+			{
+				Output = Transform.GetScale3D().Size() / SQRT_THREE * 100.0f;
+			}
+			else
+			{
+				Output = Transform.GetScale3D().GetComponentForAxis(Axis) * 100.0f;
+			}
 		}
 	}
 }
 
 FString FTGORRigUnit_GetScaleLength::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+float FTGORRigUnit_SoftBoundaries::SoftBoundaries(float Value, float Max)
+{
+	return Max * 2.0f * (1.0f / (1.0f + FMath::Exp(-Value * 2.0f / Max)) - 0.5f);
+}
+
+FTGORRigUnit_SoftBoundaries_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		Output = SoftBoundaries(Value, Limit);
+	}
+}
+
+FString FTGORRigUnit_SoftBoundaries::ProcessPinLabelForInjection(const FString& InLabel) const
 {
 	FString Formula;
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);
@@ -711,49 +826,4 @@ FString FTGORRigUnit_PreviewAnimation::ProcessPinLabelForInjection(const FString
 	FString Formula;
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
-
-
-/// ///////////////////////////////////////////////////////// Linker doesn't wanna give it to me? fine, just copy paste!
-/*
-bool FCachedRigElement::UpdateCache(const FRigHierarchyContainer* InContainer)
-{
-	if (InContainer)
-	{
-		if (!IsValid() || InContainer->Version != ContainerVersion)
-		{
-			return UpdateCache(GetKey(), InContainer);
-		}
-		return IsValid();
-	}
-	return false;
-}
-
-bool FCachedRigElement::UpdateCache(const FRigElementKey& InKey, const FRigHierarchyContainer* InContainer)
-{
-	if (InContainer)
-	{
-		if (!IsValid() || !IsIdentical(InKey, InContainer))
-		{
-			Reset();
-
-			int32 Idx = InContainer->GetIndex(InKey);
-			if (Idx != INDEX_NONE)
-			{
-				Key = InKey;
-				Index = (uint16)Idx;
-			}
-
-			ContainerVersion = InContainer->Version;
-		}
-		return IsValid();
-	}
-	return false;
-}
-
-bool FCachedRigElement::IsIdentical(const FRigElementKey& InKey, const FRigHierarchyContainer* InContainer)
-{
-	return InKey == Key && InContainer->Version == ContainerVersion;
-}
-*/
-/// /////////////////////////////////////////////////////////
 

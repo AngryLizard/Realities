@@ -2,7 +2,6 @@
 
 #include "TGOR_MovementComponent.h"
 
-#include "MovementSystem/Content/TGOR_Mobile.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 #include "MovementSystem/Tasks/TGOR_MovementTask.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
@@ -71,7 +70,6 @@ void UTGOR_MovementComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementInput, COND_SimulatedOnly);
 
 	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementSlots, COND_None); // This MUST be replicated before setup
-	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementSetup, COND_None);
 	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementState, COND_None);
 }
 
@@ -93,11 +91,82 @@ void UTGOR_MovementComponent::UpdateContent_Implementation(FTGOR_SpawnerDependen
 	Dependencies.Process<UTGOR_PilotComponent>();
 	Dependencies.Process<UTGOR_AnimationComponent>();
 
-	FTGOR_MovementInstance Setup;
-	Setup.Mobile = Dependencies.Spawner->GetMFromType<UTGOR_Mobile>(SpawnMobile);
-	ApplyMovementSetup(Setup);
+
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	TMap<UTGOR_Movement*, TArray<UTGOR_MovementTask*>> Previous;
+
+	// Remove slots but cache both instances and items in case the new loadout can use them
+	for (int Slot = 0; Slot < MovementSlots.Num(); Slot++)
+	{
+		UTGOR_MovementTask* MovementSlot = MovementSlots[Slot];
+		if (IsValid(MovementSlot))
+		{
+			Previous.FindOrAdd(MovementSlot->GetMovement()).Add(MovementSlot);
+		}
+	}
+
+	MovementSlots.Empty();
+
+	// Get installed movement modes
+	Movements = Dependencies.Spawner->GetMListFromType<UTGOR_Movement>(SpawnMovements);
+
+	// Get all candidates that are part of the movement queue
+	for (UTGOR_Movement* Movement : Movements)
+	{
+		// Get slot from cache or create one
+		UTGOR_MovementTask* MovementSlot = nullptr;
+
+		TArray<UTGOR_MovementTask*>* Ptr = Previous.Find(Movement);
+		if (Ptr && Ptr->Num() > 0)
+		{
+			MovementSlot = Ptr->Pop();
+		}
+		else
+		{
+			// No cache was found, create a new one
+			MovementSlot = Movement->CreateMovementTask(this, MovementSlots.Num());
+		}
+
+		// Initialise and add to slots
+		if (IsValid(MovementSlot))
+		{
+			MovementSlots.Add(MovementSlot);
+		}
+	}
+
+	// Schedule with current if available or reset
+	const int32 ActiveSlot = MovementSlots.Find(CurrentTask);
+	if (MovementSlots.IsValidIndex(ActiveSlot))
+	{
+		MoveWith(ActiveSlot);
+	}
+	else
+	{
+		MoveWith(INDEX_NONE);
+	}
+
+	// Discard tasks that got removed
+	for (const auto& Pair : Previous)
+	{
+		for (UTGOR_MovementTask* MovementSlot : Pair.Value)
+		{
+			MovementSlot->MarkPendingKill();
+		}
+	}
 
 	BuildMovementFrame();
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_MovementComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	const int32 Num = Movements.Num();
+	for (int32 Index = 0; Index < Num; Index++)
+	{
+		Modules.Emplace(Index, Movements[Index]);
+	}
+	return Modules;
 }
 
 TSubclassOf<UTGOR_Performance> UTGOR_MovementComponent::GetPerformanceType() const
@@ -109,17 +178,6 @@ UTGOR_AnimationComponent* UTGOR_MovementComponent::GetAnimationComponent() const
 {
 	return GetOwnerComponent<UTGOR_AnimationComponent>();
 }
-
-void UTGOR_MovementComponent::UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component)
-{
-	Component->UpdateAttributes(Attributes.Values);
-}
-
-float UTGOR_MovementComponent::GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const
-{
-	return Attributes.GetAttribute(Attribute, Default);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -264,91 +322,6 @@ void UTGOR_MovementComponent::RepNotifyMovementState(const FTGOR_MovementState& 
 {
 }
 
-bool UTGOR_MovementComponent::ApplyMovementSetup(FTGOR_MovementInstance Setup)
-{
-	SINGLETON_RETCHK(false);
-
-	UTGOR_MovementTask* CurrentTask = GetMovementTask();
-	TMap<UTGOR_Movement*, TArray<UTGOR_MovementTask*>> Previous;
-
-	// Remove slots but cache both instances and items in case the new loadout can use them
-	for (int Slot = 0; Slot < MovementSlots.Num(); Slot++)
-	{
-		UTGOR_MovementTask* MovementSlot = MovementSlots[Slot];
-		if (IsValid(MovementSlot))
-		{
-			Previous.FindOrAdd(MovementSlot->GetMovement()).Add(MovementSlot);
-		}
-	}
-
-	MovementSlots.Empty();
-	MovementSetup.Mobile = Setup.Mobile;
-	if (IsValid(Setup.Mobile))
-	{
-		// Get installed movement modes
-		const TArray<UTGOR_Movement*>& Movements = Setup.Mobile->Instanced_MovementInsertions.Collection;//Content->GetIListFromType<UTGOR_Movement>();
-
-		// Get all candidates that are part of the movement queue
-		for (UTGOR_Movement* Movement : Movements)
-		{
-			// Add inserted attributes
-			const TArray<UTGOR_Attribute*>& AttributeQueue = Movement->Instanced_AttributeInsertions.Collection;//GetIListFromType<UTGOR_Attribute>();
-			for (UTGOR_Attribute* Attribute : AttributeQueue)
-			{
-				// Attributes were already reset in a parent component
-				Attributes.Values.Emplace(Attribute, Attribute->DefaultValue);
-			}
-
-			// Get slot from cache or create one
-			UTGOR_MovementTask* MovementSlot = nullptr;
-
-			TArray<UTGOR_MovementTask*>* Ptr = Previous.Find(Movement);
-			if (Ptr && Ptr->Num() > 0)
-			{
-				MovementSlot = Ptr->Pop();
-			}
-			else
-			{
-				// No cache was found, create a new one
-				MovementSlot = Movement->CreateMovementTask(this, MovementSlots.Num());
-			}
-
-			// Initialise and add to slots
-			if (IsValid(MovementSlot))
-			{
-				MovementSlots.Add(MovementSlot);
-			}
-		}
-	}
-
-	// Schedule with current if available or reset
-	const int32 ActiveSlot = MovementSlots.Find(CurrentTask);
-	if (MovementSlots.IsValidIndex(ActiveSlot))
-	{
-		MoveWith(ActiveSlot);
-	}
-	else
-	{
-		MoveWith(INDEX_NONE);
-	}
-
-	// Discard tasks that got removed
-	for (const auto& Pair : Previous)
-	{
-		for (UTGOR_MovementTask* MovementSlot : Pair.Value)
-		{
-			MovementSlot->MarkPendingKill();
-		}
-	}
-	return true;
-}
-
-
-void UTGOR_MovementComponent::OnReplicateMovementSetup()
-{
-	ApplyMovementSetup(MovementSetup);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FVector UTGOR_MovementComponent::GetRawInput() const
@@ -462,8 +435,8 @@ void UTGOR_MovementComponent::UpdateMovement(const FTGOR_MovementTick& Tick, con
 		}
 	}
 
-	// Go through priority list in reverse order
-	for (int32 Index = MovementSlots.Num() - 1; Index >= 0; Index--)
+	// Go through priority list
+	for (int32 Index = 0; Index < MovementSlots.Num(); Index++)
 	{
 		// Stop at already active movement
 		UTGOR_MovementTask* MovementSlot = MovementSlots[Index];

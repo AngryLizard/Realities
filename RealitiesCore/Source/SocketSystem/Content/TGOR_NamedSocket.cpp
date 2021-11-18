@@ -3,6 +3,7 @@
 #include "TGOR_NamedSocket.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
 
+#include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 #include "TargetSystem/Components/TGOR_InteractableComponent.h"
 #include "SocketSystem/Components/TGOR_SocketComponent.h"
 
@@ -100,8 +101,7 @@ bool UTGOR_NamedSocket::CheckDimensions(const UTGOR_SocketComponent* Parent, con
 {
 	if (IsValid(Parent))
 	{
-		UTGOR_Attribute* Attribute = Instanced_AttributeInsertions.GetOfType(SizeAttribute);
-		const float Factor = Parent->Execute_GetAttribute(Parent, Attribute, 1.0f);
+		const float Factor = UTGOR_AttributeComponent::GetAttributeValue(Parent->GetOwner(), SizeAttribute, 1.0f);
 
 		const FTGOR_MovementShape& ParentShape = Parent->GetBody();
 		return (Shape.Radius <= ParentShape.Radius * Radius * Factor && Shape.Height <= ParentShape.Height * Height * Factor);

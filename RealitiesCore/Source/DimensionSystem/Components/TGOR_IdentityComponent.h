@@ -71,6 +71,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System")
 		TSubclassOf<UTGOR_Spawner> DefaultSpawner;
 
+	/** Get spawner interface objects attached to this identity */
+	UFUNCTION(BlueprintPure, Category = "!TGOR System", Meta = (Keywords = "C++"))
+		TArray<UObject*> GetSpawnerObjects() const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -95,6 +99,10 @@ protected:
 	/** Actor identification in current world (or -1 if not tracked) */
 	UPROPERTY(VisibleAnywhere, Replicated, Category = "!TGOR Dimension")
 		int32 WorldIdentity;
+
+	/** Associated Spawn objects */
+	UPROPERTY(BlueprintReadOnly, Category = "!TGOR System")
+		TArray<TScriptInterface<ITGOR_SpawnerInterface>> SpawnerObjects;
 
 	/** Associated Dimension objects */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Dimension")

@@ -24,6 +24,6 @@ TArray<UTGOR_CoreContent*> UTGOR_AttributeQuery::QueryContent() const
 
 void UTGOR_AttributeQuery::AssignComponent(UTGOR_AttributeComponent* AttributeComponent)
 {
-	Attributes = AttributeComponent->GetAttributes();
+	Attributes = AttributeComponent->ComputeActiveAttributes();
 }
 

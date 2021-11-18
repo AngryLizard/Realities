@@ -10,7 +10,6 @@
 
 #include "CustomisationSystem/Content/TGOR_Skin.h"
 #include "CreatureSystem/Content/TGOR_Creature.h"
-#include "ActionSystem/Content/TGOR_Loadout.h"
 #include "ActionSystem/Content/TGOR_Action.h"
 
 #include "CoreSystem/Gameplay/TGOR_GameInstance.h"

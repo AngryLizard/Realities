@@ -16,7 +16,7 @@ class UTGOR_AttributeInterface : public UInterface
 };
 
 /**
- *
+ * Interface for objects that modify attributes
  */
 class ATTRIBUTESYSTEM_API ITGOR_AttributeInterface
 {
@@ -24,14 +24,8 @@ class ATTRIBUTESYSTEM_API ITGOR_AttributeInterface
 
 public:
 
-	/** Set attribute structures */
+	/** Get attribute modifications */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "!TGOR Game", Meta = (Keywords = "C++"))
-		void UpdateAttributes(const UTGOR_AttributeComponent* Component);
-	virtual void UpdateAttributes_Implementation(const UTGOR_AttributeComponent* Component);
-
-	/** Get cached attribute value */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "!TGOR Game", Meta = (Keywords = "C++"))
-		float GetAttribute(UTGOR_Attribute* Attribute, float Default) const;
-	virtual float GetAttribute_Implementation(UTGOR_Attribute* Attribute, float Default) const;
-
+		TArray<UTGOR_Modifier*> QueryActiveModifiers() const;
+	virtual TArray<UTGOR_Modifier*> QueryActiveModifiers_Implementation() const;
 };
