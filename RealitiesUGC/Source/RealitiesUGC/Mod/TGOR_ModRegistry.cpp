@@ -22,7 +22,7 @@ FTGOR_UGCPackage::FTGOR_UGCPackage()
 	IsCorePackage = false;
 }
 
-
+#pragma optimize( "", off )
 bool UTGOR_ModRegistry::FindUGCPackages()
 {
 	const FProjectDescriptor* Project = IProjectManager::Get().GetCurrentProject();
@@ -47,13 +47,14 @@ bool UTGOR_ModRegistry::FindUGCPackages()
 			Package.EngineVersion = *Descriptor.EngineVersion;
 			Package.Author = *Descriptor.CreatedBy;
 			Package.Description = *Descriptor.Description;
-			CorePackage.IsCorePackage = IsCorePackage;
+			Package.IsCorePackage = IsCorePackage;
 			UGCPackages.Add(Package);
 		}
 	}
 	
 	return UGCPackages.Num() > 0;
 }
+#pragma optimize( "", on )
 
 bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 {
