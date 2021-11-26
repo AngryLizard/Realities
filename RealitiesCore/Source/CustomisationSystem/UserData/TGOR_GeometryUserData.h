@@ -159,7 +159,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "MeshMerge")
 		TArray<FTGOR_RenderGeometrySection> RenderSections;
 
-
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Pawn", Meta = (Keywords = "C++"))
 		void EnsureVertexBake(UObject* WorldContextObject, USkeletalMesh* SourceMesh, int32 SectionIndex, bool CreateAsset);
 

@@ -261,7 +261,7 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 		}
 
 		// Merge meshes into one
-		FTGOR_SkeletalMeshMerge Merge(TargetMesh, Meshes, Mappings, 0, EMeshBufferAccess::Default, UVTransforms, LocalSpaceTransforms, TargetRigBoneMapping);
+		FTGOR_SkeletalMeshMerge Merge(TargetMesh, Meshes, Mappings, 0, EMeshBufferAccess::Default, UVTransforms, LocalSpaceTransforms, TargetCache.RigBoneMapping);
 		if (Merge.DoMerge())
 		{
 			TArray<FSkeletalMaterial>& MeshMaterials = TargetMesh->GetMaterials();
@@ -313,8 +313,10 @@ FTGOR_BodypartMergeOutput UTGOR_CustomisationComponent::MergeBodyparts()
 
 void UTGOR_CustomisationComponent::RuntimeExportMesh(const FTGOR_BodypartMergeOutput& Output, const FString& Filename)
 {
+#if WITH_EDITOR
 	FTGOR_SkeletalMeshExport SkeletalExport(Output);
 	SkeletalExport.Export(Filename);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

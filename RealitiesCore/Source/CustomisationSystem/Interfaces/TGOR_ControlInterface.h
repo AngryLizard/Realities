@@ -37,5 +37,5 @@ public:
 
 	/** Gets the transform of this control relative to a given component */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Game", Meta = (Keywords = "C++"))
-		virtual FTransform GetControlTransform(UTGOR_ControlSkeletalMeshComponent* Component) const;
+		virtual FTransform GetControlTransform(USkinnedMeshComponent* Component) const;
 };

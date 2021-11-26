@@ -25,6 +25,7 @@ ATGOR_PhysicsVolume::ATGOR_PhysicsVolume(const FObjectInitializer& ObjectInitial
 	bReplicates = true;
 
 	MobilityComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_PilotComponent>(this, FName(TEXT("PilotComponent")));
+	MobilityComponent->SetVisibility(false);
 	SetRootComponent(MobilityComponent);
 
 	IdentityComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_IdentityComponent>(this, FName(TEXT("IdentityComponent")));

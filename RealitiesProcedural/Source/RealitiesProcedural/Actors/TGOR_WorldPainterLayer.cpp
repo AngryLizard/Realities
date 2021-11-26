@@ -148,10 +148,6 @@ void ATGOR_WorldPainterLayer::PostEditMove(bool bFinished)
 	OnBrushUpdate(bFinished);
 }
 
-#endif // WITH_EDITOR
-
-
-
 void ATGOR_WorldPainterLayer::Bake()
 {
 	if (!GenerateTriangulationDone) GenerateTriangulation();
@@ -161,7 +157,6 @@ void ATGOR_WorldPainterLayer::Bake()
 	if (!GenerateTextureDone) GenerateTexture();
 	//GenerateMesh();
 }
-
 
 void ATGOR_WorldPainterLayer::OnBrushUpdate(bool bFinished)
 {
@@ -175,12 +170,14 @@ void ATGOR_WorldPainterLayer::OnBrushUpdate(bool bFinished)
 		Bake();
 	}
 }
+#endif
 
 ATGOR_WorldPainterCanvas* ATGOR_WorldPainterLayer::GetPainterCanvas() const
 {
 	return Cast<ATGOR_WorldPainterCanvas>(GetAttachParentActor());
 }
 
+#if WITH_EDITOR
 void ATGOR_WorldPainterLayer::GenerateTriangulation()
 {
 	FRandomStream Random(GeneratorSeed);
@@ -379,6 +376,7 @@ void ATGOR_WorldPainterLayer::GenerateTexture()
 	}
 	GenerateTextureDone = true;
 }
+#endif // WITH_EDITOR
 
 
 void ATGOR_WorldPainterLayer::BeginDrawCanvasToRenderTargetVolume(UCanvas*& Canvas, FVector2D& Size)

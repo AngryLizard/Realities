@@ -40,9 +40,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Painter Texture", meta = (ShowOnlyInnerProperties))
 		FTGOR_BrushData Brush;
 
+#if WITH_EDITOR
 	/** Bake owning painter canvas */
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "World Painter Brush", Meta = (Keywords = "C++"))
 		void Bake();
+#endif
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

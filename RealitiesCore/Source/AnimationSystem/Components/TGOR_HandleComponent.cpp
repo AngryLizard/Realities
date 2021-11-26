@@ -22,9 +22,9 @@ FName UTGOR_HandleComponent::GetControlName() const
 	return GetFName();
 }
 
-FTransform UTGOR_HandleComponent::GetControlTransform(UTGOR_ControlSkeletalMeshComponent* Component) const
+FTransform UTGOR_HandleComponent::GetControlTransform(USkinnedMeshComponent* Component) const
 {
-	return Component->GetRelativeControlTransform(this);
+	return UTGOR_ControlSkeletalMeshComponent::GetRelativeControlTransform(Component, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +82,6 @@ bool UTGOR_HandleComponent::TraceHandle(UTGOR_PilotComponent* Component, const F
 		Task->Parent(Parent.Mobility, Parent.Index);
 		Task->SimulateDynamic(Output);
 
-		Flatness = 1.0f;
 		return true;
 	}
 	return false;
@@ -90,9 +89,9 @@ bool UTGOR_HandleComponent::TraceHandle(UTGOR_PilotComponent* Component, const F
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 FPrimitiveSceneProxy* UTGOR_HandleComponent::CreateSceneProxy()
 {
-	/** Represents a UCapsuleComponent to the scene manager. */
 	class FDrawHandleSceneProxy final : public FPrimitiveSceneProxy
 	{
 	public:
@@ -187,3 +186,4 @@ FPrimitiveSceneProxy* UTGOR_HandleComponent::CreateSceneProxy()
 
 	return new FDrawHandleSceneProxy(this);
 }
+*/

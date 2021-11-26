@@ -40,16 +40,16 @@ class ANIMATIONSYSTEM_API UTGOR_HandleComponent : public UTGOR_PilotComponent, p
 public:
 	UTGOR_HandleComponent();
 	virtual FName GetControlName() const override;
-	virtual FTransform GetControlTransform(UTGOR_ControlSkeletalMeshComponent* Component) const override;
+	virtual FTransform GetControlTransform(USkinnedMeshComponent* Component) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Flatness of this control */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Animation")
-		float Flatness;
+	/** How much this control currently applies to the animation */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Animation", meta=(ClampMin = 0, ClampMax = 1))
+		float Intensity = 1.0f;
 
 	/** Name of the controlrig key (if applicable, otherwise None) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Animation")
@@ -66,14 +66,5 @@ public:
 		Returns true if trace was successful and hit something. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
 		bool TraceHandle(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output);
-
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	//~ Begin UPrimitiveComponent Interface.
-	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
-	//~ End UPrimitiveComponent Interface.
 
 };

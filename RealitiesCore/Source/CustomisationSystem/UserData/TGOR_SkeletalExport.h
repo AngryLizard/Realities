@@ -191,6 +191,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if WITH_EDITOR
 	bool OpenFileDialogue(const FString& FileName, FString& OutFilePath);
 	void Export(const FString& Filename);
+#endif
 };

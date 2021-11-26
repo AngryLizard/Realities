@@ -51,16 +51,18 @@ void ATGOR_WorldPainterBrush::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
+#if WITH_EDITORONLY_DATA
 	UMaterialInterface* Material = GetPreviewComponent()->GetMaterial(0);
 	if (IsValid(Material) && !IsValid(DynamicMaterial))
 	{
 		DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this);
 	}
+#endif
 
 	UpdateBillboardMaterial();
 }
 
-
+#if WITH_EDITOR
 void ATGOR_WorldPainterBrush::Bake()
 {
 	ATGOR_WorldPainterLayer* PainterLayer = GetPainterLayer();
@@ -69,9 +71,11 @@ void ATGOR_WorldPainterBrush::Bake()
 		PainterLayer->Bake();
 	}
 }
+#endif
 
 void ATGOR_WorldPainterBrush::UpdateBillboardMaterial()
 {
+#if WITH_EDITORONLY_DATA
 	if (IsValid(DynamicMaterial))
 	{
 		const int32 Num = Brush.Slices.Num();
@@ -89,6 +93,7 @@ void ATGOR_WorldPainterBrush::UpdateBillboardMaterial()
 
 		GetPreviewComponent()->SetMaterial(0, DynamicMaterial);
 	}
+#endif
 }
 
 ATGOR_WorldPainterLayer* ATGOR_WorldPainterBrush::GetPainterLayer() const

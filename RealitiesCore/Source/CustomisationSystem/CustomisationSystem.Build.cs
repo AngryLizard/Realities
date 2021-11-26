@@ -34,7 +34,6 @@ public class CustomisationSystem : ModuleRules
 				"Slate",
 				"SlateCore",
 				"ControlRig",
-				"DesktopPlatform",
 				"AnimationCore",
 				"RenderCore",
 				"Json",
@@ -48,7 +47,8 @@ public class CustomisationSystem : ModuleRules
 			PrivateDependencyModuleNames.AddRange(
 				new string[] 
 				{
-					"UnrealEd"
+					"UnrealEd",
+					"DesktopPlatform",
 				}
 				);
 		}

@@ -6,28 +6,20 @@
 
 #include "CustomisationSystem/Interfaces/TGOR_ControlInterface.h"
 #include "Components/ShapeComponent.h"
-#include "TGOR_ControlComponent.generated.h"
+#include "TGOR_EllipsoidComponent.generated.h"
 
-#define CONTROL_RADIUS 10.0f
-
-
-UENUM(BlueprintType)
-enum class ETGOR_ControlType : uint8
-{
-	Pivot,
-	Vector
-};
+#define ELLIPSOID_RADIUS 10.0f
 
 /**
- * UTGOR_ControlComponent represent character customisations
+ * UTGOR_EllipsoidComponent represent ellipsoidal collision elements
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class CUSTOMISATIONSYSTEM_API UTGOR_ControlComponent : public UShapeComponent, public ITGOR_ControlInterface
+class ANIMATIONSYSTEM_API UTGOR_EllipsoidComponent : public UShapeComponent, public ITGOR_ControlInterface
 {
 	GENERATED_BODY()
 
 public:
-	UTGOR_ControlComponent();
+	UTGOR_EllipsoidComponent();
 	virtual FName GetControlName() const override;
 	virtual FTransform GetControlTransform(USkinnedMeshComponent* Component) const override;
 
@@ -36,20 +28,16 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Type of the control */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Customisation")
-		ETGOR_ControlType ControlType;
-	
+	/** How much this collision applies */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Animation", meta = (ClampMin = 0, ClampMax = 1))
+		float Intensity = 1.0f;
+
+	/** Name of the controlrig key (if applicable, otherwise None) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Animation")
+		FName ControlName;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	//~ Begin UObject Interface
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-	virtual void PostEditComponentMove(bool bFinished) override;
-#endif // WITH_EDITOR
-	//~ End UObject Interface
 
 	//~ Begin USceneComponent Interface
 	virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
@@ -64,5 +52,4 @@ public:
 	//~ Begin UShapeComponent Interface
 	virtual void UpdateBodySetup() override;
 	//~ End UShapeComponent Interface
-
 };
