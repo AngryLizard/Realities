@@ -70,7 +70,7 @@ public:
 	* Grab rotation [0..1]
 	*/
 	UPROPERTY(meta = (Input))
-		float Grab;
+		float Grab = 0.0f;
 
 	/**
 	* Range in degrees for grab values
@@ -82,7 +82,7 @@ public:
 	* Lateral rotation [0..1]
 	*/
 	UPROPERTY(meta = (Input))
-		float Spread;
+		float Spread = 0.0f;
 
 	/**
 	* Base range in degrees for spread values
@@ -112,7 +112,7 @@ public:
 	* Output grab angle in degrees
 	*/
 	UPROPERTY(meta = (Output))
-		float Angle;
+		float Angle = 0.0f;
 
 	// Cache
 	UPROPERTY(Transient)

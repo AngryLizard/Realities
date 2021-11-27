@@ -159,7 +159,10 @@ void UTGOR_GeometryUserData::EnsureVertexBake(UObject* WorldContextObject, USkel
 
 				RenderTarget->UpdateTexture2D(Pair.Value, ETextureSourceFormat::TSF_RGBA16F);
 				Section.Bakes.Emplace(Pair.Key, Pair.Value);
+
+#if WITH_EDITOR
 				Pair.Value->PostEditChange();
+#endif
 			}
 		}
 

@@ -107,12 +107,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "World Painter Texture", Meta = (ClampMin = 0, ClampMax = 256))
 		int32 MaterialID = 0;
 
+#if WITH_EDITOR
+
 	/** Draw contained brushes to Target Texture */
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "World Painter Texture", Meta = (Keywords = "C++"))
 		void Bake();
 
-
-#if WITH_EDITOR
 	/** Called when a brush updated (currently unused) */
 	void OnBrushUpdate(bool bFinished);
 #endif // WITH_EDITOR
@@ -139,6 +139,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 
+#if WITH_EDITOR
 	// These procedures were split-up in case we ever want to update this at runtime (only some of the last few steps need to be repeated on brush/setting changes)
 	bool GenerateTriangulationDone = false;
 	void GenerateTriangulation();
@@ -154,6 +155,7 @@ private:
 
 	bool GenerateTextureDone = false;
 	void GenerateTexture();
+#endif // WITH_EDITOR
 
 	FTGOR_Triangulation2D Triangulation;
 	TArray<FTGOR_BrushPoint> Points;

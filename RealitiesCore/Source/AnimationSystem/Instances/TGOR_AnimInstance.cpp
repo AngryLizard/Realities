@@ -242,7 +242,7 @@ void UTGOR_AnimInstance::UpdateHandles()
 				FTransform Transform = Handle->GetRelativeTransform() * Handle->MovementCone->GetRelativeTransform();
 				//Transform.SetLocation(Handle->MovementCone->ProjectInside(Transform.GetLocation()));
 				Transform.SetRotation(Transform.GetRotation());
-				Transform.SetScale3D(FVector(1.0f, 1.0f, Handle->Flatness));
+				Transform.SetScale3D(FVector(1.0f, 1.0f, 1.0f));
 
 				UControlRig* ControlRig = LinkedControlRig->GetControlRig();
 				if (IsValid(ControlRig))

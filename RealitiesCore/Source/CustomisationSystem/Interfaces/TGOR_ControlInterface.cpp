@@ -16,7 +16,7 @@ FName ITGOR_ControlInterface::GetControlName() const
 	return "Control";
 }
 
-FTransform ITGOR_ControlInterface::GetControlTransform(UTGOR_ControlSkeletalMeshComponent* Component) const
+FTransform ITGOR_ControlInterface::GetControlTransform(USkinnedMeshComponent* Component) const
 {
 	return FTransform::Identity;
 }

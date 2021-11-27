@@ -9,7 +9,7 @@
 
 
 /**
- * UTGOR_RetargetComponent lets you chain ControlRigs
+ * UTGOR_RetargetComponent forwards controls from a different skeletal mesh to the driving target ControlRig. The source SkeletalMesh component must be the direct parent of this component.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
 class CUSTOMISATIONSYSTEM_API UTGOR_RetargetComponent : public UTGOR_ControlSkeletalMeshComponent
@@ -25,7 +25,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Cached ControlRig */
+	/** Cached ControlRig, this ControlRig drives the TargetRig */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Animation")
 		TSubclassOf<UControlRig> SourceRigClass;
 
@@ -36,10 +36,7 @@ protected:
 		USkeletalMeshComponent* SourceComponent;
 
 	UPROPERTY(transient)
-		UControlRig* SourceRig;
-
-	UPROPERTY(transient)
-		TMap<FName, uint16> SourceRigBoneMapping;
+		FTGOR_ControlRigCache SourceCache;
 
 	UPROPERTY(transient)
 		TMap<int32, int32> RetargetRigControlMapping;

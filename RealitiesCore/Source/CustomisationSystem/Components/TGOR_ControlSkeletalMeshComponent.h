@@ -14,7 +14,35 @@
 
 class UControlRig;
 class UTGOR_ControlComponent;
+class UTGOR_ControlSkeletalMeshComponent;
 class ITGOR_ControlInterface;
+
+
+USTRUCT()
+struct FTGOR_ControlRigCache
+{
+	GENERATED_BODY()
+
+public:
+	void InitialiseControls(TSubclassOf<UControlRig> ControlRigClass, UObject* Owner, USkinnedMeshComponent* SkinnedMesh, bool bForce);
+	void InitialiseControlTransforms(USkinnedMeshComponent* SkinnedMesh);
+	void UpdateTransforms(TArray<FTransform>& Transforms, USkinnedMeshComponent* SkinnedMesh, float DeltaTime);
+	void UpdateControlTransforms(USkinnedMeshComponent* SkinnedMesh, bool bIsInitial);
+	bool HasMapping() const;
+
+	UPROPERTY(transient)
+		UControlRig* ControlRig = nullptr;
+
+	UPROPERTY(transient)
+		TMap<FName, uint16> RigBoneMapping;
+
+	UPROPERTY(transient)
+		TMap<FName, uint16> RigCurveMapping;
+
+	UPROPERTY(transient)
+		TMap<uint16, TScriptInterface<ITGOR_ControlInterface>> ControlMapping;
+};
+
 
 /**
  * 
@@ -36,7 +64,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Cached ControlRig */
+	/** Cached ControlRig, this ControlRig drives the Skeleton */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Animation")
 		TSubclassOf<UControlRig> TargetRigClass;
 
@@ -44,20 +72,14 @@ public:
 protected:
 
 	UPROPERTY(transient)
-		UControlRig* TargetRig;
-
-	UPROPERTY(transient)
-		TMap<FName, uint16> TargetRigBoneMapping;
-
-	UPROPERTY(transient)
-		TMap<FName, uint16> TargetRigCurveMapping;
+		FTGOR_ControlRigCache TargetCache;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Gets the relative transform of one component to this mesh */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		FTransform GetRelativeControlTransform(const USceneComponent* Child) const;
+		static FTransform GetRelativeControlTransform(USkinnedMeshComponent* Parent, const USceneComponent* Child);
 
 	/**  */
 	UFUNCTION()
@@ -78,7 +100,7 @@ public:
 #if WITH_EDITORONLY_DATA
 	/** If true, this will Tick until disabled */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Animation")
-		uint8 bUpdateAnimationInEditor : 1;
+		bool bUpdateAnimationInEditor = true;
 #endif
 
 #if WITH_EDITOR
@@ -90,9 +112,6 @@ protected:
 
 	/** Initialise controlrig control if AutoInitialiseControlRigenabled. */
 	virtual void InitAutoControlRig(bool bForceReinit = false);
-
-	/** Sets controlrig control from control components. */
-	void UpdateControlTransforms(bool bIsInitial);
 
 	// this is marked if transform has to be updated
 	bool bNeedsRefreshTransform;

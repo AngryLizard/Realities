@@ -21,9 +21,9 @@ FName UTGOR_ControlComponent::GetControlName() const
 	return GetFName();
 }
 
-FTransform UTGOR_ControlComponent::GetControlTransform(UTGOR_ControlSkeletalMeshComponent* Component) const
+FTransform UTGOR_ControlComponent::GetControlTransform(USkinnedMeshComponent* Component) const
 {
-	return Component->GetRelativeControlTransform(this);
+	return UTGOR_ControlSkeletalMeshComponent::GetRelativeControlTransform(Component, this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

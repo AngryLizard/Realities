@@ -16,8 +16,10 @@
 #include "Rendering/SkeletalMeshLODRenderData.h"
 #include "Animation/MorphTarget.h"
 
+#if WITH_EDITOR
 #include "DesktopPlatformModule.h"
 #include "IDesktopPlatform.h"
+#endif
 
 #define LOCTEXT_NAMESPACE "TGOR_SkeletalExport"
 
@@ -43,15 +45,15 @@ T Max4(const T& A, const T& B)
 	return Out;
 }
 
-
-int32 FReferenceSkeleton::GetDirectChildBones(int32 ParentBoneIndex, TArray<int32>& Children) const
+// This function in FReferenceSkeleton for some reason isn't DLL'd ):
+int32 GetDirectChildBones(const FReferenceSkeleton& ReferenceSkeleton, int32 ParentBoneIndex, TArray<int32>& Children)
 {
 	Children.Reset();
 
-	const int32 NumBones = GetNum();
+	const int32 NumBones = ReferenceSkeleton.GetNum();
 	for (int32 ChildIndex = ParentBoneIndex + 1; ChildIndex < NumBones; ChildIndex++)
 	{
-		if (ParentBoneIndex == GetParentIndex(ChildIndex))
+		if (ParentBoneIndex == ReferenceSkeleton.GetParentIndex(ChildIndex))
 		{
 			Children.Add(ChildIndex);
 		}
@@ -155,7 +157,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 
 		// Bone properties
 		Bone.Name = OutputSkeleton.GetBoneName(BoneIndex).ToString();
-		OutputSkeleton.GetDirectChildBones(BoneIndex, Bone.Children);
+		GetDirectChildBones(OutputSkeleton, BoneIndex, Bone.Children);
 
 		// Local transform
 		FTransform BoneTransform = OutputSkeleton.GetRefBonePose()[BoneIndex];
@@ -1003,6 +1005,7 @@ TArray<TSharedPtr<FJsonValue>> FTGOR_SkeletalMeshExport::RegisterScenes()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if WITH_EDITOR
 bool FTGOR_SkeletalMeshExport::OpenFileDialogue(const FString& FileName, FString& OutFilePath)
 {
 	const FString NDisplayFileDescription = LOCTEXT("GLTFDescription", "GLTF Export").ToString();
@@ -1151,6 +1154,7 @@ void FTGOR_SkeletalMeshExport::Export(const FString& Filename)
 	FJsonSerializer::Serialize(Data.ToSharedRef(), Writer);
 	FFileHelper::SaveStringToFile(Output, *FilePath);
 }
+#endif
 
 
 #undef LOCTEXT_NAMESPACE
