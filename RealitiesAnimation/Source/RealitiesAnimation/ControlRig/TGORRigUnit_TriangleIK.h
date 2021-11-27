@@ -14,7 +14,7 @@
 /**
  * Analytic IK for hinges
  */
-USTRUCT(meta = (DisplayName = "Hinge IK", Keywords = "TGOR,IK", PrototypeName = "HingeIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Analytic Hinge IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "HingeIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_HingeIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()
@@ -65,7 +65,7 @@ public:
 /**
  * Analytic IK for digitigrade legs
  */
-USTRUCT(meta = (DisplayName = "Digitigrade IK", Keywords = "TGOR,IK", PrototypeName = "DigitigradeIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Analytic Digitigrade IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "DigitigradeIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DigitigradeIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()
@@ -116,7 +116,7 @@ public:
 /**
  * Analytic IK for clavicles
  */
-USTRUCT(meta = (DisplayName = "Clavicle IK", Keywords = "TGOR,IK", PrototypeName = "ClavicleIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Analytic Clavicle IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "ClavicleIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_ClavicleIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()

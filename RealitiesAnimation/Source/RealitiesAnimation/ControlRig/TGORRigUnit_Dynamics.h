@@ -32,7 +32,7 @@ struct FRigUnit_SplineChain_WorkData
 /**
  * Dynamics for spline chains
  */
-USTRUCT(meta = (DisplayName = "SplineChain Dynamics", Keywords = "TGOR,Dynamics", PrototypeName = "SplineChainDynamics", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "SplineChain Dynamics", Category = "TGOR Dynamic", Keywords = "TGOR,Dynamics", PrototypeName = "SplineChainDynamics", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_SplineChainDynamics : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()
@@ -137,7 +137,7 @@ struct FRigUnit_RetractGrip_WorkData
 /**
  * Dynamics for a location retracting on big target changes
  */
-USTRUCT(meta = (DisplayName = "Retract and Grip Dynamics", Keywords = "TGOR,Dynamics", PrototypeName = "RetractGripDynamics", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Retract and Grip Dynamics", Category = "TGOR Dynamic", Keywords = "TGOR,Dynamics", PrototypeName = "RetractGripDynamics", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_RetractGripDynamics : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()

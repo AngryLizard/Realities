@@ -103,7 +103,7 @@ struct REALITIESANIMATION_API FRigUnit_BoneCustomisation
 /**
  * C
  */
-USTRUCT(meta = (DisplayName = "Customise initial", Keywords = "TGOR,Utility", PrototypeName = "CustomiseInitial", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Customise initial", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "CustomiseInitial", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_CustomiseInitial : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()
@@ -139,7 +139,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_CustomiseInitial : public FTGORRigUni
 /**
  * Copy transforms from bones to controls
  */
-USTRUCT(meta = (DisplayName = "Clone Transforms", Keywords = "TGOR,Utility", PrototypeName = "CloneTransforms", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Clone Transforms", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "CloneTransforms", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()
@@ -180,7 +180,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 /**
  * Copy transforms from bones to controls
  */
-USTRUCT(meta = (DisplayName = "Clone Transforms", Keywords = "TGOR,Utility", PrototypeName = "CloneTransforms", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Clone Transforms", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "CloneTransforms", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_CloneTransforms : public FRigUnitMutable
 {
 	GENERATED_BODY()
@@ -205,7 +205,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_CloneTransforms : public FRigUnitMuta
 /**
  * Estimate forward ray from a triangle formation
  */
-USTRUCT(meta = (DisplayName = "Transform to plane", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Transform to plane", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_TriangleEstimateDirection : public FRigUnit
 {
 	GENERATED_BODY()
@@ -279,7 +279,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_TriangleEstimateDirection : public FR
 /**
  * Apply means testing to match a direction to a chain of bones
  */
-USTRUCT(meta = (DisplayName = "Transform to plane", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Transform to plane", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_TransformToPlane : public FRigUnit
 {
 	GENERATED_BODY()
@@ -313,7 +313,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_TransformToPlane : public FRigUnit
 /**
  * Limit an input quaternion along a given axis
  */
-USTRUCT(meta = (DisplayName = "Limit Rotation", Keywords = "TGOR,Utility", PrototypeName = "LimitRotation", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Limit Rotation", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "LimitRotation", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_LimitRotation : public FRigUnit
 {
 	GENERATED_BODY()
@@ -363,7 +363,7 @@ public:
 /**
  * Apply means testing to match a direction to a chain of bones
  */
-USTRUCT(meta = (DisplayName = "Mean Direction", Keywords = "TGOR,Utility", PrototypeName = "MeanDirection", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Mean Direction", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "MeanDirection", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_MeanDirection : public FRigUnit
 {
 	GENERATED_BODY()
@@ -406,7 +406,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_MeanDirection : public FRigUnit
 /**
  * Apply power iterations to match a direction to a chain of bones
  */
-USTRUCT(meta = (DisplayName = "Power Direction", Keywords = "TGOR,Utility", PrototypeName = "PowerDirection", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Power Direction", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "PowerDirection", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_PowerDirection : public FRigUnit
 {
 	GENERATED_BODY()
@@ -444,7 +444,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_PowerDirection : public FRigUnit
 /**
  * Compute maximum chain length from initial pose
  */
-USTRUCT(meta = (DisplayName = "Chain Length", Keywords = "TGOR,Utility", PrototypeName = "ChainLength", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Chain Length", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "ChainLength", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_ChainLength : public FRigUnit
 {
 	GENERATED_BODY()
@@ -482,7 +482,7 @@ public:
 /**
  * Analyse chain properties
  */
-USTRUCT(meta = (DisplayName = "Chain Analysis", Keywords = "TGOR,Utility", PrototypeName = "ChainAnalysis", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Chain Analysis", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "ChainAnalysis", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_ChainAnalysis : public FRigUnit
 {
 	GENERATED_BODY()
@@ -540,7 +540,7 @@ public:
 /**
  * Convert space from one space to the other
  */
-USTRUCT(meta = (DisplayName = "Rebase", Keywords = "TGOR,Utility", PrototypeName = "Rebase", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Rebase", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "Rebase", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_Rebase : public FRigUnit
 {
 	GENERATED_BODY()
@@ -591,7 +591,7 @@ public:
 /**
  * Convert translation and rotation independently from one transform to a target
  */
-USTRUCT(meta = (DisplayName = "Convert Space", Keywords = "TGOR,Utility", PrototypeName = "ConvertSpace", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Convert Space", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "ConvertSpace", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_ConvertSpace : public FRigUnit
 {
 	GENERATED_BODY()
@@ -643,7 +643,7 @@ public:
 /**
  * Rotation to align forward and up direction
  */
-USTRUCT(meta = (DisplayName = "Rotate Towards", Keywords = "TGOR,Utility", PrototypeName = "RotateTowards", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Rotate Towards", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "RotateTowards", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_RotateToward : public FRigUnit
 {
 	GENERATED_BODY()
@@ -694,7 +694,7 @@ public:
 /**
  * Scale value from scale vector
  */
-USTRUCT(meta = (DisplayName = "Get Scale Length", Keywords = "TGOR,Utility", PrototypeName = "GetScaleLength", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Get Scale Length", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "GetScaleLength", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_GetScaleLength : public FRigUnit
 {
 	GENERATED_BODY()
@@ -736,7 +736,7 @@ public:
 /**
  * Scale value from scale vector
  */
-USTRUCT(meta = (DisplayName = "Soft Boundaries", Keywords = "TGOR,Utility", PrototypeName = "SoftBoundaries", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Soft Boundaries", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "SoftBoundaries", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_SoftBoundaries : public FRigUnit
 {
 	GENERATED_BODY()
@@ -816,7 +816,7 @@ struct FRigUnit_PreviewAnimation_WorkData
 /**
  * Previews an animation and maps it to available controls
  */
-USTRUCT(meta = (DisplayName = "Preview animation", Keywords = "TGOR,Utility", PrototypeName = "PreviewAnimation", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Preview animation", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "PreviewAnimation", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_PreviewAnimation : public FRigUnitMutable
 {
 	GENERATED_BODY()

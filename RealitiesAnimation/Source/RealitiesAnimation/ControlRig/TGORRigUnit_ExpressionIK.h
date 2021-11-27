@@ -12,7 +12,7 @@
 /**
  * Analytic IK for look-at targets
  */
-USTRUCT(meta = (DisplayName = "LookAt IK", Keywords = "TGOR,IK", PrototypeName = "LookAtIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Constrained Look At IK", Category = "TGOR Expression", Keywords = "TGOR,IK", PrototypeName = "LookAtIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_LookAtIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()
@@ -60,7 +60,7 @@ public:
 /**
  * Analytic IK for eyelid targets
  */
-USTRUCT(meta = (DisplayName = "Eyelid IK", Keywords = "TGOR,IK", PrototypeName = "EyelidIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Eyelid IK", Category = "TGOR Expression", Keywords = "TGOR,IK", PrototypeName = "EyelidIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EyelidIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()

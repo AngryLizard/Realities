@@ -68,7 +68,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformRetarget : public FTGORRigUnit_
 /**
  * Retarget a bone around the source initial pose
  */
-USTRUCT(meta = (DisplayName = "Deform Orient", Keywords = "TGOR,Deformation", PrototypeName = "DeformOrient", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Deform Orient", Category = "TGOR Deform", Keywords = "TGOR,Deformation", PrototypeName = "DeformOrient", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DeformOrient : public FTGORRigUnit_DeformRetarget
 {
 	GENERATED_BODY()
@@ -100,7 +100,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformOrient : public FTGORRigUnit_De
 /**
  * Adapts Deformation bones to a chain of bones
  */
-USTRUCT(meta = (DisplayName = "Deform Chain", Keywords = "TGOR,Deformation", PrototypeName = "DeformChain", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Deform Chain", Category = "TGOR Deform", Keywords = "TGOR,Deformation", PrototypeName = "DeformChain", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DeformChain : public FTGORRigUnit_DeformRetarget
 {
 	GENERATED_BODY()
@@ -214,7 +214,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformPivot : public FTGORRigUnit_Def
 /**
  * Adapts Deformation bones to linear movement around a given pivot
  */
-USTRUCT(meta = (DisplayName = "Deform Translate", Keywords = "TGOR,Deformation", PrototypeName = "DeformTranslate", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Deform Translate", Category = "TGOR Deform", Keywords = "TGOR,Deformation", PrototypeName = "DeformTranslate", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DeformTranslate : public FTGORRigUnit_DeformPivot
 {
 	GENERATED_BODY()
@@ -272,7 +272,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformTranslate : public FTGORRigUnit
 /**
  * Retarget a bone around the source initial pose
  */
-USTRUCT(meta = (DisplayName = "Deform Initial", Keywords = "TGOR,Deformation", PrototypeName = "DeformInitial", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Deform Initial", Category = "TGOR Deform", Keywords = "TGOR,Deformation", PrototypeName = "DeformInitial", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DeformInitial : public FTGORRigUnit_DeformPivot
 {
 	GENERATED_BODY()
@@ -318,7 +318,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformInitial : public FTGORRigUnit_D
 /**
  * Estimate root transform from a pair of end-points
  */
-USTRUCT(meta = (DisplayName = "Deform Root", Keywords = "TGOR,Deform", PrototypeName = "DeformRoot", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Deform Root", Category = "TGOR Deform", Keywords = "TGOR,Deform", PrototypeName = "DeformRoot", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_DeformRoot : public FTGORRigUnit_DeformPivot
 {
 	GENERATED_BODY()

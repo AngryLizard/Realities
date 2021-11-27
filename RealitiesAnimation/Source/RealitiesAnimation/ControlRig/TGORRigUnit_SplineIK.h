@@ -12,7 +12,7 @@
 /**
  * Analytic IK for spline chains
  */
-USTRUCT(meta = (DisplayName = "SplineChain IK", Keywords = "TGOR,IK", PrototypeName = "SplineChainIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Spline Chain IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "SplineChainIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_SplineChainIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()
@@ -58,7 +58,7 @@ public:
 /**
  * Analytic IK for aiming
  */
-USTRUCT(meta = (DisplayName = "BendTarget IK", Keywords = "TGOR,IK", PrototypeName = "BendTargetIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Bend To Aim Towards IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "BendTargetIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_BendTargetIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()

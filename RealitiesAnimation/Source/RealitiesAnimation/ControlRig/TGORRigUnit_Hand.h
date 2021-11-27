@@ -40,7 +40,7 @@ struct FTGOR_HandParams
 /**
  * Closest point on an ellipsoid
  */
-USTRUCT(meta = (DisplayName = "Finger Transformn", Keywords = "TGOR,Collision", PrototypeName = "FingerTransform", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Finger Transformn", Category = "TGOR Articulation", Keywords = "TGOR,Collision", PrototypeName = "FingerTransform", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_FingerTransform : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()

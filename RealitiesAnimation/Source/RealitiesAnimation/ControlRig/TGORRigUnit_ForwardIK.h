@@ -12,7 +12,7 @@
 /**
  * Iterative IK for spline aiming based on FABRIK with soft constraint
  */
-USTRUCT(meta = (DisplayName = "Anchor IK", Keywords = "TGOR,IK", PrototypeName = "AnchorIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Constrained FABRIK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "AnchorIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AnchorIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()
@@ -62,7 +62,7 @@ public:
 /**
  * Iterative IK for bending a chain between two points
  */
-USTRUCT(meta = (DisplayName = "Bend IK", Keywords = "TGOR,IK", PrototypeName = "BendIK", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Two Point Bend IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "BendIK", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_BendIK : public FTGORRigUnit_IK
 {
 	GENERATED_BODY()

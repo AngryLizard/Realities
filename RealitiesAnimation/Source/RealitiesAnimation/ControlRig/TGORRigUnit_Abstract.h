@@ -81,7 +81,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractRetarget : public FTGORRigUni
 /**
  * Orient abstractor along a chain
  */
-USTRUCT(meta = (DisplayName = "Abstract Orient", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractOrient", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Abstract Orient", Category = "TGOR Abstraction", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractOrient", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AbstractOrient : public FTGORRigUnit_AbstractRetarget
 {
 	GENERATED_BODY()
@@ -113,7 +113,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractOrient : public FTGORRigUnit_
 /**
  * Adapts abstractor bones to a chain of bones
  */
-USTRUCT(meta = (DisplayName = "Abstract Chain", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractChain", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Abstract Chain", Category = "TGOR Abstraction", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractChain", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AbstractChain : public FTGORRigUnit_AbstractRetarget
 {
 	GENERATED_BODY()
@@ -191,7 +191,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractPivot : public FTGORRigUnit_A
 /**
  * Adapts abstractor bones to linear movement around a given pivot
  */
-USTRUCT(meta = (DisplayName = "Abstract Translate", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractTranslate", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Abstract Translate", Category = "TGOR Abstraction", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractTranslate", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AbstractTranslate : public FTGORRigUnit_AbstractPivot
 {
 	GENERATED_BODY()
@@ -272,7 +272,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractTranslate : public FTGORRigUn
 /**
  * Retarget a bone around the source initial pose
  */
-USTRUCT(meta = (DisplayName = "Abstract Initial", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractInitial", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Abstract Initial", Category = "TGOR Abstraction", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractInitial", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AbstractInitial : public FTGORRigUnit_AbstractPivot
 {
 	GENERATED_BODY()
@@ -320,7 +320,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractInitial : public FTGORRigUnit
 /**
  * Estimate root transform from a triplet of anchor cones
  */
-USTRUCT(meta = (DisplayName = "Abstract Root", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractRoot", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Abstract Root", Category = "TGOR Abstraction", Keywords = "TGOR,Abstractor", PrototypeName = "AbstractRoot", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_AbstractRoot : public FTGORRigUnit_AbstractPivot
 {
 	GENERATED_BODY()

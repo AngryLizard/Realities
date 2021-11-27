@@ -40,7 +40,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_Objective : public FTGORRigUnit_Mutab
 /**
  * Project an objective on a plane
  */
-USTRUCT(meta = (DisplayName = "Objective Planar Project", Keywords = "TGOR,Objective", PrototypeName = "ObjectivePlanarProject", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Objective Planar Project", Category = "TGOR Articulation", Keywords = "TGOR,Objective", PrototypeName = "ObjectivePlanarProject", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_ObjectivePlanarProject : public FTGORRigUnit_Objective
 {
 	GENERATED_BODY()

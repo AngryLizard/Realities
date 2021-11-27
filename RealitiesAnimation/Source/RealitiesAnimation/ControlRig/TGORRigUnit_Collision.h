@@ -42,7 +42,7 @@ public:
 /**
  * Closest point on an ellipsoid
  */
-USTRUCT(meta = (DisplayName = "Ellipsoid Projection", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidProjection", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Ellipsoid Projection", Category = "TGOR EllipsoidCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidProjection", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidProjection : public FTGORRigUnit_Ellipsoid
 {
 	GENERATED_BODY()
@@ -82,7 +82,7 @@ public:
 /**
  * Raycast on an ellipsoid
  */
-USTRUCT(meta = (DisplayName = "Ellipsoid Raycast", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidRaycast", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Ellipsoid Raycast", Category = "TGOR EllipsoidCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidRaycast", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidRaycast : public FTGORRigUnit_Ellipsoid
 {
 	GENERATED_BODY()
@@ -134,7 +134,7 @@ public:
 /**
  * Collides a line with
  */
-USTRUCT(meta = (DisplayName = "Ellipsoid RayCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidRayCollision", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Ellipsoid RayCollision", Category = "TGOR EllipsoidCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidRayCollision", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidRayCollide : public FTGORRigUnit_Ellipsoid
 {
 	GENERATED_BODY()
@@ -186,7 +186,7 @@ public:
 /**
  * Ellipsoid collision for a rotating chain
  */
-USTRUCT(meta = (DisplayName = "Ellipsoid Chain Collision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidChainCollision", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Ellipsoid Chain Collision", Category = "TGOR EllipsoidCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidChainCollision", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidChainCollide : public FTGORRigUnit_Mutable
 {
 	GENERATED_BODY()
@@ -257,7 +257,7 @@ public:
 /**
  * Ellipsoid projections for an objective transform
  */
-USTRUCT(meta = (DisplayName = "Ellipsoid Transform Project", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidTransformProject", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Ellipsoid Transform Project", Category = "TGOR EllipsoidCollision", Keywords = "TGOR,Collision", PrototypeName = "EllipsoidTransformProject", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidTransformProject : public FTGORRigUnit_Ellipsoid
 {
 	GENERATED_BODY()
