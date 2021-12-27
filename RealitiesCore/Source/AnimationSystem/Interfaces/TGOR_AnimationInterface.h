@@ -41,13 +41,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Game", Meta = (Keywords = "C++"))
 		virtual UTGOR_AnimationComponent* GetAnimationComponent() const;
 
-	/** Gets the relevant animation content */
+	/**
+	// Gets the relevant animation content 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Game", Meta = (Keywords = "C++"))
 		virtual UTGOR_Animation* GetAnimation() const;
 
-	/** Gets the relevant animation content of a given type or null if not compatible */
+	// Gets the relevant animation content of a given type or null if not compatible
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Game", Meta = (DeterminesOutputType = "Type", ExpandEnumAsExecs = "Branches", Keywords = "C++"))
 		virtual UTGOR_Animation* GetAnimationChecked(TSubclassOf<UTGOR_Animation> Type, ETGOR_ValidEnumeration& Branches);
+		 */
 
 protected:
 };

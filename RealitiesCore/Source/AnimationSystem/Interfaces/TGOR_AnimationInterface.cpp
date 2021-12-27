@@ -18,6 +18,7 @@ UTGOR_AnimationComponent* ITGOR_AnimationInterface::GetAnimationComponent() cons
 	return nullptr;
 }
 
+/*
 UTGOR_Animation* ITGOR_AnimationInterface::GetAnimation() const
 {
 	UTGOR_AnimationComponent* Component = GetAnimationComponent();
@@ -40,3 +41,4 @@ UTGOR_Animation* ITGOR_AnimationInterface::GetAnimationChecked(TSubclassOf<UTGOR
 	}
 	return nullptr;
 }
+*/

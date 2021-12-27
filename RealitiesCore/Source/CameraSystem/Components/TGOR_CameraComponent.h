@@ -22,50 +22,29 @@ class UTGOR_Stage;
 
 
 USTRUCT(BlueprintType)
-struct FTGOR_CameraModifier
+struct FTGOR_CameraState
 {
 	GENERATED_USTRUCT_BODY()
-		FTGOR_CameraModifier();
 
-	/** Camera parameters */
+	/** Camera content belonging to this state */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		FVector4 Params;
+		UTGOR_Camera* Camera = nullptr;
 
-	/** Camera blend speed/time */
+	/** Current camera input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		float Weight;
+		FVector4 Input = FVector4(0,0,0,0);
 
-	/** Camera blend speed/time */
+	/** Current blend velocity */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		float Blend;
-};
+		FVector4 InputVelocity = FVector4(0, 0, 0, 0);
 
-
-USTRUCT(BlueprintType)
-struct FTGOR_CameraHandle
-{
-	GENERATED_USTRUCT_BODY()
-		FTGOR_CameraHandle();
-
-		/** Register to poll for activity */
+	/** Current camera parameters */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		TScriptInterface<ITGOR_RegisterInterface> Register;
+		FVector4 TargetInput = FVector4(0, 0, 0, 0);
 
-	/** Enabled modifiers by this handle */
+	/** Current blend Force (Spring constant) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		TMap<UTGOR_Camera*, FTGOR_CameraModifier> Params;
-};
-
-
-USTRUCT(BlueprintType)
-struct FTGOR_CameraQueue
-{
-	GENERATED_USTRUCT_BODY()
-		FTGOR_CameraQueue();
-
-	/** Content layers in order from bottom to top */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
-		TArray<UTGOR_CoreContent*> Layers;
+		float BlendForce = 0;
 };
 
 
@@ -90,60 +69,40 @@ public:
 
 	/** Copies current state of this camera to another camera, resets fixed state if teleport */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void CopyToCamera(UTGOR_CameraComponent* Camera, float Blend, bool Teleport);
+		void CopyToCamera(UTGOR_CameraComponent* Camera, bool Teleport);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Register modifier to go active. */
+	/** Set camera parameter, <= 0 for no blending. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void RegisterHandle(TScriptInterface<ITGOR_RegisterInterface> Register, UTGOR_CoreContent* Content, TSubclassOf<UTGOR_Camera> Type, const FVector& Params, float Blend = -1.0);
+		void ApplyCameraEffect(TSubclassOf<UTGOR_Camera> Type, const FVector& Params, float Blend = -1.0);
 	
-	/** Unregister cameras manually. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void UnregisterHandle(UTGOR_CoreContent* Content, TSubclassOf<UTGOR_Camera> Type);
-
-	/** Fast forward ease queues. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void FastForward();
-
 	/** Camera setup this component spawns with. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
 		TArray<TSubclassOf<UTGOR_Camera>> SpawnCameras;
 
+	/** Minimum camera pitch in degrees. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
+		float MinPitch;
+
+	/** Maximum camera pitch in degrees. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Camera")
+		float MaxPitch;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Generate queues from currently registered handles. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void BuildCameraQueues(TMap<UTGOR_Camera*, FTGOR_CameraQueue>& Queues);
-
-	/** Eases in a modifier, returns whether easing in is done. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera|Internal", Meta = (Keywords = "C++"))
-		bool EaseModifierIn(FTGOR_CameraModifier& Modifier, float DeltaTime);
-
-	/** Eases out a modifier, returns whether easing out is done. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera|Internal", Meta = (Keywords = "C++"))
-		bool EaseModifierOut(FTGOR_CameraModifier& Modifier, float DeltaTime);
-
-	/** Handles for camera modifiers */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera")
-		TMap<UTGOR_CoreContent*, FTGOR_CameraHandle> Handles;
-
-	/** Easing out modifiers */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera")
-		TMap<UTGOR_Camera*, FTGOR_CameraModifier> EaseOuts;
-
-	/** Set of currently supported Modifiers */
+	/** Currently running camera effects in the order they're applied */
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Camera")
-		TMap<UTGOR_Camera*, FVector4> Cameras;
+		TArray<FTGOR_CameraState> Cameras;
+
+	/** Simulate camera states */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		void SimulateCameras(float DeltaTime);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
-
-	/** Camera world rotation */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		FQuat ViewRotation;
 
 	/** Springarm component this camera is parented to */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
@@ -157,33 +116,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		float CollisionStrength;
 
-	/** Degree of smoothstep */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		int32 SmoothStepDegree;
-
 	/** MaterialCollection to use for lerping */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		UMaterialParameterCollection* MaterialCollection;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-
-	/** Rotates camera towards the given up vector */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void RotateCameraUpside(const FVector& UpVector, float Amount, bool Control = false);
-
-	/** Camera rotation along axis, if control is true this is only applied if not fixed */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void RotateCamera(const FVector& Axis, float Angle, bool Control = true);
-
-	/** Set camera rotation */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void SetViewRotation(const FQuat& Quat);
-
-	/** Get view rotation */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		FQuat GetViewRotation() const;
 
 	/** Get desired camera location after camera arm transformations */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
@@ -192,6 +130,14 @@ public:
 	/** Set how much camera adhers to collision */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		void SetCollisionStrength(float Strength);
+
+	/** Set camera rotation */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		void SetViewRotation(const FQuat& Quat);
+
+	/** Get camera rotation */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
+		FQuat GetViewRotation() const;
 
 	/** Get camera rotation */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
@@ -208,19 +154,12 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Horizontal camera rotation around current up vector */
+	/** Horizontal camera rotation around current up vector in degrees */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		void RotateCameraHorizontally(float Amount);
 
-	/** Vertical camera rotation around control rotation right axis */
+	/** Vertical camera rotation around control rotation right axis  in degrees */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
 		void RotateCameraVertically(float Amount);
 
-	/** Get camera rotation in pawn local space */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		FQuat ToLocalCameraRotation(const FTGOR_MovementPosition& Position) const;
-
-	/** Set camera rotation from pawn local space */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Camera", Meta = (Keywords = "C++"))
-		void FromLocalCameraRotation(const FTGOR_MovementPosition& Position, const FQuat& Quat);
 };

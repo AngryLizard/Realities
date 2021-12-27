@@ -17,13 +17,13 @@ class ANIMATIONSYSTEMEXTENSION_API UTGOR_AnimationInstanceVariableSet : public U
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual UEdGraphPin* CreateTargetPin() PURE_VIRTUAL(UTGOR_AnimationInstanceVariableSet::CreateTargetPin, return nullptr; );
 	virtual UK2Node_CallFunction* CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) PURE_VIRTUAL(UTGOR_AnimationInstanceVariableSet::CreateCallFunction, return nullptr; );
 	virtual bool IsActionFilteredOut(class FBlueprintActionFilter const& Filter) PURE_VIRTUAL(UTGOR_AnimationInstanceVariableSet::IsActionFilteredOut, return false; );
 	virtual UClass* GetAnimInstanceClass() const PURE_VIRTUAL(UTGOR_AnimationInstanceVariableSet::GetAnimInstanceClass, return nullptr; );
 
 
 	// customize pin data based on the input
+	virtual UEdGraphPin* CreateTargetPin();
 	virtual void CustomizePinData(UEdGraphPin* Pin, FName SourcePropertyName, int32 ArrayIndex) const {}
 
 	//~ Begin UEdGraphNode Interface.
@@ -63,6 +63,9 @@ class ANIMATIONSYSTEMEXTENSION_API UTGOR_AnimationInstanceVariableSet : public U
 	// can customize details tab 
 	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder);
 
+	// has target pin at all
+	virtual bool HasTargetPin() const { return false; };
+
 protected:
 	void SetPinToolTip(UEdGraphPin& MutatablePin, const FText& PinDescription) const;
 
@@ -96,23 +99,23 @@ protected:
 };
 
 UCLASS(BlueprintType, Blueprintable)
+class ANIMATIONSYSTEMEXTENSION_API UTGOR_TaskVariableSet : public UTGOR_AnimationInstanceVariableSet
+{
+	GENERATED_UCLASS_BODY()
+
+	virtual UK2Node_CallFunction* CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
+	virtual bool IsActionFilteredOut(class FBlueprintActionFilter const& Filter) override;
+	virtual UClass* GetAnimInstanceClass() const override;
+	virtual bool HasTargetPin() const override { return false; };
+};
+
+UCLASS(BlueprintType, Blueprintable)
 class ANIMATIONSYSTEMEXTENSION_API UTGOR_AnimationVariableSet : public UTGOR_AnimationInstanceVariableSet
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual UEdGraphPin* CreateTargetPin() override;
 	virtual UK2Node_CallFunction* CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual bool IsActionFilteredOut(class FBlueprintActionFilter const& Filter) override;
 	virtual UClass* GetAnimInstanceClass() const override;
-};
-
-UCLASS(BlueprintType, Blueprintable)
-class ANIMATIONSYSTEMEXTENSION_API UTGOR_ArchetypeVariableSet : public UTGOR_AnimationInstanceVariableSet
-{
-	GENERATED_UCLASS_BODY()
-
-	virtual UEdGraphPin* CreateTargetPin() override;
-	virtual UK2Node_CallFunction* CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
-	virtual bool IsActionFilteredOut(class FBlueprintActionFilter const& Filter) override;
-	virtual UClass* GetAnimInstanceClass() const override;
+	virtual bool HasTargetPin() const override { return true; };
 };

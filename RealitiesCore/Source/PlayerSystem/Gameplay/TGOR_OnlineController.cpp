@@ -45,7 +45,6 @@ ATGOR_OnlineController::ATGOR_OnlineController(const FObjectInitializer& ObjectI
 	MaxCameraSwitchDistance = 10'000.0f;
 
 	PawnCamera = nullptr;
-	CameraBlendTime = 1.0f;
 
 	MaxContentLength = 0xFF;
 	Singleton = nullptr;
@@ -164,7 +163,7 @@ void ATGOR_OnlineController::SetPawn(APawn* InPawn)
 			const FVector Target = PawnCamera->GetComponentLocation();
 			const bool Teleport = (Source - Target).SizeSquared() > MaxCameraSwitchDistance * MaxCameraSwitchDistance;
 
-			OldCamera->CopyToCamera(PawnCamera, CameraBlendTime, Teleport);
+			OldCamera->CopyToCamera(PawnCamera, Teleport);
 		}
 
 		//UnlockUpdate(InPawn);

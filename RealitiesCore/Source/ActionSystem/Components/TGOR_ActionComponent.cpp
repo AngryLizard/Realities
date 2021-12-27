@@ -450,17 +450,6 @@ TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Actio
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ActionComponent::PlayAnimation(TSubclassOf<UTGOR_Animation> InAnimation)
-{
-	UTGOR_AnimationComponent* AnimationComponent = GetOwnerComponent<UTGOR_AnimationComponent>();
-	if (IsValid(AnimationComponent))
-	{
-		AnimationComponent->SwitchAnimation(PerformanceType, InAnimation);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 FTGOR_Time UTGOR_ActionComponent::GetServerTime(float Delay)
 {
 	SINGLETON_RETCHK(FTGOR_Time());

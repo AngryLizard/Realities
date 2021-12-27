@@ -205,7 +205,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_CloneTransforms : public FRigUnitMuta
 /**
  * Estimate forward ray from a triangle formation
  */
-USTRUCT(meta = (DisplayName = "Transform to plane", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
+USTRUCT(meta = (DisplayName = "Triange Estimate", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "TriangeEstimate", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_TriangleEstimateDirection : public FRigUnit
 {
 	GENERATED_BODY()
@@ -275,9 +275,8 @@ struct REALITIESANIMATION_API FTGORRigUnit_TriangleEstimateDirection : public FR
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 /**
- * Apply means testing to match a direction to a chain of bones
+ * Translates a transform to a plane
  */
 USTRUCT(meta = (DisplayName = "Transform to plane", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "TransformToPlane", NodeColor = "1.0 0.44 0.0"))
 struct REALITIESANIMATION_API FTGORRigUnit_TransformToPlane : public FRigUnit
@@ -692,6 +691,149 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Rotation to align two vectors
+ */
+USTRUCT(meta = (DisplayName = "Rotation between", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "RotationBetween", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_RotationBetween : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_RotationBetween() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+	/**
+	 * Source direction
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Source = FVector::ForwardVector;
+
+	/**
+	 * Target direction
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Target = FVector::ForwardVector;
+
+	/**
+	 * Rotation between
+	 */
+	UPROPERTY(meta = (Output))
+		FQuat Output = FQuat::Identity;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Reproject a trajectory onto a plane
+ */
+USTRUCT(meta = (DisplayName = "Reproject onto Plane", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "ReprojectOntoPlane", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_ReprojectOntoPlane : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_ReprojectOntoPlane() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * Point to reproject
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Point = FVector::ZeroVector;
+
+	/**
+	 * Trajectory reference point, maintains distance along projection direction
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Reference = FVector::ZeroVector;
+
+	/**
+	 * Projection direction
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Direction = FVector::UpVector;
+
+	/**
+	 * Plane location
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Location = FVector::ZeroVector;
+
+	/**
+	 * Plane normal
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Normal = FVector::UpVector;
+
+	/**
+	 * Reprojected location
+	 */
+	UPROPERTY(meta = (Output))
+		FVector Projection = FVector::ZeroVector;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Warp point along direction
+ */
+USTRUCT(meta = (DisplayName = "Warp along direction", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "WarpAlongDirection", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_WarpAlongDirection : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_WarpAlongDirection() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * Point to reproject
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Point = FVector::ZeroVector;
+
+	/**
+	 * Trajectory reference point, scales along this point
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Reference = FVector::ZeroVector;
+
+	/**
+	 * Projection direction
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Direction = FVector::UpVector;
+
+	/**
+	 * Warp scale
+	 */
+	UPROPERTY(meta = (Input))
+		float Scale = 1.0f;
+
+	/**
+	 * Reprojected location
+	 */
+	UPROPERTY(meta = (Output))
+		FVector Warped = FVector::ZeroVector;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
  * Scale value from scale vector
  */
 USTRUCT(meta = (DisplayName = "Get Scale Length", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "GetScaleLength", NodeColor = "1.0 0.44 0.0"))
@@ -805,7 +947,7 @@ struct FRigUnit_PreviewAnimation_WorkData
 		bool bInitialized = false;
 
 	UPROPERTY(transient)
-		UControlRig* ConversionRig = nullptr;
+		TWeakObjectPtr<UControlRig> ConversionRig;
 
 	struct FBoneContainer BoneContainer;
 	struct FCompactPose Pose;

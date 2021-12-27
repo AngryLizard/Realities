@@ -5,29 +5,11 @@
 #include "CoreMinimal.h"
 
 #include "CustomisationSystem/Interfaces/TGOR_ControlInterface.h"
+#include "AnimationSystem/Components/TGOR_AttachComponent.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "TGOR_HandleComponent.generated.h"
 
-class UTGOR_AttachComponent;
 class UTGOR_RigidComponent;
-
-
-/**
-*
-*/
-USTRUCT(BlueprintType)
-struct ANIMATIONSYSTEM_API FTGOR_HandleTraceOutput : public FTGOR_MovementDynamic
-{
-	GENERATED_USTRUCT_BODY();
-
-	/** Handle to cone delta */
-	UPROPERTY()
-		FVector Delta = FVector::ZeroVector;
-
-	/** Trace direction */
-	UPROPERTY()
-		FVector Direction = FVector::ZeroVector;
-};
 
 /**
  * UTGOR_HandleComponent represent animation targets
@@ -62,9 +44,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Traces for new handle position, relocates pilot accordingly (assumes owning cone is directly parented to root).
-		Returns true if trace was successful and hit something. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		bool TraceHandle(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output);
-
+	/** Get simple ground contact from current state */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
+		void GetGroundContact(FVector& SurfaceLocation, FVector& SurfaceNormal) const;
 };

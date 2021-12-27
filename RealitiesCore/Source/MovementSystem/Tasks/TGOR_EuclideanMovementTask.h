@@ -29,13 +29,21 @@ public:
 
 	virtual void Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
-	virtual void Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
+	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
 
+	virtual void PrepareStart() override;
+	virtual void Interrupt() override;
+
+	/** Simulate symplectic integration for a given time */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
+		void SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
 	UPROPERTY(Transient)
-		UTGOR_PilotComponent* RootComponent;
+		TWeakObjectPtr<UTGOR_PilotComponent> RootComponent;
 
 	UPROPERTY(Transient)
-		UTGOR_EuclideanPilotTask* EuclideanTask;
+		TWeakObjectPtr<UTGOR_EuclideanPilotTask> EuclideanTask;
 };

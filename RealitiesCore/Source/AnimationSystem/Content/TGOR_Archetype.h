@@ -24,14 +24,7 @@ class ANIMATIONSYSTEM_API UTGOR_Archetype : public UTGOR_Spawner
 	
 public:
 	UTGOR_Archetype();
-	virtual bool Validate_Implementation() override;
 	virtual TSubclassOf<AActor> GetSpawnClass_Implementation() const override;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Animation")
-		TSubclassOf<UTGOR_AnimInstance> InstanceClass;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -61,10 +54,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
 		virtual UTGOR_AnimInstance* GetAnimationInstance(UTGOR_AnimationComponent* Target);
-
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif // WITH_EDITOR
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

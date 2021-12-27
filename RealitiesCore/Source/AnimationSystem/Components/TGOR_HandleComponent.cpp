@@ -29,65 +29,12 @@ FTransform UTGOR_HandleComponent::GetControlTransform(USkinnedMeshComponent* Com
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_HandleComponent::TraceHandle(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float Multiplier, FTGOR_HandleTraceOutput& Output)
+void UTGOR_HandleComponent::GetGroundContact(FVector& SurfaceLocation, FVector& SurfaceNormal) const
 {
-	UTGOR_LinearPilotTask* Task = GetPOfType<UTGOR_LinearPilotTask>();
-	if (IsValid(MovementCone) && IsValid(Task))
-	{
-		const float Radius = GetScaledCapsuleHalfHeight();
-
-		check(MovementCone->GetAttachParent() && "Root cone not supported for TraceHandle");
-		const FTransform ConeRelative = MovementCone->GetAttachParent()->GetComponentTransform() * Component->GetComponentTransform().Inverse();
-
-		// Component is not guaranteed to be parent!
-		const FVector Location = Space.Linear + Space.Angular * ConeRelative.TransformPosition(MovementCone->GetAlignmentLocation());
-
-		Output.Direction = Space.Angular * ConeRelative.TransformVectorNoScale(MovementCone->GetAlignmentDirection());
-		const FVector Translation = Output.Direction * (MovementCone->LimitRadius * Multiplier);
-
-		FTGOR_MovementParent Parent;
-
-		FHitResult Hit;
-		if (Component->MovementSphereTraceSweep(Radius, Location, Translation, Hit))
-		{
-			Output.Linear = Hit.ImpactPoint;
-			Output.Angular = FQuat::FindBetweenNormals(FVector::UpVector, Hit.Normal);
-
-			Parent = Component->FindReparentToComponent(Hit.GetComponent(), Hit.BoneName);
-		}
-		else
-		{
-			Output.Linear = Location + Translation;
-			Output.Angular = FQuat::FindBetweenNormals(FVector::UpVector, -Output.Direction); // < Could utilise Alignment here somehow, but wrong axis
-
-			Parent.Mobility = Component;
-			Parent.Index = INDEX_NONE;
-		}
-
-		Output.Delta = Output.Linear - Location;
-		const FVector RadialVelocity = Space.AngularVelocity ^ Output.Delta;
-
-		//TODO: If we don't care about dynamics we can use this instead and save some computation:
-		//Task->SimulatePosition(Target);
-
-		// Angular dynamics
-		Output.AngularVelocity = Space.AngularVelocity;
-		Output.AngularAcceleration = Space.AngularAcceleration;
-
-		// Linear dynamics
-		Output.LinearVelocity = Space.LinearVelocity + RadialVelocity;
-		Output.LinearAcceleration = Space.LinearAcceleration + (RadialVelocity ^ Space.AngularVelocity);
-
-		// Reparent
-		Task->Parent(Parent.Mobility, Parent.Index);
-		Task->SimulateDynamic(Output);
-
-		return true;
-	}
-	return false;
+	const FTGOR_MovementPosition Position = ComputePosition();
+	SurfaceLocation = Position.Linear;
+	SurfaceNormal = Position.Angular.GetAxisZ();
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
 FPrimitiveSceneProxy* UTGOR_HandleComponent::CreateSceneProxy()

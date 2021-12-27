@@ -112,3 +112,48 @@ public:
 	UPROPERTY(meta = (Input))
 		FTransform Anchor = FTransform::Identity;
 };
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Iterative IK for bending a chain between two points
+ */
+USTRUCT(meta = (DisplayName = "One Point Bend IK", Category = "TGOR IK", Keywords = "TGOR,IK", PrototypeName = "SingleBendIK", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_SingleBendIK : public FTGORRigUnit_IK
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_SingleBendIK() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * The chain to adapt (Has to be continuous chain)
+	 */
+	UPROPERTY(meta = (Input, ExpandByDefault))
+		FRigElementKeyCollection Chain;
+
+	/*
+	 * Max angle change per segment towards the objective
+	 */
+	UPROPERTY(meta = (Input))
+		float MaxObjectiveAngle = 40.0f;
+
+	/*
+	 * Max angle change per segment towards the anchor
+	 */
+	UPROPERTY(meta = (Input))
+		float MaxAnchorAngle = 20.0f;
+
+	/**
+	 * Bending iterations
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		int32 Iterations = 10;
+};

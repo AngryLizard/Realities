@@ -170,11 +170,26 @@ public:
 
 	/** Get attached pilot task */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
-		UTGOR_PilotTask* GetPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const;
+		UTGOR_PilotTask* GetCurrentPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const;
 
-	template<typename T> T* GetPOfType() const
+	template<typename T> T* GetCurrentPOfType() const
 	{
-		return Cast<T>(GetPilotOfType(T::StaticClass()));
+		return Cast<T>(GetCurrentPilotOfType(T::StaticClass()));
+	}
+
+	/** Get all pilot tasks of given type */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		TArray<UTGOR_PilotTask*> GetPilotListOfType(TSubclassOf<UTGOR_PilotTask> Type) const;
+
+	template<typename T> TArray<T*> GetPListOfType() const
+	{
+		TArray<T*> Output;
+		TArray<UTGOR_PilotTask*> Pilots = GetPilotListOfType(T::StaticClass());
+		for (UTGOR_PilotTask* Pilot : Pilots)
+		{
+			Output.Emplace(Cast<T>(Pilot));
+		}
+		return Output;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

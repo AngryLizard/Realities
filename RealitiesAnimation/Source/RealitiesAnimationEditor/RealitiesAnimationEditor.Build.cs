@@ -35,6 +35,16 @@ public class RealitiesAnimationEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"RealitiesUtility",
+				"ControlRig",
+				"ControlRigEditor",
+				"Sequencer",
+				"LevelSequence",
+				"MovieScene",
+				"MovieSceneTracks",
+				"LevelSequenceEditor",
+				"EditorStyle",
+				"UnrealEd"
 			}
 			);
 		

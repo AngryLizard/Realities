@@ -10,7 +10,7 @@
 class UTGOR_Content;
 
 /**
-* TGOR_Action handles any kind of replicated actions
+* UTGOR_Task
 */
 UCLASS()
 class CORESYSTEM_API UTGOR_Task : public UTGOR_Object

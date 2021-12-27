@@ -18,6 +18,27 @@
 #include "DrawDebugHelpers.h"
 
 
+FTGOR_MovementDynamic FTGOR_ConeTraceOutput::GetDynamicFromTrace(const FTGOR_MovementSpace& Space) const
+{
+	FTGOR_MovementDynamic Dynamic;
+	Dynamic.Linear = Location;
+	Dynamic.Angular = FQuat::FindBetweenNormals(FVector::UpVector, Normal);
+
+	const FVector RadialVelocity = Space.AngularVelocity ^ Delta;
+
+	// Angular dynamics
+	Dynamic.AngularVelocity = Space.AngularVelocity;
+	Dynamic.AngularAcceleration = Space.AngularAcceleration;
+
+	// Linear dynamics
+	Dynamic.LinearVelocity = Space.LinearVelocity + RadialVelocity;
+	Dynamic.LinearAcceleration = Space.LinearAcceleration + (RadialVelocity ^ Space.AngularVelocity);
+
+	return Dynamic;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 UTGOR_AttachComponent::UTGOR_AttachComponent()
 :	Super()
 {
@@ -34,6 +55,53 @@ void UTGOR_AttachComponent::OnChildAttached(USceneComponent* ChildComponent)
 	if (IsValid(Handle))
 	{
 		Handle->MovementCone = this;
+	}
+}
+
+void UTGOR_AttachComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
+{
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
+
+	AttachCone = Dependencies.Spawner->GetMFromType<UTGOR_AttachCone>(SpawnAttachCone);
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_AttachComponent::GetModuleType_Implementation() const
+{
+	return MakeModuleList(AttachCone);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool UTGOR_AttachComponent::TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float TraceRadius, float LengthMultiplier, FTGOR_ConeTraceOutput& Output) const
+{
+	check(GetAttachParent() && "Root cone not supported for TraceHandle");
+	const FTransform ConeRelative = GetAttachParent()->GetComponentTransform() * Component->GetComponentTransform().Inverse();
+
+	// Component is not guaranteed to be parent!
+	const FVector Location = Space.Linear + Space.Angular * ConeRelative.TransformPosition(GetAlignmentLocation());
+
+	Output.Direction = Space.Angular * ConeRelative.TransformVectorNoScale(GetAlignmentDirection());
+	const FVector Translation = Output.Direction * (LimitRadius * LengthMultiplier);
+
+	FHitResult Hit;
+	if (Component->MovementSphereTraceSweep(TraceRadius, Location, Translation, Hit))
+	{
+		Output.Location = Hit.ImpactPoint;
+		Output.Normal = Hit.Normal;
+		Output.Delta = Output.Location - Location;
+
+		Output.Parent = Component->FindReparentToComponent(Hit.GetComponent(), Hit.BoneName);
+		return true;
+	}
+	else
+	{
+		Output.Location = Location + Translation;
+		Output.Normal = -Output.Direction; // < Could utilise Alignment here somehow, but wrong axis
+		Output.Delta = Output.Location - Location;
+
+		Output.Parent.Mobility = Component;
+		Output.Parent.Index = INDEX_NONE;
+		return false;
 	}
 }
 

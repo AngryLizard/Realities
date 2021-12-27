@@ -102,7 +102,6 @@ FString FTGORRigUnit_AnchorIK::ProcessPinLabelForInjection(const FString& InLabe
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void WeightedMean(TArray<FTransform>& Transforms, const TArray<FTransform>& A, const TArray<FTransform>& B, float Bias)
@@ -133,6 +132,72 @@ void Straighten(TArray<FTransform>& Transforms, const TArray<FTransform>& Rest)
 	}
 }
 
+void InitialiseBendTransforms(const FRigUnitContext& Context, const FRigUnit_DebugSettings& DebugSettings, const FRigElementKeyCollection& Chain, const FTransform& StartEE, const FTransform& EndEE, TArray<FTransform>& Rest, TArray<FTransform>& StartChain, TArray<FTransform>& EndChain, TArray<FTransform>& Transforms)
+{
+	const int32 ChainNum = Chain.Num();
+
+	// Populate transform lists
+	Rest.Reserve(ChainNum);
+	StartChain.Reserve(ChainNum);
+	EndChain.Reserve(ChainNum);
+	Transforms.Reserve(ChainNum);
+	for (int32 Index = 0; Index < ChainNum; Index++)
+	{
+		Rest.Emplace(Context.Hierarchy->GetInitialTransform(Chain[Index]));
+		Transforms.Emplace(Context.Hierarchy->GetGlobalTransform(Chain[Index]));
+		StartChain.Emplace(StartEE);
+		EndChain.Emplace(EndEE);
+	}
+
+	// Compute separate global transforms assuming rest pose for both ends
+	for (int32 Index = 1; Index < ChainNum; Index++)
+	{
+		StartChain[Index] = Rest[Index] * StartChain[Index - 1];
+		EndChain[ChainNum - Index - 1] = Rest[ChainNum - Index].Inverse() * EndChain[ChainNum - Index];
+
+		if (DebugSettings.bEnabled)
+		{
+			Context.DrawInterface->DrawPoint(FTransform::Identity, StartChain[Index].GetLocation(), DebugSettings.Scale * 5.0f, FLinearColor::Red);
+			Context.DrawInterface->DrawPoint(FTransform::Identity, EndChain[ChainNum - Index - 1].GetLocation(), DebugSettings.Scale * 5.0f, FLinearColor::Blue);
+		}
+	}
+}
+
+
+void ChainForwardSolve(const FRigUnitContext& Context, const FRigUnit_DebugSettings& DebugSettings, const TArray<FTransform>& Rest, const TArray<FTransform>& Transforms, TArray<FTransform>& StartChain, float MaxAnchorRadians)
+{
+	const int32 ChainNum = Rest.Num();
+	for (int32 Index = 1; Index < ChainNum; Index++)
+	{
+		const FTransform& Regular = Rest[Index];
+		const FQuat Rotation = SoftRotate(Regular, StartChain[Index - 1], Transforms[Index], MaxAnchorRadians);
+		StartChain[Index] = Regular * Rotation * StartChain[Index - 1];
+
+		if (DebugSettings.bEnabled)
+		{
+			Context.DrawInterface->DrawPoint(FTransform::Identity, StartChain[Index].GetLocation(), DebugSettings.Scale * 7.5f, FLinearColor::White);
+		}
+	}
+}
+
+void ChainBackwardSolve(const FRigUnitContext& Context, const FRigUnit_DebugSettings& DebugSettings, const TArray<FTransform>& Rest, const TArray<FTransform>& Transforms, TArray<FTransform>& EndChain, float MaxObjectiveRadians)
+{
+	const int32 ChainNum = Rest.Num();
+	for (int32 Index = ChainNum - 1; Index >= 1; Index--)
+	{
+		const FTransform& RegularInv = Rest[Index].Inverse();
+		const FQuat Rotation = SoftRotate(RegularInv, EndChain[Index], Transforms[Index - 1], MaxObjectiveRadians);
+		EndChain[Index - 1] = RegularInv * Rotation * EndChain[Index];
+
+		if (DebugSettings.bEnabled)
+		{
+			Context.DrawInterface->DrawPoint(FTransform::Identity, EndChain[Index - 1].GetLocation(), DebugSettings.Scale * 7.5f, FLinearColor::Black);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 FTGORRigUnit_BendIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
@@ -154,67 +219,19 @@ FTGORRigUnit_BendIK_Execute()
 			const FTransform StartEE = ComputeObjectiveTransform(Hierarchy, AnchorSettings, Chain.First(), Anchor);
 			const FTransform EndEE = ComputeObjectiveTransform(Hierarchy, ObjectiveSettings, Chain.Last(), Objective);
 
-			// Populate transform lists
-			TArray<FTransform> Rest;
-			Rest.Reserve(ChainNum);
-			TArray<FTransform> StartChain;
-			StartChain.Reserve(ChainNum);
-			TArray<FTransform> EndChain;
-			EndChain.Reserve(ChainNum);
-			TArray<FTransform> Transforms;
-			Transforms.Reserve(ChainNum);
-			for (int32 Index = 0; Index < ChainNum; Index++)
-			{
-				Rest.Emplace(Hierarchy->GetInitialTransform(Chain[Index]));
-				Transforms.Emplace(Hierarchy->GetGlobalTransform(Chain[Index]));
-				StartChain.Emplace(StartEE);
-				EndChain.Emplace(EndEE);
-			}
-
-			// Compute separate global transforms assuming rest pose for both ends
-			for (int32 Index = 1; Index < ChainNum; Index++)
-			{
-				StartChain[Index] = Rest[Index] * StartChain[Index - 1];
-				EndChain[ChainNum - Index - 1] = Rest[ChainNum - Index].Inverse() * EndChain[ChainNum - Index];
-
-				if (DebugSettings.bEnabled)
-				{
-					Context.DrawInterface->DrawPoint(FTransform::Identity, StartChain[Index].GetLocation(), DebugSettings.Scale * 5.0f, FLinearColor::Red);
-					Context.DrawInterface->DrawPoint(FTransform::Identity, EndChain[ChainNum - Index - 1].GetLocation(), DebugSettings.Scale * 5.0f, FLinearColor::Blue);
-				}
-			}
+			TArray<FTransform> Rest, StartChain, EndChain, Transforms;
+			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, EndEE, Rest, StartChain, EndChain, Transforms);
 			
 			// Collapse start and end chain into one
 			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
 
+			const float MaxAnchorRadians = FMath::DegreesToRadians(MaxAnchorAngle);
+			const float MaxObjectiveRadians = FMath::DegreesToRadians(MaxObjectiveAngle);
 			for (int32 Iteration = 0; Iteration < Iterations; Iteration++)
 			{
 				// Apply one FABRIK iteration to both directions
-				const float MaxAnchorRadians = FMath::DegreesToRadians(MaxAnchorAngle);
-				for (int32 Index = 1; Index < ChainNum; Index++)
-				{
-					const FTransform Regular = Rest[Index];
-					const FQuat Rotation = SoftRotate(Regular, StartChain[Index - 1], Transforms[Index], MaxAnchorRadians);
-					StartChain[Index] = Regular * Rotation * StartChain[Index - 1];
-
-					if (DebugSettings.bEnabled)
-					{
-						Context.DrawInterface->DrawPoint(FTransform::Identity, StartChain[Index].GetLocation(), DebugSettings.Scale * 7.5f, FLinearColor::White);
-					}
-				}
-
-				const float MaxObjectiveRadians = FMath::DegreesToRadians(MaxObjectiveAngle);
-				for (int32 Index = ChainNum - 1; Index >= 1; Index--)
-				{
-					const FTransform Regular = Rest[Index];
-					const FQuat Rotation = SoftRotate(Regular.Inverse(), EndChain[Index], Transforms[Index - 1], MaxObjectiveRadians);
-					EndChain[Index - 1] = Regular.Inverse() * Rotation * EndChain[Index];
-
-					if (DebugSettings.bEnabled)
-					{
-						Context.DrawInterface->DrawPoint(FTransform::Identity, EndChain[Index - 1].GetLocation(), DebugSettings.Scale * 7.5f, FLinearColor::Black);
-					}
-				}
+				ChainForwardSolve(Context, DebugSettings, Rest, Transforms, StartChain, MaxAnchorRadians);
+				ChainBackwardSolve(Context, DebugSettings, Rest, Transforms, EndChain, MaxObjectiveRadians);
 
 				// Collapse both FABRIK iterations into one
 				WeightedMean(Transforms, StartChain, EndChain, 1.0f);
@@ -235,6 +252,67 @@ FTGORRigUnit_BendIK_Execute()
 }
 
 FString FTGORRigUnit_BendIK::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGORRigUnit_SingleBendIK_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		const int32 ChainNum = Chain.Num();
+		if (ChainNum < 2)
+		{
+			UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Chain has to have length at least 2."));
+		}
+		else
+		{
+			// Objective properties
+			const FTransform StartEE = Hierarchy->GetGlobalTransform(Chain.First());
+			const FTransform EndEE = ComputeObjectiveTransform(Hierarchy, ObjectiveSettings, Chain.Last(), Objective);
+
+			// Populate transform lists
+			TArray<FTransform> Rest, StartChain, EndChain, Transforms;
+			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, EndEE, Rest, StartChain, EndChain, Transforms);
+
+			// Collapse start and end chain into one
+			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
+
+			const float MaxAnchorRadians = FMath::DegreesToRadians(MaxAnchorAngle);
+			const float MaxObjectiveRadians = FMath::DegreesToRadians(MaxObjectiveAngle);
+			for (int32 Iteration = 0; Iteration < Iterations; Iteration++)
+			{
+				ChainBackwardSolve(Context, DebugSettings, Rest, Transforms, EndChain, MaxObjectiveRadians);
+				ChainForwardSolve(Context, DebugSettings, Rest, Transforms, StartChain, MaxAnchorRadians);
+
+				// Collapse both FABRIK iterations into one
+				WeightedMean(Transforms, StartChain, EndChain, 1.0f);
+			}
+
+			// Make sure all bones are properly rotated
+			Straighten(Transforms, Rest);
+
+			// Set bones to transforms
+			for (int32 Index = 1; Index < ChainNum - 1; Index++)
+			{
+				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], PropagateToChildren == ETGOR_Propagation::All);
+			}
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), PropagateToChildren != ETGOR_Propagation::Off);
+		}
+	}
+}
+
+FString FTGORRigUnit_SingleBendIK::ProcessPinLabelForInjection(const FString& InLabel) const
 {
 	FString Formula;
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);

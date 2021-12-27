@@ -575,19 +575,22 @@ bool UTGOR_PipelineComponent::ParentPipelineSocket(UTGOR_PilotComponent* Attache
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_PipelineSocketTask* Task = Attachee->GetPOfType<UTGOR_PipelineSocketTask>();
-		if (IsValid(Task) && Task->CanParent(this, Socket))
+		TArray<UTGOR_PipelineSocketTask*> Tasks = Attachee->GetPListOfType<UTGOR_PipelineSocketTask>();
+		for (UTGOR_PipelineSocketTask* Task : Tasks)
 		{
-			const FTGOR_MovementSpace Space = Attachee->ComputeSpace();
-			Task->Parent(this, Socket);
+			if (IsValid(Task) && Task->CanParent(this, Socket))
+			{
+				const FTGOR_MovementSpace Space = Attachee->ComputeSpace();
+				Task->Parent(this, Socket);
 
-			// TODO: Possibly make this a function inside task
-			Task->State.SocketDirection = Socket->Forward ? 1.0f : -1.0;
-			Task->State.SocketDistance = Socket->GetSplineDistance(this);
-			Task->State.SocketSpeed = Task->State.SocketDirection * InitialSpeed;
+				// TODO: Possibly make this a function inside task
+				Task->State.SocketDirection = Socket->Forward ? 1.0f : -1.0;
+				Task->State.SocketDistance = Socket->GetSplineDistance(this);
+				Task->State.SocketSpeed = Task->State.SocketDirection * InitialSpeed;
 
-			Attachee->AttachWith(Task->Identifier.Slot);
-			return true;
+				Attachee->AttachWith(Task->Identifier.Slot);
+				return true;
+			}
 		}
 	}
 	return false;
@@ -597,8 +600,14 @@ bool UTGOR_PipelineComponent::CanParentPipelineSocket(UTGOR_PilotComponent* Atta
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_PipelineSocketTask* Task = Attachee->GetPOfType<UTGOR_PipelineSocketTask>();
-		return IsValid(Task) && Task->CanParent(this, Socket);
+		TArray<UTGOR_PipelineSocketTask*> Tasks = Attachee->GetPListOfType<UTGOR_PipelineSocketTask>();
+		for (UTGOR_PipelineSocketTask* Task : Tasks)
+		{
+			if (IsValid(Task) && Task->CanParent(this, Socket))
+			{
+				return true;
+			}
+		}
 	}
 	return false;
 }

@@ -20,4 +20,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** AnimBP slot identifier */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		FString SubAnimIdentifier = "Default";
+
 };

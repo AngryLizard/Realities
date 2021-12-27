@@ -657,6 +657,30 @@ FTGOR_MovementDamper FTGOR_MovementBody::ComputeExternalTorque(const FTGOR_Movem
 	return Output;
 }
 
+FTGOR_MovementSpace FTGOR_MovementBody::SimulateForce(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementForce& External, float DeltaTime) const
+{
+	FTGOR_MovementSpace Out;
+
+	float LinearSpeedClamp = 10'000.0f;
+	float AngularSpeedClamp = 50.0f;
+
+	// Update linear velocities
+	Out.LinearAcceleration = GetUnmassedLinear(Force.Force + External.Force);
+	const FVector LinearVelocity = Space.LinearVelocity + Space.LinearAcceleration * DeltaTime;
+	const FVector RelativeLinearVelocity = Space.RelativeLinearVelocity + Space.LinearAcceleration * DeltaTime;
+	Out.LinearVelocity = UTGOR_Math::ClampToSize(LinearVelocity, LinearSpeedClamp);
+	Out.RelativeLinearVelocity = RelativeLinearVelocity + Out.LinearVelocity - LinearVelocity;
+
+	// Update angular velocities
+	Out.AngularAcceleration = GetUnmassedAngular(Space.Angular, Force.Torque + External.Torque);
+	const FVector AngularVelocity = Space.AngularVelocity + Space.AngularAcceleration * DeltaTime;
+	const FVector RelativeAngularVelocity = Space.RelativeAngularVelocity + Space.AngularAcceleration * DeltaTime;
+	Out.AngularVelocity = UTGOR_Math::ClampToSize(AngularVelocity, AngularSpeedClamp);
+	Out.RelativeAngularVelocity = RelativeAngularVelocity + Out.AngularVelocity - AngularVelocity;
+
+	return Out;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FVector FTGOR_MovementBody::GetUnmassedLinear(const FVector& Vector) const

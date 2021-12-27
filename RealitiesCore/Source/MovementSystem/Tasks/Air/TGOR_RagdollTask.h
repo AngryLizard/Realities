@@ -30,7 +30,7 @@ public:
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 	virtual void Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const override;
-	virtual void Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out) override;
+	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

@@ -36,33 +36,33 @@ bool UTGOR_StrafingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR
 }
 
 
-float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	// Parent implements damping
-	Super::GetInputForce(Tick, Space, Orientation, External, Contact, Repel, Out);
+	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
 
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Only worry about velocity along Frame
-	const float Speed = Contact.FrameVelocity.Size();
-	const FTGOR_Direction Input = Contact.FrameInput;
+	const float Speed = MovementContact.FrameVelocity.Size();
+	const FTGOR_Direction Input = MovementContact.FrameInput;
 
 	FVector View;
-	const float MaximumSpeed = ComputeMaxSpeed(Contact, View);
+	const float MaximumSpeed = ComputeMaxSpeed(View);
 	const float FinalMaximumSpeed = MaximumSpeed * GetSpeedRatio();
 	if (FinalMaximumSpeed >= SMALL_NUMBER)
 	{
 		// Rotate towards input direction
 		const float TotalSpeedRatio = Speed / FinalMaximumSpeed;
 		const float TorqueSpeedRatio = Identifier.Component->ComputeTorqueSpeedRatio(TotalSpeedRatio, TorqueSpeedSlowdown);
-		const FVector Alignment = Identifier.Component->ComputeTorqueAlong(External.UpVector, Contact.FrameForward, View);
+		const FVector Alignment = Identifier.Component->ComputeTorqueAlong(External.UpVector, MovementContact.FrameForward, View);
 		Out.Torque += Alignment * (TorqueSpeedRatio * TurnTorque * Frame.Strength);
 	}
 
 
 	// Filter sideways input
-	const float LegRatio = ComputeCrouchSpeedRatio(Contact.GroundRatio);
+	const float LegRatio = ComputeCrouchSpeedRatio(MovementContact.GroundRatio);
 	const float InputRatio = FMath::Min(Input.Magnitude, 1.0f);
 	const float FinalMaxVelocity = FinalMaximumSpeed * LegRatio * InputRatio;
 	if (FinalMaxVelocity >= SMALL_NUMBER)
@@ -73,17 +73,17 @@ float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 
 			// Compute movement direction
 			const float Forward = Input.Direction | View;
-			const float Right = Input.Direction | (Contact.FrameNormal ^ View);
-			const FVector Direction = Forward * Contact.FrameForward + Right * Contact.FrameRight;
+			const float Right = Input.Direction | (MovementContact.FrameNormal ^ View);
+			const FVector Direction = Forward * MovementContact.FrameForward + Right * MovementContact.FrameRight;
 
 			// Get input vector transformed to Frame, move forwards if aligned, directly move towards input if not
-			const float ForwardRatio = Contact.FrameForward | View;
+			const float ForwardRatio = MovementContact.FrameForward | View;
 			const float StrengthRatio = Identifier.Component->ComputeDirectionRatio(ForwardRatio, SpeedRatio, LockMovementWithTurning);
 			const float Direct = StrengthRatio * Input.Magnitude * MaximumLegStrength;
 			Out.Force += Identifier.Component->ComputeForceTowards(Direction, Out.Force, Direct, SpeedRatio);
 
 			// Apply centripetal forces for nice curves
-			Out.Force += Body.GetMassedLinear(Contact.FrameAngular ^ Contact.FrameVelocity);
+			Out.Force += Body.GetMassedLinear(MovementContact.FrameAngular ^ MovementContact.FrameVelocity);
 		}
 		return SpeedRatio;
 	}
@@ -91,17 +91,17 @@ float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FT
 }
 
 
-float UTGOR_StrafingTask::ComputeMaxSpeed(const FTGOR_MovementContact& Contact, FVector& View) const
+float UTGOR_StrafingTask::ComputeMaxSpeed(FVector& View) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
-	View = UTGOR_Math::Normalize(State.View - (State.View | Contact.FrameNormal) * Contact.FrameNormal);
+	View = UTGOR_Math::Normalize(State.View - (State.View | MovementContact.FrameNormal) * MovementContact.FrameNormal);
 
 	// Compute max speed in current input direction
-	const float InputSize = Contact.FrameInput.Size();
+	const float InputSize = MovementContact.FrameInput.Size();
 	if (InputSize >= SMALL_NUMBER)
 	{
 		// Compute ratio in either direction
-		const float ForwardRatio = (Contact.FrameInput | View) / InputSize;
+		const float ForwardRatio = (MovementContact.FrameInput | View) / InputSize;
 		const float SquaredRatio = ForwardRatio * ForwardRatio;
 
 		// Compute appropriate maximum speed

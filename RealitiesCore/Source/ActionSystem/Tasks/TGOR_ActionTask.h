@@ -5,7 +5,7 @@
 #include "../TGOR_ActionInstance.h"
 #include "InventorySystem/Storage/TGOR_StorageInstance.h"
 
-#include "CoreSystem/Tasks/TGOR_Task.h"
+#include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
 #include "TGOR_ActionTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ struct ACTIONSYSTEM_API FTGOR_ActionTaskIdentifier
 * TGOR_Action handles any kind of replicated actions
 */
 UCLASS(Blueprintable)
-class ACTIONSYSTEM_API UTGOR_ActionTask : public UTGOR_Task
+class ACTIONSYSTEM_API UTGOR_ActionTask : public UTGOR_AnimatedTask
 {
 	GENERATED_BODY()
 
@@ -67,6 +67,7 @@ public:
 
 	UTGOR_ActionTask();
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+	virtual TScriptInterface<ITGOR_AnimationInterface> GetAnimationOwner() const override;
 
 	/** Log a message for this given action */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -260,6 +261,15 @@ public:
 	/** Forward serverside depending on ClientAuthority */
 	void Integrate(FTGOR_ActionState& State, const FTGOR_ActionState& TargetState);
 
+	/** Tick animation */
+	virtual void Animate(float Deltatime);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Called every frame to update animation (multiple action ticks can happen per animation frame). */
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		void OnAnimate(float Deltatime);
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 
@@ -327,6 +337,7 @@ private:
 	/** Last record aim target */
 	UPROPERTY()
 		FTGOR_AimInstance LastAim;
+
 
 protected:
 private:

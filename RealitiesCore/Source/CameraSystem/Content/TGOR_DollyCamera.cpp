@@ -20,7 +20,7 @@ FVector4 UTGOR_DollyCamera::Initial(const UTGOR_CameraComponent* Camera, const U
 	return FVector4(DefaultFOV, DefaultVignette, 1.0f, 0.0f);
 }
 
-FVector4 UTGOR_DollyCamera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector4& Params) const
+FVector4 UTGOR_DollyCamera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector& Params) const
 {
 	// FOV
 	const float Param = Params.X;

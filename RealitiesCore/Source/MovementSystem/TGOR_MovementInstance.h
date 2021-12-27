@@ -138,9 +138,17 @@ struct MOVEMENTSYSTEM_API FTGOR_MovementGround
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Slope;
 
-	/** Distance from ground in cm */
+	/** Distance ratio from ground in [0, 1] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float GroundRatio;
+
+	/** Closest distance ratio from ground in [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float MinGroundRatio;
+
+	/** Furthest distance ratio from ground in [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float MaxGroundRatio;
 };
 
 /**

@@ -21,14 +21,12 @@ void UTGOR_SocketMovementTask::Initialise()
 	Super::Initialise();
 
 	RootComponent = Identifier.Component->GetRootPilot();
-	if (IsValid(RootComponent))
-	{
-		SocketTask = RootComponent->GetPOfType<UTGOR_SocketPilotTask>();
-	}
-	else
+	if (!RootComponent.IsValid())
 	{
 		ERROR("RootComponent invalid", Error);
 	}
+	
+	SocketTask.Reset();
 }
 
 bool UTGOR_SocketMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
@@ -37,10 +35,31 @@ bool UTGOR_SocketMovementTask::Invariant(const FTGOR_MovementSpace& Space, const
 	{
 		return false;
 	}
-	return IsValid(RootComponent) && IsValid(SocketTask) && SocketTask->IsRegistered();
+
+	UTGOR_SocketPilotTask* Task = SocketTask.IsValid() ? SocketTask.Get() : RootComponent->GetCurrentPOfType<UTGOR_SocketPilotTask>();
+	if (!RootComponent.IsValid() || !IsValid(Task))
+	{
+		return false;
+	}
+
+	return true;
 }
 
-void UTGOR_SocketMovementTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
+void UTGOR_SocketMovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
 	Super::Update(Space, External, Tick, Output);
+}
+
+void UTGOR_SocketMovementTask::PrepareStart()
+{
+	Super::PrepareStart();
+
+	SocketTask = RootComponent->GetCurrentPOfType<UTGOR_SocketPilotTask>();
+}
+
+void UTGOR_SocketMovementTask::Interrupt()
+{
+	Super::Interrupt();
+
+	SocketTask.Reset();
 }

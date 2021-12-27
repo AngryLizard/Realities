@@ -212,12 +212,15 @@ bool UTGOR_SocketComponent::ParentNamedSocket(UTGOR_PilotComponent* Attachee, UT
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_NamedSocketTask* Task = Attachee->GetPOfType<UTGOR_NamedSocketTask>();
-		if (IsValid(Task) && Task->CanParent(this, Socket))
+		TArray<UTGOR_NamedSocketTask*> Tasks = Attachee->GetPListOfType<UTGOR_NamedSocketTask>();
+		for (UTGOR_NamedSocketTask* Task : Tasks)
 		{
-			Task->Parent(this, Socket);
-			Attachee->AttachWith(Task->Identifier.Slot);
-			return true;
+			if (IsValid(Task) && Task->CanParent(this, Socket))
+			{
+				Task->Parent(this, Socket);
+				Attachee->AttachWith(Task->Identifier.Slot);
+				return true;
+			}
 		}
 	}
 	return false;
@@ -227,8 +230,14 @@ bool UTGOR_SocketComponent::CanParentNamedSocket(UTGOR_PilotComponent* Attachee,
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_NamedSocketTask* Task = Attachee->GetPOfType<UTGOR_NamedSocketTask>();
-		return IsValid(Task) && Task->CanParent(this, Socket);
+		TArray<UTGOR_NamedSocketTask*> Tasks = Attachee->GetPListOfType<UTGOR_NamedSocketTask>();
+		for (UTGOR_NamedSocketTask* Task : Tasks)
+		{
+			if (IsValid(Task) && Task->CanParent(this, Socket))
+			{
+				return true;
+			}
+		}
 	}
 	return nullptr;
 }

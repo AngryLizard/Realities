@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MovementSystem/TGOR_IPC.h"
 
 #include "TGOR_UprightTask.h"
 #include "TGOR_WalkingTask.generated.h"
@@ -24,6 +25,7 @@ public:
 
 	UTGOR_WalkingTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Initialise() override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -48,7 +50,23 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
+	/** Pendulum properties for wind-up */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		FTGOR_PendulumProperties Pendulum;
 
+	/** Properties for riccati equation solver */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		FTGOR_RiccatiProperties Riccati;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+
+	UPROPERTY()
+		FTGOR_IPCProperties IPC;
 
 };

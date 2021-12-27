@@ -4,14 +4,48 @@
 
 #include "CoreMinimal.h"
 
+#include "AnimationSystem/Content/TGOR_AttachCone.h"
+
+#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "TGOR_AttachComponent.generated.h"
+
+/**
+*
+*/
+USTRUCT(BlueprintType)
+struct ANIMATIONSYSTEM_API FTGOR_ConeTraceOutput
+{
+	GENERATED_USTRUCT_BODY();
+
+	/** Trace location */
+	UPROPERTY()
+		FVector Location = FVector::ZeroVector;
+
+	/** Normal location */
+	UPROPERTY()
+		FVector Normal = FVector::UpVector;
+
+	/** Handle to cone delta */
+	UPROPERTY()
+		FVector Delta = FVector::ZeroVector;
+
+	/** Trace direction */
+	UPROPERTY()
+		FVector Direction = FVector::ZeroVector;
+
+	/** Trace parent */
+	UPROPERTY()
+		FTGOR_MovementParent Parent;
+
+	FTGOR_MovementDynamic GetDynamicFromTrace(const FTGOR_MovementSpace& Space) const;
+};
 
 /**
  * UTGOR_AttachComponent allows separate attachment points.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class ANIMATIONSYSTEM_API UTGOR_AttachComponent : public UShapeComponent
+class ANIMATIONSYSTEM_API UTGOR_AttachComponent : public UShapeComponent, public ITGOR_SpawnerInterface
 {
 	GENERATED_BODY()
 
@@ -19,7 +53,31 @@ public:
 	UTGOR_AttachComponent();
 	virtual void OnChildAttached(USceneComponent* ChildComponent) override;
 
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
+
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** AttachCone this component represents */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TSubclassOf<UTGOR_AttachCone> SpawnAttachCone;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	/*  */
+	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		UTGOR_AttachCone* AttachCone;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Traces for along the cone center, returns true if trace was successful and hit something. */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
+		bool TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float TraceRadius, float LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

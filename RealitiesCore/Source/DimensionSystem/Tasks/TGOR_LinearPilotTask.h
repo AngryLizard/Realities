@@ -81,11 +81,11 @@ public:
 
 	/** Parent this task to a given mobility. Does not preserve current world transform. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void Parent(UTGOR_MobilityComponent* Parent, int32 Index);
+		virtual void Parent(UTGOR_MobilityComponent* Parent, int32 Index);
 
 	/** Whether this task can parent to a given mobility */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool CanParent(const UTGOR_MobilityComponent* Parent, int32 Index) const;
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		virtual bool CanParent(const UTGOR_MobilityComponent* Parent, int32 Index) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:

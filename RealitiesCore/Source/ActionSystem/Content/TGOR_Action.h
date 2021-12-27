@@ -170,10 +170,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Base animation module of this action, gets played automatically when scheduled */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSubclassOf<UTGOR_Animation> MainAnimation;
-
 	/** Which type of input this action is triggered by */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<UTGOR_Input>> TriggerInputs;

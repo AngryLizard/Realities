@@ -38,6 +38,11 @@ void UTGOR_ActionTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& O
 	DOREPLIFETIME_CONDITION(UTGOR_ActionTask, LastCallTimestamp, COND_None);
 }
 
+TScriptInterface<ITGOR_AnimationInterface> UTGOR_ActionTask::GetAnimationOwner() const
+{
+	return GetOwnerComponent();
+}
+
 void UTGOR_ActionTask::LogActionMessage(const FString& Domain, const FString& Message)
 {
 	if(IsValid(Identifier.Content) && IsValid(Identifier.Component) && Singleton.IsValid() && Identifier.Content->Verbose)
@@ -110,11 +115,7 @@ bool UTGOR_ActionTask::Condition() const
 
 void UTGOR_ActionTask::PrepareStart()
 {
-	if (*Identifier.Content->MainAnimation)
-	{
-		Identifier.Component->PlayAnimation(Identifier.Content->MainAnimation);
-	}
-
+	PlayAnimation();
 	OnPrepareStart();
 }
 
@@ -122,6 +123,7 @@ bool UTGOR_ActionTask::PrepareState(float Time, float Deltatime)
 {
 	ETGOR_StateEnumeration Wait = ETGOR_StateEnumeration::NextState;
 	OnPrepare(Time, Deltatime, Wait);
+	Animate(Deltatime);
 	return Wait == ETGOR_StateEnumeration::KeepState;
 }
 
@@ -134,6 +136,7 @@ bool UTGOR_ActionTask::OperateState(float Time, float Deltatime)
 {
 	ETGOR_StateEnumeration Wait = ETGOR_StateEnumeration::NextState;
 	OnOperate(Time, Deltatime, Wait);
+	Animate(Deltatime);
 	return Wait == ETGOR_StateEnumeration::KeepState;
 }
 
@@ -146,12 +149,13 @@ bool UTGOR_ActionTask::FinishState(float Time, float Deltatime)
 {
 	ETGOR_StateEnumeration Wait = ETGOR_StateEnumeration::NextState;
 	OnFinish(Time, Deltatime, Wait);
+	Animate(Deltatime);
 	return Wait == ETGOR_StateEnumeration::KeepState;
 }
 
 void UTGOR_ActionTask::Interrupt()
 {
-	Identifier.Component->PlayAnimation(nullptr);
+	ResetAnimation();
 	OnInterrupt();
 }
 
@@ -814,6 +818,11 @@ void UTGOR_ActionTask::Integrate(FTGOR_ActionState& State, const FTGOR_ActionSta
 			}
 		}
 	}
+}
+
+void UTGOR_ActionTask::Animate(float Deltatime)
+{
+	OnAnimate(Deltatime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

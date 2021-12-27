@@ -61,7 +61,6 @@ TMap<int32, UTGOR_SpawnModule*> UTGOR_AnimationComponent::GetModuleType_Implemen
 bool UTGOR_AnimationComponent::ApplyAnimationSetup(FTGOR_AnimationInstance Setup)
 {
 	// TODO: Keep running animations of same type
-	PerformanceSlots.Empty();
 	AnimInstance = nullptr;
 
 	// Run setup
@@ -71,15 +70,9 @@ bool UTGOR_AnimationComponent::ApplyAnimationSetup(FTGOR_AnimationInstance Setup
 	// Initialise animBP
 	if (IsValid(AnimationSetup.Archetype))
 	{
-		// Keep previous animBP if not defined
-		if (*AnimationSetup.Archetype->InstanceClass)
-		{
-			SetAnimInstanceClass(AnimationSetup.Archetype->InstanceClass);
-		}
-
 		for (UTGOR_Performance* Performance : AnimationSetup.Archetype->Instanced_PerformanceInsertions.Collection)
 		{
-			PerformanceSlots.Emplace(Performance, nullptr);
+			PerformanceSlots.Emplace(Performance);
 		}
 
 		for (UTGOR_RigParam* Param : AnimationSetup.Archetype->Instanced_RigParamInsertions.Collection)
@@ -116,51 +109,31 @@ bool UTGOR_AnimationComponent::ApplyAnimationSetup(FTGOR_AnimationInstance Setup
 	return true;
 }
 
-bool UTGOR_AnimationComponent::SwitchAnimation(TSubclassOf<UTGOR_Performance> PerformanceType, TSubclassOf<UTGOR_Animation> AnimationType)
+bool UTGOR_AnimationComponent::SwitchAnimation(TSubclassOf<UTGOR_Performance> PerformanceType, UTGOR_AnimatedTask* AnimatedTask)
 {
 	if (AnimInstance.IsValid())
 	{
-		for (const auto& Pair : PerformanceSlots)
+		for (UTGOR_Performance* PerformanceSlot : PerformanceSlots)
 		{
-			if (Pair.Key->IsA(PerformanceType))
+			if (PerformanceSlot->IsA(PerformanceType))
 			{
-				if (IsValid(Pair.Value))
-				{
-					if (*AnimationType)
-					{
-						// There is already an animation running but we chose a different one
-						if (!Pair.Value->IsA(AnimationType))
-						{
-							AnimInstance->AssignAnimationInstance(Pair.Key, AnimationSetup.Archetype->Instanced_AnimationInsertions.GetOfType(AnimationType));
-							return true;
-						}
-					}
-					else
-					{
-						// There is already an animation running and we want to cancel it
-						AnimInstance->AssignAnimationInstance(Pair.Key, nullptr);
-						return true;
-					}
-				}
-				else if (*AnimationType)
-				{
-					// There is no animation running but we want to run one
-					AnimInstance->AssignAnimationInstance(Pair.Key, AnimationSetup.Archetype->Instanced_AnimationInsertions.GetOfType(AnimationType));
-					return true;
-				}
+				AnimInstance->AssignAnimationInstance(PerformanceSlot, AnimatedTask);
 			}
 		}
 	}
 	return false;
 }
 
-UTGOR_Animation* UTGOR_AnimationComponent::GetAnimation(TSubclassOf<UTGOR_Performance> PerformanceType) const
+UTGOR_AnimatedTask* UTGOR_AnimationComponent::GetAnimation(TSubclassOf<UTGOR_Performance> PerformanceType) const
 {
-	for (const auto& Pair : PerformanceSlots)
+	if (AnimInstance.IsValid())
 	{
-		if (Pair.Key->IsA(PerformanceType))
+		for (UTGOR_Performance* PerformanceSlot : PerformanceSlots)
 		{
-			return Pair.Value;
+			if (PerformanceSlot->IsA(PerformanceType))
+			{
+				return AnimInstance->GetQueue(PerformanceSlot);
+			}
 		}
 	}
 	return nullptr;

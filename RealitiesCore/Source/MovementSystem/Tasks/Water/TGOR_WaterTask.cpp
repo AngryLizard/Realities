@@ -39,7 +39,7 @@ void UTGOR_WaterTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	return Super::QueryInput(OutInput, OutView);
 }
 
-void UTGOR_WaterTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
+void UTGOR_WaterTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();

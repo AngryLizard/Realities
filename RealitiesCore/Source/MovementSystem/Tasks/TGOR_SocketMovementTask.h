@@ -27,13 +27,16 @@ public:
 
 	virtual void Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
-	virtual void Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
+	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
+
+	virtual void PrepareStart() override;
+	virtual void Interrupt() override;
 
 protected:
 
 	UPROPERTY(Transient)
-		UTGOR_PilotComponent* RootComponent;
+		TWeakObjectPtr<UTGOR_PilotComponent> RootComponent;
 
 	UPROPERTY(Transient)
-		UTGOR_SocketPilotTask* SocketTask;
+		TWeakObjectPtr<UTGOR_SocketPilotTask> SocketTask;
 };

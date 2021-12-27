@@ -104,8 +104,8 @@ float UTGOR_RigidComponent::TickPhysics(float Time)
 				const FVector InflictedLinearVelocity = MovementBody.GetUnmassedLinear(Inflicted.LinearMomentum);
 				const FVector InflictedAngularVelocity = MovementBody.GetUnmassedAngular(Space.Angular, Inflicted.AngularMomentum);
 
-				Space.AddLinearVelocity(InflictedLinearVelocity + Space.LinearAcceleration * Tick.Deltatime);
-				Space.AddAngularVelocity(InflictedAngularVelocity + Space.AngularAcceleration * Tick.Deltatime);
+				Space.AddLinearVelocity(InflictedLinearVelocity + Space.LinearAcceleration * Tick.DeltaTime);
+				Space.AddAngularVelocity(InflictedAngularVelocity + Space.AngularAcceleration * Tick.DeltaTime);
 
 				Inflicted.LinearMomentum = FVector::ZeroVector;
 				Inflicted.AngularMomentum = FVector::ZeroVector;
@@ -131,16 +131,16 @@ float UTGOR_RigidComponent::TickPhysics(float Time)
 						// Damping is the factor that was applied to velocity, meaning if it gets bigger than 1.0 we oscillate
 						const float LinearDampingStress = Out.MaxLinearDamping / MovementBody.Mass;
 						const float AngularDampingStress = Out.MaxAngularDamping / MinInertia;
-						const float TimeStress = FMath::Max(LinearDampingStress, AngularDampingStress) * Tick.Deltatime;
+						const float TimeStress = FMath::Max(LinearDampingStress, AngularDampingStress) * Tick.DeltaTime;
 						if (TimeStress > 1.0f)
 						{
 							INC_FLOAT_STAT_BY(STAT_DampingFactor, TimeStress);
-							Tick.Deltatime /= FMath::Min(TimeStress, MaxDampingStratification);
+							Tick.DeltaTime /= FMath::Min(TimeStress, MaxDampingStratification);
 						}
 					}
 					*/
 
-					External.UpVector = UTGOR_Math::Normalize(FMath::VInterpConstantTo(External.UpVector, -Out.Orientation, Tick.Deltatime, OrientationSpeed));
+					External.UpVector = UTGOR_Math::Normalize(FMath::VInterpConstantTo(External.UpVector, -Out.Orientation, Tick.DeltaTime, OrientationSpeed));
 
 					// Store upvector in local space. Base could have changed during ComputePhysics so we need to recompute it.
 					const FTGOR_MovementPosition Position = RootPilot->ComputeBase();
@@ -148,12 +148,12 @@ float UTGOR_RigidComponent::TickPhysics(float Time)
 				}
 
 				// Compute used energy for force and torque (Approximated with forward euler E=|F|*dx and E=|T|*da)
-				const float LinearEnergy = Out.Force.Size() * Space.RelativeLinearVelocity.Size() * Tick.Deltatime;
-				const float AngularEnergy = Out.Torque.Size() * Space.RelativeAngularVelocity.Size() * Tick.Deltatime;
+				const float LinearEnergy = Out.Force.Size() * Space.RelativeLinearVelocity.Size() * Tick.DeltaTime;
+				const float AngularEnergy = Out.Torque.Size() * Space.RelativeAngularVelocity.Size() * Tick.DeltaTime;
 				Energy += LinearEnergy + AngularEnergy;
 			}
 
-			Remaining -= Tick.Deltatime;
+			Remaining -= Tick.DeltaTime;
 		}
 
 		PostComputePhysics(Space, Energy, Remaining);
@@ -193,15 +193,15 @@ bool UTGOR_RigidComponent::PopulateMovementTick(float Time, FTGOR_MovementTick& 
 	// Adaptive timestep
 	if (StratisfyTimestep)
 	{
-		OutTick.Deltatime = SimulationTimestep;
+		OutTick.DeltaTime = SimulationTimestep;
 		return (Time >= SimulationTimestep);
 	}
 	else
 	{
 		// Stratisfy always on very slow frames (other parts of the game will take the hit mkay?)
 		// Otherwise some of the simulation will go Nan-bread
-		OutTick.Deltatime = FMath::Min(Time, 0.05f);
-		return (OutTick.Deltatime >= SMALL_NUMBER);
+		OutTick.DeltaTime = FMath::Min(Time, 0.05f);
+		return (OutTick.DeltaTime >= SMALL_NUMBER);
 	}
 }
 

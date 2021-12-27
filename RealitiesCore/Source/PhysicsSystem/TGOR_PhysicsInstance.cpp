@@ -53,7 +53,7 @@ bool FTGOR_MovementCapture::NetSerialize(FArchive& Ar, class UPackageMap* Map, b
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGOR_MovementTick::FTGOR_MovementTick()
-	: Deltatime(0.0f),
+	: DeltaTime(0.0f),
 	MaxLinearDamping(0.0f),
 	MaxAngularDamping(0.0f)
 {

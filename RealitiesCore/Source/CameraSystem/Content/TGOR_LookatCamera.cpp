@@ -22,9 +22,9 @@ FVector4 UTGOR_LookatCamera::Initial(const UTGOR_CameraComponent* Camera, const 
 	return FVector4(Origin + ViewRotation.Vector() * 512.0f, 0.0f);
 }
 
-FVector4 UTGOR_LookatCamera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector4& Params) const
+FVector4 UTGOR_LookatCamera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector& Params) const
 {
-	return Params + FVector4(FVector::ZeroVector, 1.0f);
+	return FVector4(Params, 1.0f);
 }
 
 void UTGOR_LookatCamera::Apply(UTGOR_CameraComponent* Camera, USpringArmComponent* SpringArm, const FVector4& Input)

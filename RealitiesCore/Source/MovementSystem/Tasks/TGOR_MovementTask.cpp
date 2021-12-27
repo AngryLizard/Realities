@@ -21,6 +21,10 @@ void UTGOR_MovementTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >&
 	DOREPLIFETIME_CONDITION(UTGOR_MovementTask, Identifier, COND_InitialOnly);
 }
 
+TScriptInterface<ITGOR_AnimationInterface> UTGOR_MovementTask::GetAnimationOwner() const
+{
+	return GetOwnerComponent();
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,31 +56,17 @@ float UTGOR_MovementTask::GetAttribute(TSubclassOf<UTGOR_Attribute> Type, float 
 	return UTGOR_AttributeComponent::GetAttributeValue(Identifier.Component->GetOwner(), Type, Default);
 }
 
-void UTGOR_MovementTask::GetHandleComponents(TArray<UTGOR_HandleComponent*>& Handles, const TSet<TSubclassOf<UTGOR_Primitive>>& Types, bool EnforceCone) const
-{
-	TArray<UTGOR_HandleComponent*> Components = Identifier.Component->GetOwnerComponents<UTGOR_HandleComponent>();
-	for (UTGOR_HandleComponent* Component : Components)
-	{
-		if (!EnforceCone || IsValid(Component->MovementCone))
-		{
-			for (TSubclassOf<UTGOR_Primitive> Type : Types)
-			{
-				if (Component->SpawnPrimitive->IsChildOf(Type))
-				{
-					Handles.Emplace(Component);
-					break;
-				}
-			}
-		}
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_MovementTask::Initialise()
 {
 	Identifier.Content->TaskInitialise(this);
 	OnInitialise();
+}
+
+void UTGOR_MovementTask::PrepareStart()
+{
+	PlayAnimation();
 }
 
 bool UTGOR_MovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
@@ -110,9 +100,13 @@ void UTGOR_MovementTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	OutView = FVector::ZeroVector;
 }
 
-void UTGOR_MovementTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
+void UTGOR_MovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
+}
 
+void UTGOR_MovementTask::Interrupt()
+{
+	ResetAnimation();
 }
 
 void UTGOR_MovementTask::Animate(const FTGOR_MovementSpace& Space, float DeltaTime)

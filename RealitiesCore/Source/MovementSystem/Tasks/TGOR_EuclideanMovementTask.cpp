@@ -21,14 +21,12 @@ void UTGOR_EuclideanMovementTask::Initialise()
 	Super::Initialise();
 
 	RootComponent = Identifier.Component->GetRootPilot();
-	if (IsValid(RootComponent))
-	{
-		EuclideanTask = RootComponent->GetPOfType<UTGOR_EuclideanPilotTask>();
-	}
-	else
+	if (!RootComponent.IsValid())
 	{
 		ERROR("RootComponent invalid", Error);
 	}
+
+	EuclideanTask.Reset();
 }
 
 bool UTGOR_EuclideanMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
@@ -37,15 +35,53 @@ bool UTGOR_EuclideanMovementTask::Invariant(const FTGOR_MovementSpace& Space, co
 	{
 		return false;
 	}
-	return IsValid(RootComponent) && IsValid(EuclideanTask) && EuclideanTask->IsRegistered();
+
+	UTGOR_EuclideanPilotTask* Task = EuclideanTask.IsValid() ? EuclideanTask.Get() : RootComponent->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
+	if (!RootComponent.IsValid() || !IsValid(Task))
+	{
+		return false;
+	}
+
+	return true;
 }
 
-void UTGOR_EuclideanMovementTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
+void UTGOR_EuclideanMovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
+	SimulateSymplectic(Space, Output, External, Tick.DeltaTime, true);
 	Super::Update(Space, External, Tick, Output);
+}
 
-	////////////////////////////////////////////////////////////////////////////////////////////
+void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep)
+{
+	// Make sure we aren't introducing NaNs
+	if (Force.Force.ContainsNaN())
+	{
+		ERROR("Output force NAN!", Error);
+	}
 
-	RootComponent->SimulateSymplectic(Space, Output, External, Tick.Deltatime, true);
-	EuclideanTask->SimulateDynamic(Space);
+	if (Force.Torque.ContainsNaN())
+	{
+		ERROR("Output torque NAN!", Error);
+	}
+
+	const FTGOR_MovementBody& MovementBody = RootComponent->GetBody();
+	FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Force, External, Timestep);
+
+	// Simulate move
+	RootComponent->SimulateMove(Out, Timestep, Sweep);
+	EuclideanTask->SimulateDynamic(Out);
+}
+
+void UTGOR_EuclideanMovementTask::PrepareStart()
+{
+	Super::PrepareStart();
+
+	EuclideanTask = RootComponent->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
+}
+
+void UTGOR_EuclideanMovementTask::Interrupt()
+{
+	Super::Interrupt();
+
+	EuclideanTask.Reset();
 }

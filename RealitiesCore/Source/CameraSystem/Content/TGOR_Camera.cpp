@@ -6,19 +6,18 @@
 
 
 UTGOR_Camera::UTGOR_Camera()
-	: Super(),
-	DefaultBlendTime(2.0f)
+	: Super()
 {
 }
 
 FVector4 UTGOR_Camera::Initial(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm) const
 {
-	return FVector::ZeroVector;
+	return FVector4(0,0,0,0);
 }
 
-FVector4 UTGOR_Camera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector4& Params) const
+FVector4 UTGOR_Camera::Filter(const UTGOR_CameraComponent* Camera, const USpringArmComponent* SpringArm, const FVector& Params) const
 {
-	return Params;
+	return FVector4(Params, 1);
 }
 
 void UTGOR_Camera::Apply(UTGOR_CameraComponent* Camera, USpringArmComponent* SpringArm, const FVector4& Input)

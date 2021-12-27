@@ -9,6 +9,7 @@
 
 class UTGOR_PilotComponent;
 class UTGOR_IdentityComponent;
+class UTGOR_VolumeVisualiserComponent;
 class UTGOR_ReplicationGraphNode_VolumeCell;
 
 ///////////////////////////////////////////////// DECL ///////////////////////////////////////////////////
@@ -73,6 +74,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 		UTGOR_IdentityComponent* IdentityComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
+		UTGOR_VolumeVisualiserComponent* Visualization;
 
 public:
 
@@ -143,7 +147,7 @@ protected:
 		bool IsNetworkVolume;
 
 	/** Network cell associated with this volume */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Volume")
+	UPROPERTY()
 		UTGOR_ReplicationGraphNode_VolumeCell* NetworkCell;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,6 +161,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Volume", Meta = (Keywords = "C++"))
 		virtual FTGOR_PhysicsProperties ComputeAllSurroundings(const FVector& Location) const;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	//~ Begin UObject Interface
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	void UpdateVisuals();
+#endif // WITH_EDITOR
+	//~ End UObject Interface
+	// 
 	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
 
 protected:

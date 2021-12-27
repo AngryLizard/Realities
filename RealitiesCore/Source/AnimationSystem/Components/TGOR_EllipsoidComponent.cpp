@@ -20,6 +20,31 @@ FTransform UTGOR_EllipsoidComponent::GetControlTransform(USkinnedMeshComponent* 
 	return UTGOR_ControlSkeletalMeshComponent::GetRelativeControlTransform(Component, this);
 }
 
+void UTGOR_EllipsoidComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
+{
+	ITGOR_SpawnerInterface::UpdateContent_Implementation(Dependencies);
+
+	Ellipsoid = Dependencies.Spawner->GetMFromType<UTGOR_Ellipsoid>(SpawnEllipsoid);
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_EllipsoidComponent::GetModuleType_Implementation() const
+{
+	return MakeModuleList(Ellipsoid);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_EllipsoidComponent::AdaptToGroundContact(const FVector& SurfaceLocation, const FVector& SurfaceNormal, float Stretch)
+{
+	const float Flat = 0.5f;
+
+	FTransform Transform;
+	Transform.SetLocation(SurfaceLocation - SurfaceNormal * (Flat * ELLIPSOID_RADIUS));
+	Transform.SetRotation(FQuat::FindBetweenNormals(FVector::UpVector, SurfaceNormal));
+	Transform.SetScale3D(FVector(Stretch, Stretch, Flat));
+	SetWorldTransform(Transform);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FBoxSphereBounds UTGOR_EllipsoidComponent::CalcBounds(const FTransform& LocalToWorld) const
@@ -31,7 +56,7 @@ FBoxSphereBounds UTGOR_EllipsoidComponent::CalcBounds(const FTransform& LocalToW
 
 void UTGOR_EllipsoidComponent::UpdateBodySetup()
 {
-	// No collision needed ever
+	// No collision needed
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

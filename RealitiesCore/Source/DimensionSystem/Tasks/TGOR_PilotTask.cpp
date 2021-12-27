@@ -75,7 +75,7 @@ FTGOR_MovementDynamic UTGOR_PilotTask::ComputeBase() const
 
 FTGOR_MovementPosition UTGOR_PilotTask::ComputePosition() const
 {
-	return ComputeBase();
+	return ComputeSpace();
 }
 
 FTGOR_MovementSpace UTGOR_PilotTask::ComputeSpace() const

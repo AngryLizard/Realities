@@ -58,7 +58,7 @@ struct PHYSICSSYSTEM_API FTGOR_MovementTick
 
 	/** Amount of time to simulate */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Deltatime;
+		float DeltaTime;
 
 	/** Max damping coefficient for this frame to prevent oscillation */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

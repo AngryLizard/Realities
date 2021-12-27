@@ -307,11 +307,6 @@ FTGORRigUnit_LimitRotation_Execute()
 	else
 	{
 		Output = LimitRotation(Quat, Axis, Min, Max);
-
-		const float Length = Output.SizeSquared();
-
-		UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Square length %f."), Length);
-
 	}
 }
 
@@ -684,6 +679,82 @@ FString FTGORRigUnit_GetScaleLength::ProcessPinLabelForInjection(const FString& 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+FTGORRigUnit_RotationBetween_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		Output = FQuat::FindBetweenVectors(Source, Target);
+	}
+}
+
+FString FTGORRigUnit_RotationBetween::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGORRigUnit_ReprojectOntoPlane_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		const FVector Delta = Point - Reference;
+		const FVector Projected = Delta.ProjectOnToNormal(Direction);
+
+		const FVector Warp = Reference + Delta - Projected; 
+		const FVector Intersection = FVector::PointPlaneProject(Warp, FPlane(Location, Normal));
+
+		Projection = Intersection + Projected;
+	}
+}
+
+FString FTGORRigUnit_ReprojectOntoPlane::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGORRigUnit_WarpAlongDirection_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		const FVector Delta = Point - Reference;
+		const FVector Projected = Delta.ProjectOnToNormal(Direction);
+		const FVector Offset = Delta - Projected;
+
+		Warped = Reference + Offset + Projected * Scale;
+	}
+}
+
+FString FTGORRigUnit_WarpAlongDirection::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 float FTGORRigUnit_SoftBoundaries::SoftBoundaries(float Value, float Max)
 {
 	return Max * 2.0f * (1.0f / (1.0f + FMath::Exp(-Value * 2.0f / Max)) - 0.5f);
@@ -719,6 +790,7 @@ FTGORRigUnit_PreviewAnimation_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		WorkData.bInitialized = false;
+		WorkData.ConversionRig.Reset();
 	}
 	else
 	{
@@ -755,7 +827,7 @@ FTGORRigUnit_PreviewAnimation_Execute()
 
 				if (*PreviewSettings.ConversionRigClass)
 				{
-					if (!IsValid(WorkData.ConversionRig) || !WorkData.ConversionRig->IsA(PreviewSettings.ConversionRigClass))
+					if (!WorkData.ConversionRig.IsValid() || !WorkData.ConversionRig->IsA(PreviewSettings.ConversionRigClass))
 					{
 						WorkData.ConversionRig = NewObject<UControlRig>(Context.OwningComponent, PreviewSettings.ConversionRigClass);
 						WorkData.ConversionRig->Initialize(true);
@@ -777,13 +849,18 @@ FTGORRigUnit_PreviewAnimation_Execute()
 				FAnimExtractContext ExtractContext(WorkData.Time, false);
 				PreviewSettings.PreviewAnimation->GetBonePose(PoseData, ExtractContext);
 
-				if (IsValid(WorkData.ConversionRig))
+				if (WorkData.ConversionRig.IsValid())
 				{
+					FRigBoneHierarchy& ConversionBoneHierarchy = WorkData.ConversionRig->GetBoneHierarchy();
+
 					for (FBoneIndexType BoneIndex = 0; BoneIndex < BoneNum; BoneIndex++)
 					{
 						const FName KeyName = Reference.GetBoneName(BoneIndex);
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
-						WorkData.ConversionRig->GetBoneHierarchy().SetLocalTransform(KeyName, Transform, false);
+						if (ConversionBoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						{
+							ConversionBoneHierarchy.SetLocalTransform(KeyName, Transform, false);
+						}
 					}
 
 					WorkData.ConversionRig->SetDeltaTime(Context.DeltaTime);
@@ -794,8 +871,15 @@ FTGORRigUnit_PreviewAnimation_Execute()
 					for (FBoneIndexType ControlIndex = 0; ControlIndex < ControlNum; ControlIndex++)
 					{
 						const FName KeyName = ControlHierarchy.GetName(ControlIndex);
-						const FTransform& Transform = ControlHierarchy.GetLocalTransform(ControlIndex);
-						Hierarchy->ControlHierarchy.SetLocalTransform(KeyName, Transform);
+						const FTransform& Transform = ControlHierarchy.GetGlobalTransform(ControlIndex);
+						if (Hierarchy->ControlHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						{
+							Hierarchy->ControlHierarchy.SetGlobalTransform(KeyName, Transform);
+						}
+						else if (Hierarchy->BoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						{
+							Hierarchy->BoneHierarchy.SetGlobalTransform(KeyName, Transform, false);
+						}
 					}
 				}
 				else
@@ -804,7 +888,14 @@ FTGORRigUnit_PreviewAnimation_Execute()
 					{
 						const FName KeyName = Reference.GetBoneName(BoneIndex);
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
-						Hierarchy->BoneHierarchy.SetLocalTransform(KeyName, Transform, false);
+						if (Hierarchy->ControlHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						{
+							Hierarchy->ControlHierarchy.SetLocalTransform(KeyName, Transform);
+						}
+						else if (Hierarchy->BoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						{
+							Hierarchy->BoneHierarchy.SetLocalTransform(KeyName, Transform, false);
+						}
 					}
 				}
 

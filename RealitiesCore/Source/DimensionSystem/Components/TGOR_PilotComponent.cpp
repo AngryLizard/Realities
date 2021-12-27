@@ -32,27 +32,6 @@ void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// Make sure we are parented to surrounding volume if we aren't parented to anything
-	UTGOR_PilotTask* PilotTask = GetPilotTask();
-	if (!IsValid(PilotTask) && SurroundingVolume.IsValid())
-	{
-		UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
-		if (IsValid(Movement))
-		{
-			Movement->ParentLinear(this, INDEX_NONE, ComputeSpace());
-		}
-
-		// Can't parent to myself
-		if (Movement != this)
-		{
-			// Check whether it worked
-			PilotTask = GetPilotTask();
-			if (!IsValid(PilotTask))
-			{
-				ERROR("Pilot object without task found", Warning);
-			}
-		}
-	}
 	SetComponentPosition(ComputePosition());
 }
 
@@ -71,7 +50,7 @@ void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSlots, COND_None); // This MUST be replicated before setup
+	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSlots, COND_None);
 	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotState, COND_None);
 }
 
@@ -154,17 +133,29 @@ void UTGOR_PilotComponent::OnPositionChange(const FTGOR_MovementPosition& Positi
 {
 	Super::OnPositionChange(Position);
 
-	ATGOR_PhysicsVolume* Volume = QueryVolume(Position.Linear, SurroundingVolume.Get());
-	if (Volume != SurroundingVolume)
+	if (PilotSlots.Num() > 0)
 	{
-		// Notify owner
-		OnVolumeChanged.Broadcast(SurroundingVolume.Get(), Volume);
-		SurroundingVolume = Volume;
-
-		// Notify owner once if we are left without volume
-		if (!SurroundingVolume.IsValid())
+		UTGOR_PilotTask* PilotTask = GetPilotTask();
+		ATGOR_PhysicsVolume* Volume = QueryVolume(Position.Linear, SurroundingVolume.Get());
+		if (Volume != SurroundingVolume || !IsValid(PilotTask))
 		{
-			OnOutOfLevel.Broadcast();
+			// Notify owner
+			OnVolumeChanged.Broadcast(SurroundingVolume.Get(), Volume);
+			SurroundingVolume = Volume;
+
+			// Notify owner once if we are left without volume
+			if (SurroundingVolume.IsValid())
+			{
+				UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
+				if (IsValid(Movement))
+				{
+					Movement->ParentLinear(this, INDEX_NONE, ComputeSpace());
+				}
+			}
+			else
+			{
+				OnOutOfLevel.Broadcast();
+			}
 		}
 	}
 }
@@ -440,19 +431,29 @@ void UTGOR_PilotComponent::AttachWith(int32 Identifier)
 	}
 }
 
-UTGOR_PilotTask* UTGOR_PilotComponent::GetPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const
+UTGOR_PilotTask* UTGOR_PilotComponent::GetCurrentPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const
 {
+	if (PilotSlots.IsValidIndex(PilotState.ActiveSlot) && PilotSlots[PilotState.ActiveSlot]->IsA(Type))
+	{
+		return PilotSlots[PilotState.ActiveSlot];
+	}
+	return nullptr;
+}
+
+TArray<UTGOR_PilotTask*> UTGOR_PilotComponent::GetPilotListOfType(TSubclassOf<UTGOR_PilotTask> Type) const
+{
+	TArray<UTGOR_PilotTask*> Pilots;
 	if (*Type)
 	{
 		for (UTGOR_PilotTask* PilotSlot : PilotSlots)
 		{
 			if (PilotSlot->IsA(Type))
 			{
-				return PilotSlot;
+				Pilots.Emplace(PilotSlot);
 			}
 		}
 	}
-	return nullptr;
+	return Pilots;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

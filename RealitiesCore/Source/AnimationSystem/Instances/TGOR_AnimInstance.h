@@ -14,7 +14,7 @@
 class UTGOR_AttachComponent;
 class UTGOR_HandleComponent;
 class UTGOR_SubAnimInstance;
-class UTGOR_Animation;
+class UTGOR_AnimatedTask;
 class UTGOR_Performance;
 class UTGOR_RigParam;
 class UTGOR_Archetype;
@@ -53,10 +53,10 @@ public:
 		bool IsSwitched;
 
 	UPROPERTY()
-		UTGOR_SubAnimInstance* Previous;
+		TWeakObjectPtr<UTGOR_SubAnimInstance> Previous;
 	
 	UPROPERTY()
-		UTGOR_SubAnimInstance* Current;
+		TWeakObjectPtr<UTGOR_SubAnimInstance> Current;
 
 	UPROPERTY()
 		TSubclassOf<UTGOR_SubAnimInstance> DefaultOn;
@@ -109,7 +109,7 @@ public:
 		bool HasQueue(UTGOR_Performance* Type) const;
 
 	UFUNCTION()
-		UTGOR_Animation* GetQueue(UTGOR_Performance* Type) const;
+		UTGOR_AnimatedTask* GetQueue(UTGOR_Performance* Type) const;
 
 	UFUNCTION(BlueprintPure, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
 		FTGOR_SubAnimBlend GetBlendInfo(TSubclassOf<UTGOR_Performance> Type) const;
@@ -121,7 +121,7 @@ public:
 		FName GetSubAnimName(UTGOR_Performance* Performance) const;
 	
 	UFUNCTION()
-		void AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_Animation* Animation);
+		void AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask);
 
 	UFUNCTION()
 		void ClearQueues();

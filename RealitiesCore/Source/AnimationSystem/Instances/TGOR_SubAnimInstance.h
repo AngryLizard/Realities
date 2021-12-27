@@ -39,10 +39,10 @@ public:
 	UTGOR_SubAnimInstance();
 
 	UPROPERTY(BlueprintReadOnly)
-		UTGOR_Animation* Animation;
+		TWeakObjectPtr<UTGOR_AnimatedTask> AnimatedTask;
 
 	UPROPERTY(BlueprintReadOnly)
-		UTGOR_AnimInstance* ParentInstance;
+		TWeakObjectPtr<UTGOR_AnimInstance> ParentInstance;
 
 	UPROPERTY(BlueprintReadOnly)
 		UTGOR_Performance* ParentSlot;

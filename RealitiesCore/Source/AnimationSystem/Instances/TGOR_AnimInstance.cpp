@@ -12,6 +12,7 @@
 #include "AnimationSystem/Content/TGOR_Performance.h"
 #include "AnimationSystem/Content/TGOR_Archetype.h"
 #include "AnimationSystem/Content/TGOR_RigParam.h"
+#include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
 
 #include "AnimationSystem/Components/TGOR_AttachComponent.h"
 #include "AnimationSystem/Components/TGOR_HandleComponent.h"
@@ -92,11 +93,11 @@ bool UTGOR_AnimInstance::HasQueue(UTGOR_Performance* Performance) const
 	return AnimationInstanceQueues.Contains(Performance);
 }
 
-UTGOR_Animation* UTGOR_AnimInstance::GetQueue(UTGOR_Performance* Performance) const
+UTGOR_AnimatedTask* UTGOR_AnimInstance::GetQueue(UTGOR_Performance* Performance) const
 {
 	if (const FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance))
 	{
-		return IsValid(Ptr->Current) ? Ptr->Current->Animation : nullptr;
+		return Ptr->Current.IsValid() ? Ptr->Current->AnimatedTask.Get() : nullptr;
 	}
 	return nullptr;
 }
@@ -114,15 +115,15 @@ FTGOR_SubAnimBlend UTGOR_AnimInstance::GetBlendInfo(TSubclassOf<UTGOR_Performanc
 				Blend.IsSwitched = Ptr->IsSwitched;
 
 				float CurrBlend = 0.0f;
-				if (IsValid(Ptr->Current) && IsValid(Ptr->Current->Animation))
+				if (Ptr->Current.IsValid() && Ptr->Current->AnimatedTask.IsValid())
 				{
-					CurrBlend = Ptr->Current->Animation->BlendTime;
+					CurrBlend = Ptr->Current->AnimatedTask->BlendTime;
 				}
 
 				float PrevBlend = 0.0f;
-				if (IsValid(Ptr->Previous) && IsValid(Ptr->Previous->Animation))
+				if (Ptr->Previous.IsValid() && Ptr->Previous->AnimatedTask.IsValid())
 				{
-					PrevBlend = Ptr->Previous->Animation->BlendTime;
+					PrevBlend = Ptr->Previous->AnimatedTask->BlendTime;
 				}
 
 				Blend.OnBlend = Blend.IsSwitched ? PrevBlend : CurrBlend;
@@ -141,7 +142,7 @@ UTGOR_SubAnimInstance* UTGOR_AnimInstance::GetSubAnimInstance(UTGOR_Performance*
 		const FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance);
 		if (Ptr)
 		{
-			return Ptr->Current;
+			return Ptr->Current.Get();
 		}
 	}
 	return nullptr;
@@ -152,26 +153,26 @@ FName UTGOR_AnimInstance::GetSubAnimName(UTGOR_Performance* Performance) const
 	const FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance);
 	if (Ptr && Ptr->IsSwitched)
 	{
-		return FName(*(Performance->GetDefaultName() + "_On"));
+		return FName(*(Performance->SubAnimIdentifier + "_On"));
 	}
-	return FName(*(Performance->GetDefaultName() + "_Off"));
+	return FName(*(Performance->SubAnimIdentifier + "_Off"));
 }
 
-void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_Animation* Animation)
+void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask)
 {
-	// Wait on parallel tasks to finish (This is arguable an engine bug)
+	// Wait on parallel tasks to finish (This is arguably an engine bug)
 	// DO NOT DELETE UNTIL LinkAnimGraphByTag IS MADE THREAD-SAFE
 	GetProxyOnAnyThread<FAnimInstanceProxy>();
 
 	if (IsValid(Performance))
 	{
-		if (IsValid(Animation))
+		if (IsValid(AnimatedTask))
 		{
 			// Get or add instance to queue
 			FTGOR_SubAnimationInstance& Instance = AnimationInstanceQueues.FindOrAdd(Performance);
 			Instance.IsSwitched = !Instance.IsSwitched;
 			Instance.Previous = Instance.Current;
-			if (IsValid(Instance.Previous))
+			if (Instance.Previous.IsValid())
 			{
 				Instance.Previous->OnRemovedFromParent();
 			}
@@ -190,12 +191,12 @@ void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance,
 			}
 
 			// Set anim instance to graph and queue
-			LinkAnimGraphByTag(AnimationKey, Animation->InstanceClass);
+			LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
 			Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-			if (IsValid(Instance.Current))
+			if (Instance.Current.IsValid())
 			{
 				Instance.Current->ParentInstance = this;
-				Instance.Current->Animation = Animation;
+				Instance.Current->AnimatedTask = AnimatedTask;
 				Instance.Current->ParentSlot = Performance;
 				Instance.Current->OnAddedToParent();
 			}
@@ -205,7 +206,7 @@ void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance,
 			// Set default value instead
 			Ptr->IsSwitched = !Ptr->IsSwitched;
 			Ptr->Previous = Ptr->Current;
-			if (IsValid(Ptr->Previous))
+			if (Ptr->Previous.IsValid())
 			{
 				Ptr->Previous->OnRemovedFromParent();
 			}
@@ -213,10 +214,10 @@ void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance,
 			const FName AnimationKey = GetSubAnimName(Performance);
 			LinkAnimGraphByTag(AnimationKey, Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff);
 			Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-			if (IsValid(Ptr->Current))
+			if (Ptr->Current.IsValid())
 			{
 				Ptr->Current->ParentInstance = this;
-				Ptr->Current->Animation = nullptr;
+				Ptr->Current->AnimatedTask = nullptr;
 				Ptr->Current->ParentSlot = Performance;
 				Ptr->Current->OnAddedToParent();
 			}

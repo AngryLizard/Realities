@@ -17,6 +17,7 @@
 #include "AnimationSystem/Content/TGOR_Performance.h"
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Content/TGOR_Archetype.h"
+#include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailCategoryBuilder.h"
 #include "PropertyCustomizationHelpers.h"
@@ -51,6 +52,10 @@ void UTGOR_AnimationInstanceVariableSet::PostReconstructNode()
 	Super::PostReconstructNode();
 }
 
+UEdGraphPin* UTGOR_AnimationInstanceVariableSet::CreateTargetPin()
+{
+	return CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Interface, UTGOR_AnimationInterface::StaticClass(), FTGOR_AnimationVariableSetHelper::TargetPinName);
+}
 
 void UTGOR_AnimationInstanceVariableSet::AllocateDefaultPins()
 {
@@ -59,7 +64,10 @@ void UTGOR_AnimationInstanceVariableSet::AllocateDefaultPins()
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
 	
 	// Add blueprint pin
-	CreateTargetPin();
+	if (HasTargetPin())
+	{
+		CreateTargetPin();
+	}
 
 	Super::AllocateDefaultPins();
 }
@@ -183,6 +191,7 @@ void UTGOR_AnimationInstanceVariableSet::ExpandNode(class FKismetCompilerContext
 	}
 
 	//connect outer
+	if (HasTargetPin())
 	{
 		UEdGraphPin* TargetPin = GetTargetPin();
 		UEdGraphPin* CallTargetPin = CallCreateNode->FindPin(FTGOR_AnimationVariableSetHelper::TargetPinName);
@@ -493,17 +502,51 @@ void UTGOR_AnimationInstanceVariableSet::OnPropertyExposeCheckboxChanged(ECheckB
 }
 
 
+UTGOR_TaskVariableSet::UTGOR_TaskVariableSet(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
+UK2Node_CallFunction* UTGOR_TaskVariableSet::CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+{
+	UK2Node_CallFunction* CallCreateNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
+	CallCreateNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UTGOR_AnimatedTask, GetAnimationInstance), UTGOR_AnimatedTask::StaticClass());
+	CallCreateNode->AllocateDefaultPins();
+	return CallCreateNode;
+}
+
+bool UTGOR_TaskVariableSet::IsActionFilteredOut(class FBlueprintActionFilter const& Filter)
+{
+	for (const UBlueprint* Blueprint : Filter.Context.Blueprints)
+	{
+		UClass* BPClass = Blueprint->SkeletonGeneratedClass ? Blueprint->SkeletonGeneratedClass : Blueprint->GeneratedClass;
+		if (BPClass && BPClass->IsChildOf(UTGOR_AnimatedTask::StaticClass()))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+UClass* UTGOR_TaskVariableSet::GetAnimInstanceClass() const
+{
+	UClass* Class = GetBlueprintClassFromNode();
+	if (Class && Class->IsChildOf(UTGOR_AnimatedTask::StaticClass()))
+	{
+		UTGOR_AnimatedTask* Content = Class->GetAuthoritativeClass()->GetDefaultObject<UTGOR_AnimatedTask>();
+		if (Content)
+		{
+			return *Content->InstanceClass;
+		}
+	}
+	return nullptr;
+}
+
 
 UTGOR_AnimationVariableSet::UTGOR_AnimationVariableSet(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 }
-
-UEdGraphPin* UTGOR_AnimationVariableSet::CreateTargetPin()
-{
-	return CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Interface, UTGOR_AnimationInterface::StaticClass(), FTGOR_AnimationVariableSetHelper::TargetPinName);
-}
-
 
 UK2Node_CallFunction* UTGOR_AnimationVariableSet::CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
@@ -513,7 +556,6 @@ UK2Node_CallFunction* UTGOR_AnimationVariableSet::CreateCallFunction(class FKism
 	return CallCreateNode;
 }
 
-
 bool UTGOR_AnimationVariableSet::IsActionFilteredOut(class FBlueprintActionFilter const& Filter)
 {
 	for (const UBlueprint* Blueprint : Filter.Context.Blueprints)
@@ -521,12 +563,11 @@ bool UTGOR_AnimationVariableSet::IsActionFilteredOut(class FBlueprintActionFilte
 		UClass* BPClass = Blueprint->SkeletonGeneratedClass ? Blueprint->SkeletonGeneratedClass : Blueprint->GeneratedClass;
 		if (BPClass && BPClass->IsChildOf(UTGOR_Animation::StaticClass()))
 		{
-			return(false);
+			return false;
 		}
 	}
-	return(true);
+	return true;
 }
-
 
 UClass* UTGOR_AnimationVariableSet::GetAnimInstanceClass() const
 {
@@ -541,55 +582,5 @@ UClass* UTGOR_AnimationVariableSet::GetAnimInstanceClass() const
 	}
 	return nullptr;
 }
-
-
-UTGOR_ArchetypeVariableSet::UTGOR_ArchetypeVariableSet(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-}
-
-UEdGraphPin* UTGOR_ArchetypeVariableSet::CreateTargetPin()
-{
-	return CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UTGOR_AnimationComponent::StaticClass(), FTGOR_AnimationVariableSetHelper::TargetPinName);
-}
-
-
-UK2Node_CallFunction* UTGOR_ArchetypeVariableSet::CreateCallFunction(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
-{
-	UK2Node_CallFunction* CallCreateNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
-	CallCreateNode->FunctionReference.SetExternalMember(GET_FUNCTION_NAME_CHECKED(UTGOR_Archetype, GetAnimationInstance), UTGOR_Archetype::StaticClass());
-	CallCreateNode->AllocateDefaultPins();
-	return CallCreateNode;
-}
-
-
-bool UTGOR_ArchetypeVariableSet::IsActionFilteredOut(class FBlueprintActionFilter const& Filter)
-{
-	for (const UBlueprint* Blueprint : Filter.Context.Blueprints)
-	{
-		UClass* BPClass = Blueprint->SkeletonGeneratedClass ? Blueprint->SkeletonGeneratedClass : Blueprint->GeneratedClass;
-		if (BPClass && BPClass->IsChildOf(UTGOR_Archetype::StaticClass()))
-		{
-			return(false);
-		}
-	}
-	return(true);
-}
-
-
-UClass* UTGOR_ArchetypeVariableSet::GetAnimInstanceClass() const
-{
-	UClass* Class = GetBlueprintClassFromNode();
-	if (Class && Class->IsChildOf(UTGOR_Archetype::StaticClass()))
-	{
-		UTGOR_Archetype* Content = Class->GetAuthoritativeClass()->GetDefaultObject<UTGOR_Archetype>();
-		if (Content)
-		{
-			return *Content->InstanceClass;
-		}
-	}
-	return nullptr;
-}
-
 
 #undef LOCTEXT_NAMESPACE

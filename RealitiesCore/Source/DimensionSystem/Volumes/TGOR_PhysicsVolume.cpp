@@ -4,6 +4,7 @@
 #include "TGOR_PhysicsVolume.h"
 #include "Net/UnrealNetwork.h"
 #include "CoreSystem/TGOR_Singleton.h"
+#include "DimensionSystem/Components/TGOR_VolumeVisualiserComponent.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 #include "DimensionSystem/Data/TGOR_WorldData.h"
@@ -29,6 +30,9 @@ ATGOR_PhysicsVolume::ATGOR_PhysicsVolume(const FObjectInitializer& ObjectInitial
 	SetRootComponent(MobilityComponent);
 
 	IdentityComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_IdentityComponent>(this, FName(TEXT("IdentityComponent")));
+
+	Visualization = ObjectInitializer.CreateDefaultSubobject<UTGOR_VolumeVisualiserComponent>(this, FName(TEXT("Visualization")));
+	Visualization->SetupAttachment(MobilityComponent);
 }
 
 // Called when the game starts or when spawned
@@ -287,3 +291,26 @@ FTGOR_PhysicsProperties ATGOR_PhysicsVolume::ComputeAllSurroundings(const FVecto
 	}
 	return Properties;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if WITH_EDITOR
+void ATGOR_PhysicsVolume::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	const FName PropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+
+	// We only want to modify the property that was changed at this point
+	// things like propagation from CDO to instances don't work correctly if changing one property causes a different property to change
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, IsAdditive) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, UpVector) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, Gravity) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, Density) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, DragCoeff) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(ATGOR_PhysicsVolume, IsNetworkVolume))
+	{
+		Visualization->UpdateVisuals();
+	}
+
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+#endif	// WITH_EDITOR

@@ -21,7 +21,7 @@ void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTG
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
 	if (IsValid(RootPilot))
 	{
-		UTGOR_LinearPilotTask* PilotTask = RootPilot->GetPOfType<UTGOR_LinearPilotTask>();
+		UTGOR_LinearPilotTask* PilotTask = RootPilot->GetCurrentPOfType<UTGOR_LinearPilotTask>();
 		if (IsValid(PilotTask))
 		{
 			// Check for movement parent
@@ -45,7 +45,9 @@ void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTG
 			GetDampingForce(Tick, Space.RelativeLinearVelocity, 0.0f, Output);
 			GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping, Output);
 
-			RootPilot->SimulateSymplectic(Space, Output, External, Tick.Deltatime, true);
+			const FTGOR_MovementBody& MovementBody = RootPilot->GetBody();
+			FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Output, External, Tick.DeltaTime);
+			RootPilot->SimulateMove(Out, Tick.DeltaTime, true);
 			PilotTask->SimulateDynamic(Space);
 		}
 	}

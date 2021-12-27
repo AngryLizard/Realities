@@ -296,7 +296,18 @@ void UTGOR_MovementComponent::MoveWith(int32 Identifier)
 {
 	if (Identifier != MovementState.ActiveSlot)
 	{
+		if (UTGOR_MovementTask* Task = GetMovementTask())
+		{
+			Task->Interrupt();
+		}
+
 		MovementState.ActiveSlot = Identifier;
+
+		if (UTGOR_MovementTask* Task = GetMovementTask())
+		{
+			Task->PrepareStart();
+		}
+
 		OnMovementChanged.Broadcast();
 	}
 }
@@ -514,6 +525,9 @@ void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const F
 	{
 		SCOPE_CYCLE_COUNTER(STAT_MovementTick);
 		CurrentTask->Update(Space, External, Tick, Output);
+
+		// Restrict this to only animate if necessary
+		CurrentTask->Animate(Space, Tick.DeltaTime);
 	}
 
 	Super::ComputePhysics(Space, External, Tick, Output);
@@ -521,16 +535,9 @@ void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const F
 
 void UTGOR_MovementComponent::PostComputePhysics(const FTGOR_MovementSpace& Space, float Energy, float DeltaTime)
 {
-	APawn* Pawn = Cast<APawn>(GetOwner());
 	UTGOR_MovementTask* CurrentTask = GetMovementTask();
-	if (IsValid(CurrentTask) && IsValid(Pawn))
+	if (IsValid(CurrentTask))
 	{
-		UTGOR_AnimationComponent* AnimationComponent = Pawn->FindComponentByClass<UTGOR_AnimationComponent>();
-		if (IsValid(AnimationComponent))
-		{
-			AnimationComponent->SwitchAnimation(PerformanceType, CurrentTask->GetMovement()->MainAnimation);
-		}
-
 		CurrentTask->Animate(Space, DeltaTime);
 	}
 }

@@ -21,18 +21,7 @@
 UTGOR_Archetype::UTGOR_Archetype()
 	: Super()
 {
-	InstanceClass = UTGOR_AnimInstance::StaticClass();
 	DefaultCustomisationActor = ATGOR_PreviewActor::StaticClass();
-}
-
-bool UTGOR_Archetype::Validate_Implementation()
-{
-	if (!*InstanceClass)
-	{
-		ERRET("No animation instance defined", Error, false);
-	}
-
-	return Super::Validate_Implementation();
 }
 
 TSubclassOf<AActor> UTGOR_Archetype::GetSpawnClass_Implementation() const
@@ -88,27 +77,3 @@ void UTGOR_Archetype::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionAct
 	MOV_INSERTION(PerformanceInsertions);
 	MOV_INSERTION(RigParamInsertions);
 }
-
-
-
-#if WITH_EDITOR
-
-void UTGOR_Archetype::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	FProperty* ChangedProperty = PropertyChangedEvent.Property;
-
-	if (ChangedProperty)
-	{
-		if (ChangedProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UTGOR_Archetype, InstanceClass))
-		{
-			UBlueprint* Blueprint = UBlueprint::GetBlueprintFromClass(GetClass());
-			if (Blueprint)
-			{
-				FBlueprintEditorUtils::RefreshAllNodes(Blueprint);
-			}
-		}
-	}
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-}
-
-#endif // WITH_EDITOR

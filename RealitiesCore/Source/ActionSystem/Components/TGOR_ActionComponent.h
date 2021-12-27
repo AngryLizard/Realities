@@ -209,7 +209,7 @@ public:
 		TArray<int32> GetCallableSubactionIdentifiers(UTGOR_Action* Action, bool CheckCanCall);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
+public:
 
 	/** Animation performance type */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Action")
@@ -217,10 +217,6 @@ protected:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	/** Play animation on this component. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action|Internal", Meta = (Keywords = "C++"))
-		void PlayAnimation(TSubclassOf<UTGOR_Animation> InAnimation);
 
 	/** Get world time seconds */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action|Internal", Meta = (Keywords = "C++"))

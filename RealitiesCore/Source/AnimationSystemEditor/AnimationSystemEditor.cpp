@@ -9,8 +9,9 @@
 void FAnimationSystemEditorModule::StartupModule()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	PropertyModule.RegisterCustomClassLayout("TGOR_TaskVariableSet", FOnGetDetailCustomizationInstance::CreateStatic(&FAnimationInstanceVariableSetDetails::MakeInstance));
 	PropertyModule.RegisterCustomClassLayout("TGOR_AnimationVariableSet", FOnGetDetailCustomizationInstance::CreateStatic(&FAnimationInstanceVariableSetDetails::MakeInstance));
-	PropertyModule.RegisterCustomClassLayout("TGOR_ArchetypeVariableSet", FOnGetDetailCustomizationInstance::CreateStatic(&FAnimationInstanceVariableSetDetails::MakeInstance));
+	//PropertyModule.RegisterCustomClassLayout("TGOR_ArchetypeVariableSet", FOnGetDetailCustomizationInstance::CreateStatic(&FAnimationInstanceVariableSetDetails::MakeInstance));
 }
 
 void FAnimationSystemEditorModule::ShutdownModule()

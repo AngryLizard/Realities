@@ -355,11 +355,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
 		UTGOR_CameraComponent* PawnCamera;
 
-	/** Blend time when camera transitions */
-	UPROPERTY(EditDefaultsOnly, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
-		float CameraBlendTime;
-
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 

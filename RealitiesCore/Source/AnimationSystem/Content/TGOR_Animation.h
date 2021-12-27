@@ -45,8 +45,6 @@ public:
 		UTGOR_AnimInstance* GetAnimationInstance(TScriptInterface<ITGOR_AnimationInterface> Target);
 
 #if WITH_EDITOR
-
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-
 #endif // WITH_EDITOR
 };

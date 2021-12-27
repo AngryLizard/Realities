@@ -43,27 +43,27 @@ bool UTGOR_PoseTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_Mov
 	return true;
 }
 
-float UTGOR_PoseTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact) const
+float UTGOR_PoseTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
-	const float UpInput = FMath::Max(State.Input | Contact.FrameNormal, 0.0f);
-	const float UpRight = FMath::Abs(Space.Angular.GetAxisZ() | Contact.FrameNormal);
+	const float UpInput = FMath::Max(State.Input | MovementContact.FrameNormal, 0.0f);
+	const float UpRight = FMath::Abs(Space.Angular.GetAxisZ() | MovementContact.FrameNormal);
 	return UpInput * UpRight * 2.0f - 1.0f;
 }
 
-float UTGOR_PoseTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_PoseTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Parent implements damping
-	Super::GetInputForce(Tick, Space, Orientation, External, Contact, Repel, Out);
+	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
 
 	// Filter sideways input
-	Out.Force = -Contact.FrameVelocity * BrakeCoefficient;
+	Out.Force = -MovementContact.FrameVelocity * BrakeCoefficient;
 
-	const FVector Normal = Contact.FrameNormal;
+	const FVector Normal = MovementContact.FrameNormal;
 	const FTGOR_Matrix3x3 Tensor = FTGOR_Matrix3x3(Space.Angular);
 
 	// Find motor axis that fits most to desired rotation axis

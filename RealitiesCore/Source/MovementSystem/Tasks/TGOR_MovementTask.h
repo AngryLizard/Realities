@@ -8,7 +8,7 @@
 #include "DimensionSystem/TGOR_MobilityInstance.h"
 #include "PhysicsSystem/TGOR_PhysicsInstance.h"
 
-#include "CoreSystem/Tasks/TGOR_Task.h"
+#include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
 #include "TGOR_MovementTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ struct MOVEMENTSYSTEM_API FTGOR_MovementTaskIdentifier
 * 
 */
 UCLASS(Abstract, Blueprintable)
-class MOVEMENTSYSTEM_API UTGOR_MovementTask : public UTGOR_Task
+class MOVEMENTSYSTEM_API UTGOR_MovementTask : public UTGOR_AnimatedTask
 {
 	GENERATED_BODY()
 
@@ -54,6 +54,7 @@ public:
 
 	UTGOR_MovementTask();
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
+	virtual TScriptInterface<ITGOR_AnimationInterface> GetAnimationOwner() const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -71,22 +72,21 @@ public:
 		int32 GetSlotIndex() const;
 
 	/** Get current speed ratio to apply to maximum speed where applicable */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		float GetSpeedRatio() const;
 
 	/** Get attribute for movement */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		float GetAttribute(TSubclassOf<UTGOR_Attribute> Type, float Default) const;
 
-	/** Find handles for given types */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void GetHandleComponents(TArray<UTGOR_HandleComponent*>& Handles, const TSet<TSubclassOf<UTGOR_Primitive>>& Types, bool EnforceCone) const;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Called once when this task is created*/
+	/** Called once when this task is created */
 	virtual void Initialise();
+
+	/** Called once movement is invoked */
+	virtual void PrepareStart();
 
 	/** Called every tick to check whether this task is allowed be running */
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const;
@@ -98,7 +98,10 @@ public:
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const;
 
 	/** Simulate one movement tick */
-	virtual void Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output);
+	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output);
+
+	/** Called once movement is stopped */
+	virtual void Interrupt();
 
 	/** Tick animation */
 	virtual void Animate(const FTGOR_MovementSpace& Space, float DeltaTime);

@@ -45,7 +45,7 @@ void UTGOR_RagdollTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	OutInput = UpVector * FMath::Min(InputStrength * RawInput.Size() * 2.0f, 1.0f);
 }
 
-void UTGOR_RagdollTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
+void UTGOR_RagdollTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();

@@ -85,7 +85,7 @@ void UTGOR_ClimbingTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	OutView = InputRotation.GetAxisX();
 }
 
-void UTGOR_ClimbingTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
+void UTGOR_ClimbingTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();

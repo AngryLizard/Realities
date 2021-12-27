@@ -38,25 +38,25 @@ UTGOR_AnimInstance* UTGOR_Animation::GetAnimationInstance(TScriptInterface<ITGOR
 		if (IsValid(Component) && *Slot)
 		{
 			UTGOR_Performance* Performance = nullptr;
-			for (const auto Pair : Component->PerformanceSlots)
+			for (UTGOR_Performance* PerformanceSlot : Component->PerformanceSlots)
 			{
-				if (Pair.Key && Pair.Key->IsA(Slot))
+				if (PerformanceSlot && PerformanceSlot->IsA(Slot))
 				{
-					Performance = Pair.Key;
+					Performance = PerformanceSlot;
 				}
 			}
 
 			if (IsValid(Performance) && Component->AnimInstance.IsValid())
 			{
 				UTGOR_SubAnimInstance* SubAnimInstance = Component->AnimInstance->GetSubAnimInstance(Performance);
-				if (IsValid(SubAnimInstance) && IsValid(SubAnimInstance->Animation) && SubAnimInstance->Animation->GetClass() == GetClass())
+				if (IsValid(SubAnimInstance) && SubAnimInstance->AnimatedTask.IsValid())
 				{
-					return(SubAnimInstance);
+					return SubAnimInstance;
 				}
 			}
 		}
 	}
-	return(nullptr);
+	return nullptr;
 }
 
 

@@ -12,7 +12,8 @@
 
 UTGOR_PhysicsComponent::UTGOR_PhysicsComponent()
 :	Super(),
-	SimulationTimestep(0.003f)
+	OrientationSpeed(10.0f),
+	SimulationTimestep(0.006f)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);

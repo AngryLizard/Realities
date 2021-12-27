@@ -122,16 +122,19 @@ bool UTGOR_MobilityComponent::ParentLinear(UTGOR_PilotComponent* Attachee, int32
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_LinearPilotTask* Task = Attachee->GetPOfType<UTGOR_LinearPilotTask>();
-		if (IsValid(Task) && Task->CanParent(this, Index))
+		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>();
+		for (UTGOR_LinearPilotTask* Task : Tasks)
 		{
-			Task->Parent(this, Index);
+			if (IsValid(Task) && Task->CanParent(this, Index))
+			{
+				Task->Parent(this, Index);
 
-			// Set location as desired
-			Task->SimulateDynamic(Dynamic);
+				// Set location as desired
+				Task->SimulateDynamic(Dynamic);
 
-			Attachee->AttachWith(Task->Identifier.Slot);
-			return true;
+				Attachee->AttachWith(Task->Identifier.Slot);
+				return true;
+			}
 		}
 	}
 	return false;
@@ -141,8 +144,14 @@ bool UTGOR_MobilityComponent::CanParentLinear(UTGOR_PilotComponent* Attachee, in
 {
 	if (IsValid(Attachee))
 	{
-		UTGOR_LinearPilotTask* Task = Attachee->GetPOfType<UTGOR_LinearPilotTask>();
-		return IsValid(Task) && Task->CanParent(this, Index);
+		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>();
+		for (UTGOR_LinearPilotTask* Task : Tasks)
+		{
+			if (IsValid(Task) && Task->CanParent(this, Index))
+			{
+				return true;
+			}
+		}
 	}
 	return false;
 }

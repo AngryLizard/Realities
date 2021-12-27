@@ -51,7 +51,7 @@ protected:
 		float ComputeCrouchSpeedRatio(float GroundRatio) const;
 
 
-	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementContact& Contact) const override;
+	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const override;
 
 private:
 

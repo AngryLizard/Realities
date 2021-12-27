@@ -1,12 +1,9 @@
 // The Gateway of Realities: Planes of Existence.
 
-
 #include "TGOR_SceneComponent.h"
 
-
-
-UTGOR_SceneComponent::UTGOR_SceneComponent()
-: Super()
+UTGOR_SceneComponent::UTGOR_SceneComponent(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 }
 

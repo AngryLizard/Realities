@@ -32,7 +32,7 @@ void UTGOR_ConstrainedTask::Initialise()
 
 bool UTGOR_ConstrainedTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
-	return Super::Invariant(Space, External) && !IsValid(RootComponent->GetPilotOfType(UTGOR_NamedSocketTask::StaticClass()));
+	return Super::Invariant(Space, External) && RootComponent->GetPilotListOfType(UTGOR_NamedSocketTask::StaticClass()).Num() > 0;
 }
 
 void UTGOR_ConstrainedTask::Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
@@ -49,7 +49,7 @@ void UTGOR_ConstrainedTask::QueryInput(FVector& OutInput, FVector& OutView) cons
 	OutInput = InputQuat * RawInput * InputStrength;
 }
 
-void UTGOR_ConstrainedTask::Update(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
+void UTGOR_ConstrainedTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();

@@ -46,10 +46,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
 		ETGOR_MovementEnumeration Mode;
 
-	/** Base animation module of this movement */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
-		TSubclassOf<UTGOR_Animation> MainAnimation;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 

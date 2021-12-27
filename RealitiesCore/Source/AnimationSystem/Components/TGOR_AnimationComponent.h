@@ -11,10 +11,9 @@
 #include "CoreSystem/Interfaces/TGOR_SingletonInterface.h"
 #include "TGOR_AnimationComponent.generated.h"
 
-
+class UTGOR_AnimatedTask;
 class UTGOR_AnimInstance;
 class UTGOR_Performance;
-class UTGOR_Animation;
 
 /**
  * 
@@ -24,8 +23,9 @@ class ANIMATIONSYSTEM_API UTGOR_AnimationComponent : public USkeletalMeshCompone
 {
 	GENERATED_BODY()
 
-		friend class UTGOR_Animation;
-		friend class UTGOR_Archetype;
+	friend class UTGOR_Animation;
+	friend class UTGOR_Archetype;
+	friend class UTGOR_AnimatedTask;
 
 public:
 	UTGOR_AnimationComponent();
@@ -50,14 +50,14 @@ public:
 
 	/** Sets a given performance slot to another animation, returns true if the slot changed */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		bool SwitchAnimation(TSubclassOf<UTGOR_Performance> PerformanceType, TSubclassOf<UTGOR_Animation> AnimationType);
+		bool SwitchAnimation(TSubclassOf<UTGOR_Performance> PerformanceType, UTGOR_AnimatedTask* AnimatedTask);
 
 	/** Get currently running animation */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		UTGOR_Animation* GetAnimation(TSubclassOf<UTGOR_Performance> PerformanceType) const;
+		UTGOR_AnimatedTask* GetAnimation(TSubclassOf<UTGOR_Performance> PerformanceType) const;
 
 	/** Archetype this component spawns with. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Animation")
 		TSubclassOf<UTGOR_Archetype> SpawnArchetype;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ private:
 
 	/** Currently running animations */
 	UPROPERTY()
-		TMap<UTGOR_Performance*, UTGOR_Animation*> PerformanceSlots;
+		TSet<UTGOR_Performance*> PerformanceSlots;
 
 	/** Currently running anim instance */
 	UPROPERTY(Transient)

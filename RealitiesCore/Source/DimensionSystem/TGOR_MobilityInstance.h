@@ -402,6 +402,9 @@ public:
 	/** External torque applied to a body */
 	FTGOR_MovementDamper ComputeExternalTorque(const FTGOR_MovementSpace& Space, const FTGOR_PhysicsProperties& Surroundings) const;
 
+	/** External torque applied to a body */
+	FTGOR_MovementSpace SimulateForce(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementForce& External, float DeltaTime) const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Get linear acceleration/velocity from force/momentum */
@@ -415,7 +418,6 @@ public:
 
 	/** Get angular torque/momentum from acceleration/velocity given current rotation */
 	FVector GetMassedAngular(const FQuat& Rotation, const FVector& Vector) const;
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

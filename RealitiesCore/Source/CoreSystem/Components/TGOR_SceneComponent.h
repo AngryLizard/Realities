@@ -18,7 +18,7 @@ class CORESYSTEM_API UTGOR_SceneComponent : public USceneComponent, public ITGOR
 	GENERATED_BODY()
 
 public:
-	UTGOR_SceneComponent();
+	UTGOR_SceneComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

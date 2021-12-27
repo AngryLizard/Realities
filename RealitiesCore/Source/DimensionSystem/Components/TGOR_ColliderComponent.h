@@ -135,25 +135,12 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Max velocity clamp to prevent NaN errors */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Collision|Internal")
-		float LinearSpeedClamp;
-
-	/** Max velocity clamp to prevent NaN errors */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Collision|Internal")
-		float AngularSpeedClamp;
-
 	/** Max collision iterations */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		int32 MaxCollisionIterations;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	/** Simulate symplectic integration for a given time */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		void SimulateSymplectic(FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep);
-
 	/** Simulate move for a given time */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
 		void SimulateMove(FTGOR_MovementSpace& Space, float Timestep, bool Sweep);

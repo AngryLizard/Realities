@@ -50,7 +50,7 @@ void FTGOR_SubAnimInstanceProxy::PreUpdate(UAnimInstance* InAnimInstance, float 
 
 	// Update sync groups from parent instance
 	UTGOR_SubAnimInstance* Instance = Cast<UTGOR_SubAnimInstance>(InAnimInstance);
-	if (IsValid(Instance) && IsValid(Instance->ParentInstance))
+	if (IsValid(Instance) && Instance->ParentInstance.IsValid())
 	{
 		const FTGOR_AnimInstanceProxy& ParentProxy = Instance->ParentInstance->GetInstanceProxy();
 		MergeSyncGroupsFrom(ParentProxy, Instance->SyncGroupInheritance);
@@ -64,7 +64,7 @@ void FTGOR_SubAnimInstanceProxy::UpdateSubAnimation()
 
 UTGOR_SubAnimInstance::UTGOR_SubAnimInstance()
 :	Super(),
-	Animation(nullptr),
+	AnimatedTask(nullptr),
 	ParentInstance(nullptr),
 	ParentSlot(nullptr)
 {
@@ -72,7 +72,7 @@ UTGOR_SubAnimInstance::UTGOR_SubAnimInstance()
 
 UTGOR_SubAnimInstance::UTGOR_SubAnimInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
-	Animation(nullptr),
+	AnimatedTask(nullptr),
 	ParentInstance(nullptr),
 	ParentSlot(nullptr)
 {

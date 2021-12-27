@@ -30,7 +30,7 @@ FTGOR_PhysicsProperties ATGOR_CustomSpherePhysicsVolume::ComputeSurroundings(con
 
 	// Compute depth
 	Properties.Depth = ComputeDepth(Local, Direction);
-	Properties.Gravity = Transform.TransformVector(Direction * -Gravity);
+	Properties.Gravity = Transform.TransformVector(Direction * Gravity);
 
 	// Compute velocities
 	ComputeVolumeVelocity(Location, Properties.Velocity);

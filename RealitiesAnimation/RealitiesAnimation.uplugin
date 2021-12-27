@@ -23,7 +23,7 @@
 		{
 			"Name": "RealitiesAnimationEditor",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PostEngineInit"
 		}
 	],
 	"Plugins": [

@@ -24,8 +24,6 @@ UTGOR_ColliderComponent::UTGOR_ColliderComponent()
 :	Super(),
 IgnoreThreshold(0.4f),
 IgnoreRadius(2.0f),
-LinearSpeedClamp(10'000.0f),
-AngularSpeedClamp(50.0f),
 MaxCollisionIterations(3)
 {
 }
@@ -549,37 +547,6 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void UTGOR_ColliderComponent::SimulateSymplectic(FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep)
-{
-	// Make sure we aren't introducing NaNs
-	if (Force.Force.ContainsNaN())
-	{
-		ERROR("Output force NAN!", Error);
-	}
-
-	if (Force.Torque.ContainsNaN())
-	{
-		ERROR("Output torque NAN!", Error);
-	}
-
-	const FTGOR_MovementBody& MovementBody = GetBody();
-
-	// Consume force
-	Space.LinearAcceleration = MovementBody.GetUnmassedLinear(Force.Force + External.Force);
-	Space.AngularAcceleration = MovementBody.GetUnmassedAngular(Space.Angular, Force.Torque + External.Torque);
-
-	// Update velocities
-	Space.AddLinearVelocity(Space.LinearAcceleration * Timestep);
-	Space.AddAngularVelocity(Space.AngularAcceleration * Timestep);
-
-	// Make sure velocity is not exploding by clamping it
-	Space.SetLinearVelocity(UTGOR_Math::ClampToSize(Space.LinearVelocity, LinearSpeedClamp));
-	Space.SetAngularVelocity(UTGOR_Math::ClampToSize(Space.AngularVelocity, AngularSpeedClamp));
-
-	// Simulate move
-	SimulateMove(Space, Timestep, Sweep);
-}
 
 void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, float Timestep, bool Sweep)
 {
