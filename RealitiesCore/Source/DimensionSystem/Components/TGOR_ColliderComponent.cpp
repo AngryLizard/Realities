@@ -426,7 +426,7 @@ void UTGOR_ColliderComponent::Impact(const FTGOR_MovementDynamic& Dynamic, const
 
 bool UTGOR_ColliderComponent::CanRotateOnImpact() const
 {
-	return true;
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -556,10 +556,10 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, float Tim
 
 	if (Timestep >= SMALL_NUMBER)
 	{
-		INC_DWORD_STAT_BY(STAT_Iteration, 1)
+		INC_DWORD_STAT_BY(STAT_Iteration, 1);
 
-			// Compute translation
-			const int32 Iterations = SimulateTranslate(Space, Timestep, Sweep, 1.0f, MaxCollisionIterations);
+		// Compute translation
+		const int32 Iterations = SimulateTranslate(Space, Timestep, Sweep, 1.0f, MaxCollisionIterations);
 
 		Space.Linear = GetComponentLocation();
 		Space.Angular = GetComponentQuat();

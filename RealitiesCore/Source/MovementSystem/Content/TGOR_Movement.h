@@ -37,11 +37,7 @@ public:
 	UTGOR_Movement();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Whether angular velocity is affected by collisions */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
-		bool CanRotateOnCollision;
-	
+		
 	/** Mode of this movement */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
 		ETGOR_MovementEnumeration Mode;

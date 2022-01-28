@@ -77,11 +77,14 @@ void UTGOR_EuclideanMovementTask::PrepareStart()
 	Super::PrepareStart();
 
 	EuclideanTask = RootComponent->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
+	if (!EuclideanTask.IsValid())
+	{
+		ERROR("EuclideanTask invalid", Fatal);
+	}
 }
 
 void UTGOR_EuclideanMovementTask::Interrupt()
 {
-	Super::Interrupt();
-
 	EuclideanTask.Reset();
+	Super::Interrupt();
 }

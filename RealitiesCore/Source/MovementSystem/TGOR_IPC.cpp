@@ -1,7 +1,6 @@
 // The Gateway of Realities: Planes of Existence.
 
 #include "TGOR_IPC.h"
-#include "RealitiesUtility/Utility/TGOR_Math.h"
 
 FVector4 FTGOR_PendulumProperties::PositionToPendulum(const FTGOR_MovementPosition& Position, const FVector& UpDirection, const FVector& ForwardDirection) const
 {

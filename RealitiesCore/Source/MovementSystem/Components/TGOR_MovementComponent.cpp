@@ -428,21 +428,21 @@ FVector UTGOR_MovementComponent::ComputeForceTowards(const FVector& Forward, con
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_MovementComponent::UpdateMovement(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
+bool UTGOR_MovementComponent::UpdateMovement(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External)
 {
 	// No need to update if a manual mode is running
-	UTGOR_MovementTask* CurrentTask = GetMovementTask();
-	if (IsValid(CurrentTask))
+	UTGOR_MovementTask* Task = GetMovementTask();
+	if (IsValid(Task))
 	{
 		// Abort invalid movement modes
-		if (!CurrentTask->Invariant(Space, External))
+		if (!Task->Invariant(Space, External))
 		{
 			MoveWith(INDEX_NONE);
 		}
-		else if (CurrentTask->GetMovement()->Mode != ETGOR_MovementEnumeration::Queued)
+		else if (Task->GetMovement()->Mode != ETGOR_MovementEnumeration::Queued)
 		{
 			// Don't check queue on manual/sticky modes
-			return;
+			return false;
 		}
 	}
 
@@ -451,18 +451,22 @@ void UTGOR_MovementComponent::UpdateMovement(const FTGOR_MovementTick& Tick, con
 	{
 		// Stop at already active movement
 		UTGOR_MovementTask* MovementSlot = MovementSlots[Index];
-		if (MovementSlot == CurrentTask)
+		if (MovementSlot == Task)
 		{
-			return;
+			return false;
 		}
 
 		// Queue first valid movement
 		if (MovementSlot->Invariant(Space, External))
 		{
 			MoveWith(Index);
-			return;
+			return true;
 		}
 	}
+
+	// If we reach this point the current task is invalid,
+	// so if the previous task was valid before the task changed.
+	return IsValid(Task);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -508,19 +512,23 @@ void UTGOR_MovementComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
 
 void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
-	UTGOR_MovementTask* CurrentTask = GetMovementTask();
 	if (GetOwnerRole() != ENetRole::ROLE_SimulatedProxy)
 	{
 		// Update Movement
 		UpdateMovement(Tick, Space, External);
 	}
-	else if(IsValid(CurrentTask) && !CurrentTask->Invariant(Space, External))
+	else
 	{
-		// Invalid movement, probably currently in transition phase
-		return;
+		UTGOR_MovementTask* CurrentTask = GetMovementTask();
+		if (IsValid(CurrentTask) && !CurrentTask->Invariant(Space, External))
+		{
+			// Invalid movement, probably currently in transition phase
+			return;
+		}
 	}
 
 	// Reset and compute force from movement
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
 	if (IsValid(CurrentTask))
 	{
 		SCOPE_CYCLE_COUNTER(STAT_MovementTick);

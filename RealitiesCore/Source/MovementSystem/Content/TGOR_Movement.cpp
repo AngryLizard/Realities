@@ -11,7 +11,6 @@
 
 UTGOR_Movement::UTGOR_Movement()
 	: Super(),
-	CanRotateOnCollision(false),
 	Mode(ETGOR_MovementEnumeration::Queued)
 {
 }

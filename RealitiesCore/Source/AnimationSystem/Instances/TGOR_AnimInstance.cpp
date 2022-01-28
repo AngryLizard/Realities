@@ -190,15 +190,19 @@ void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance,
 				}
 			}
 
-			// Set anim instance to graph and queue
-			LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
-			Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-			if (Instance.Current.IsValid())
+			// Check that instance can produce an animation instance
+			if (IAnimClassInterface::GetFromClass(AnimatedTask->InstanceClass))
 			{
-				Instance.Current->ParentInstance = this;
-				Instance.Current->AnimatedTask = AnimatedTask;
-				Instance.Current->ParentSlot = Performance;
-				Instance.Current->OnAddedToParent();
+				// Set anim instance to graph and queue
+				LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
+				Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
+				if (Instance.Current.IsValid())
+				{
+					Instance.Current->ParentInstance = this;
+					Instance.Current->AnimatedTask = AnimatedTask;
+					Instance.Current->ParentSlot = Performance;
+					Instance.Current->OnAddedToParent();
+				}
 			}
 		}
 		else if (FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance))
@@ -212,14 +216,18 @@ void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance,
 			}
 
 			const FName AnimationKey = GetSubAnimName(Performance);
-			LinkAnimGraphByTag(AnimationKey, Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff);
-			Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-			if (Ptr->Current.IsValid())
+			const TSubclassOf<UTGOR_SubAnimInstance>& Default = Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff;
+			if (!IsValid(Default))
 			{
-				Ptr->Current->ParentInstance = this;
-				Ptr->Current->AnimatedTask = nullptr;
-				Ptr->Current->ParentSlot = Performance;
-				Ptr->Current->OnAddedToParent();
+				LinkAnimGraphByTag(AnimationKey, Default);
+				Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
+				if (Ptr->Current.IsValid())
+				{
+					Ptr->Current->ParentInstance = this;
+					Ptr->Current->AnimatedTask = nullptr;
+					Ptr->Current->ParentSlot = Performance;
+					Ptr->Current->OnAddedToParent();
+				}
 			}
 		}
 	}

@@ -248,8 +248,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Update movement priority lists if not overriding */
-	void UpdateMovement(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
+	/** Update movement priority lists if not overriding, returns true if movement changed */
+	bool UpdateMovement(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

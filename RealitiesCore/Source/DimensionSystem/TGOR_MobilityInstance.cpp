@@ -678,6 +678,9 @@ FTGOR_MovementSpace FTGOR_MovementBody::SimulateForce(const FTGOR_MovementSpace&
 	Out.AngularVelocity = UTGOR_Math::ClampToSize(AngularVelocity, AngularSpeedClamp);
 	Out.RelativeAngularVelocity = RelativeAngularVelocity + Out.AngularVelocity - AngularVelocity;
 
+	// Copy state values
+	Out.Linear = Space.Linear;
+	Out.Angular = Space.Angular;
 	return Out;
 }
 
