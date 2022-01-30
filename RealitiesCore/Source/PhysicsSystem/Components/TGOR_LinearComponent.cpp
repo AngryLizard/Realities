@@ -47,7 +47,7 @@ void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTG
 
 			const FTGOR_MovementBody& MovementBody = RootPilot->GetBody();
 			FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Output, External, Tick.DeltaTime);
-			RootPilot->SimulateMove(Out, Tick.DeltaTime, true);
+			RootPilot->SimulateMove(Out, FTGOR_MovementPosition(), Tick.DeltaTime, true);
 			PilotTask->SimulateDynamic(Space);
 		}
 	}

@@ -129,7 +129,7 @@ float UTGOR_PhysicsComponent::TickPhysics(float Time)
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
 	if (IsValid(RootPilot))
 	{
-		FVector UpVector = ComputePhysicsUpVector();
+		const FVector UpVector = ComputePhysicsUpVector();
 
 		FTGOR_MovementSpace Space = RootPilot->ComputeSpace();
 		const FTGOR_PhysicsProperties Surroundings = RootPilot->SurroundingVolume->ComputeAllSurroundings(Space.Linear);

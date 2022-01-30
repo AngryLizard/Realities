@@ -117,10 +117,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		FTGOR_MovementPosition GetComponentPosition() const;
 
-	/** Moves this or associated component to a given position */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		void SetComponentPosition(const FTGOR_MovementPosition& Position);
-
 	/** Called when this mobility changed position */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		virtual void OnPositionChange(const FTGOR_MovementPosition& Position);

@@ -548,7 +548,7 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, float Timestep, bool Sweep)
+void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep)
 {
 	SCOPE_CYCLE_COUNTER(STAT_Move);
 
@@ -559,7 +559,7 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, float Tim
 		INC_DWORD_STAT_BY(STAT_Iteration, 1);
 
 		// Compute translation
-		const int32 Iterations = SimulateTranslate(Space, Timestep, Sweep, 1.0f, MaxCollisionIterations);
+		const int32 Iterations = SimulateTranslate(Space, Offset, Timestep, Sweep, 1.0f, MaxCollisionIterations);
 
 		Space.Linear = GetComponentLocation();
 		Space.Angular = GetComponentQuat();
@@ -571,7 +571,7 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, float Tim
 	}
 }
 
-int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, float Timestep, bool Sweep, float Ratio, int32 Iteration)
+int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Ratio, int32 Iteration)
 {
 	INC_DWORD_STAT_BY(STAT_Translation, 1);
 
@@ -579,10 +579,12 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, flo
 
 	if (Ratio >= SMALL_NUMBER && Iteration >= 0)
 	{
+		const FQuat OffsetRotation = FQuat::Slerp(FQuat::Identity, Offset.Angular, Ratio);
+
 		// Rotate base
 		const FVector W = Space.RelativeAngularVelocity * (Timestep / 2);
 		const FQuat DeltaQuat = FQuat(W.X, W.Y, W.Z, 0.0f);
-		Space.Angular = Space.Angular + (DeltaQuat * Ratio) * Space.Angular;
+		Space.Angular = OffsetRotation * (Space.Angular + (DeltaQuat * Ratio) * Space.Angular);
 		Space.Angular.Normalize();
 
 		// Initialise hitresult
@@ -593,7 +595,7 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, flo
 		// Move and rotate component (Copied from SafeMove but without recomputing hitresult)
 
 		// Compute translation
-		const FVector Translation = Space.RelativeLinearVelocity * Ratio * Timestep;
+		const FVector Translation = (Space.RelativeLinearVelocity * Timestep + Offset.Linear) * Ratio;
 		//const FCollisionShape& CollisionShape = GetCollisionShape();
 		//ProbeSweep(CollisionShape, Space, Translation);
 
@@ -618,7 +620,7 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, flo
 			Space.Angular.Normalize();
 
 			// Slide further along surface
-			return SimulateTranslate(Space, Timestep, Sweep, Rest, Iteration - 1);
+			return SimulateTranslate(Space, Offset, Timestep, Sweep, Rest, Iteration - 1);
 		}
 	}
 	return Iteration;

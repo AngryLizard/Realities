@@ -68,6 +68,10 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** Sets this component to match a given dynamic without calling any movement events */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		virtual void InitDynamic(const FTGOR_MovementDynamic& Dynamic);
+
 	/** Simulates this component to match a given dynamic */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		virtual void SimulateDynamic(const FTGOR_MovementDynamic& Dynamic);

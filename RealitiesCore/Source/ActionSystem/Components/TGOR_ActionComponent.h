@@ -212,7 +212,7 @@ public:
 public:
 
 	/** Animation performance type */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Action")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Action")
 		TSubclassOf<UTGOR_Performance> PerformanceType;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

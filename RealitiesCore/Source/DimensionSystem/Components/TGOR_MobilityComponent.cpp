@@ -91,15 +91,9 @@ FTGOR_MovementPosition UTGOR_MobilityComponent::GetComponentPosition() const
 	return Position;
 }
 
-void UTGOR_MobilityComponent::SetComponentPosition(const FTGOR_MovementPosition& Position)
-{
-	SetWorldLocationAndRotation(Position.Linear, Position.Angular, false, nullptr, ETeleportType::TeleportPhysics);
-	OnPositionChange(Position);
-}
-
 void UTGOR_MobilityComponent::OnPositionChange(const FTGOR_MovementPosition& Position)
 {
-
+	SetWorldLocationAndRotation(Position.Linear, Position.Angular, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 bool UTGOR_MobilityComponent::HasParent(const UTGOR_MobilityComponent* Component) const
@@ -129,10 +123,13 @@ bool UTGOR_MobilityComponent::ParentLinear(UTGOR_PilotComponent* Attachee, int32
 			{
 				Task->Parent(this, Index);
 
-				// Set location as desired
-				Task->SimulateDynamic(Dynamic);
+				// Set location without triggering any movement events (prevent infinite loops when parent volume changes)
+				Task->InitDynamic(Dynamic);
 
 				Attachee->AttachWith(Task->Identifier.Slot);
+
+				// Trigger movement events now
+				Attachee->OnPositionChange(Dynamic);
 				return true;
 			}
 		}

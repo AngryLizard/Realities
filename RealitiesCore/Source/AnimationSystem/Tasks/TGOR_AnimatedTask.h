@@ -3,6 +3,8 @@
 
 #include "CoreMinimal.h"
 
+#include "DimensionSystem/TGOR_MobilityInstance.h"
+
 #include "CoreSystem/Tasks/TGOR_Task.h"
 #include "TGOR_AnimatedTask.generated.h"
 
@@ -35,6 +37,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
 		float BlendTime;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
+		float AnimRootMotionTranslationScale;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
@@ -53,6 +58,9 @@ protected:
 
 	/** Reset animation on this task. */
 		void ResetAnimation();
+
+	/** Tick animation and extract root motion */
+		FTGOR_MovementPosition TickAnimationRootMotion(float DeltaTime);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:

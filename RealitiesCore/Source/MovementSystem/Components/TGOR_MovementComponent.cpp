@@ -14,6 +14,7 @@
 
 #include "CoreSystem/TGOR_Singleton.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
+#include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "TargetSystem/Components/TGOR_AimComponent.h"
 #include "SimulationSystem/Components/TGOR_SimulationComponent.h"
 #include "CustomisationSystem/Components/TGOR_ModularSkeletalMeshComponent.h"
@@ -23,6 +24,7 @@
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 
+#include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "Camera/CameraComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Net/UnrealNetwork.h"

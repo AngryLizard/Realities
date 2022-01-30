@@ -104,6 +104,18 @@ public:
 		float StandingBend = 3.0f;
 
 	/**
+	 * Percentage of how much the ankle direction is determined by the hip direction
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float AnkleKneeDirectionWeight = 1.0f;
+
+	/**
+	 * Percentage of how much the knee direction is determined by the hip direction
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float KneeHipDirectionWeight = 1.0f;
+
+	/**
 	 * Length customisation
 	 */
 	UPROPERTY(meta = (Input))

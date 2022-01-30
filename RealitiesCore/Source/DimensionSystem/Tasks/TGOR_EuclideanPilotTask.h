@@ -29,6 +29,7 @@ public:
 
 	virtual FTGOR_MovementPosition ComputePosition() const override;
 	virtual FTGOR_MovementSpace ComputeSpace() const override;
+	virtual void InitDynamic(const FTGOR_MovementDynamic& Dynamic) override;
 	virtual void SimulateDynamic(const FTGOR_MovementDynamic& Dynamic) override;
 	virtual void SimulatePosition(const FTGOR_MovementPosition& Position) override;
 

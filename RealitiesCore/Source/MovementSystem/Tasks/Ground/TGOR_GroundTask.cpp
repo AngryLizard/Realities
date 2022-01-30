@@ -118,6 +118,9 @@ void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Move
 	FTGOR_MovementRepel Repel;
 	//GetRepelForce(Component, Tick, Space, Repel, Out);
 
+	MaxGroundRatio = FMath::Clamp(2.0f - MovementContact.MaxGroundRatio, 0.0f, 1.0f);
+	MinGroundRatio = FMath::Clamp(1.0f - MovementContact.MinGroundRatio, 0.0f, MaxGroundRatio);
+
 	// Compute input force
 	const float RawRatio = GetInputForce(Tick, Space, Orientation, External, Repel, Output);
 
@@ -169,6 +172,7 @@ void UTGOR_GroundTask::GetGroundContact(const FTGOR_MovementSpace& Space, FVecto
 void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector)
 {
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
+	const FVector Up = (TraceUpVector ? UpVector : Orientation);
 
 	float Weight = 0.0f;
 	float GroundRatio = 0.0f;
@@ -201,10 +205,15 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 			Delta += Dynamic.Linear - Space.Linear;
 			Weight += 1.0f;
 		}
+		else
+		{
+			GroundRatio += TraceLengthMultiplier * 0.1f;
+			Normal += Up * 0.1f;
+			Delta -= Up * (Foot->MovementCone->LimitRadius * 0.1f);
+			Weight += 0.1f;
+		}
 	}
 
-	const FVector Forward = Space.Angular.GetAxisX();
-	const FVector Up = (TraceUpVector ? UpVector : Orientation);
 	if (Weight < SMALL_NUMBER)
 	{
 		// Default to plane
@@ -355,18 +364,17 @@ void UTGOR_GroundTask::GetStandingForce(const FTGOR_MovementTick& Tick, const FT
 	Identifier.Component->GetDampingForce(Tick, Space.RelativeLinearVelocity.ProjectOnTo(Normal), DampingCoeff, Out);
 
 	// Make sure we don't over- or understretch any leg
-	const float Upper = FMath::Clamp(2.0f - MovementContact.MaxGroundRatio, 0.0f, 1.0f);
-	const float Lower = FMath::Clamp(1.0f - MovementContact.MinGroundRatio, 0.0f, Upper);
-	const float TargetRatio = Lower + (Upper - Lower) * Stretch;
-
-	Out.Force += Normal * ((TargetRatio - MovementContact.GroundRatio) * Spring);
+	const float TargetRatio = MinGroundRatio + (MaxGroundRatio - MinGroundRatio) * Stretch;
+	const float SpringForce = (TargetRatio - MovementContact.GroundRatio) * Spring;
+	Out.Force += Normal * SpringForce;
 
 	// Jumping, apply upwards force either when already going up or when staying still enough
 	const float UpInput = FMath::Max(0.0f, MovementContact.FrameOrtho);
 	const float Relative = (Normal | Space.RelativeLinearVelocity);
 	if ((MovementContact.GroundRatio < 1.0f && Relative > 10.0f) || Relative > SMALL_NUMBER)
 	{
-		Out.Force += External.UpVector * UpInput * MaximumLegStrength * Frame.Strength;
+		const float JumpForce = UpInput * MaximumLegStrength * Frame.Strength;
+		Out.Force += External.UpVector * JumpForce;
 	}
 }
 

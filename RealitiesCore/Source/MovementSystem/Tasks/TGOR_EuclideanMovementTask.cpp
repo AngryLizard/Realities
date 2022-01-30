@@ -51,7 +51,7 @@ void UTGOR_EuclideanMovementTask::Update(const FTGOR_MovementSpace& Space, const
 	Super::Update(Space, External, Tick, Output);
 }
 
-void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float Timestep, bool Sweep)
+void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float DeltaTime, bool Sweep)
 {
 	// Make sure we aren't introducing NaNs
 	if (Force.Force.ContainsNaN())
@@ -64,11 +64,15 @@ void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& 
 		ERROR("Output torque NAN!", Error);
 	}
 
+	// Apply forces to current physics state
 	const FTGOR_MovementBody& MovementBody = RootComponent->GetBody();
-	FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Force, External, Timestep);
+	FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Force, External, DeltaTime);
+
+	// Consume root motion
+	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(DeltaTime);
 
 	// Simulate move
-	RootComponent->SimulateMove(Out, Timestep, Sweep);
+	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep);
 	EuclideanTask->SimulateDynamic(Out);
 }
 

@@ -28,16 +28,25 @@ FTGOR_MovementSpace UTGOR_EuclideanPilotTask::ComputeSpace() const
 	return Local.BaseToSpace(ComputeParentSpace());
 }
 
+void UTGOR_EuclideanPilotTask::InitDynamic(const FTGOR_MovementDynamic& Dynamic)
+{
+	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
+	Local.DynamicToBase(ParentDynamic, Dynamic);
+	Super::InitDynamic(Dynamic);
+}
+
 void UTGOR_EuclideanPilotTask::SimulateDynamic(const FTGOR_MovementDynamic& Dynamic)
 {
 	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
 	Local.DynamicToBase(ParentDynamic, Dynamic);
+	Super::SimulatePosition(Dynamic);
 }
 
 void UTGOR_EuclideanPilotTask::SimulatePosition(const FTGOR_MovementPosition& Position)
 {
 	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
 	Local.PositionToBase(ParentPosition, Position);
+	Super::SimulatePosition(Position);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -38,10 +38,10 @@ struct DIMENSIONSYSTEM_API FTGOR_PrimitiveSlot
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPilotUpdateDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMovementTeleportedDelegate, const FTGOR_MovementDynamic&, From, const FTGOR_MovementDynamic&, To, ATGOR_PhysicsVolume*, Volume);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBaseChangeDelegate, const FTGOR_MovementDynamic&, From, const FTGOR_MovementDynamic&, To, ATGOR_PhysicsVolume*, Volume);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOutOfLevelDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FChangedVolumeDelegate, ATGOR_PhysicsVolume*, From, ATGOR_PhysicsVolume*, To);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangedVolumeDelegate, ATGOR_PhysicsVolume*, Previous);
 
 /**
  * TGOR_PilotComponent Moves owner's root component. Actors should only have one of these.
@@ -128,7 +128,7 @@ protected:
 public:
 
 	UPROPERTY(BlueprintAssignable, Category = "!TGOR Movement")
-		FMovementTeleportedDelegate OnTeleportedMovement;
+		FBaseChangeDelegate OnTeleportedMovement;
 
 	/** Teleports this component to a position (Slow and reparents to any matching volume. Reparent properly if possible.) */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Movement", Meta = (Keywords = "C++", DeprecatedFunction, DeprecationMessage = "There is no reason to do this manually, use proper reparenting instead."))

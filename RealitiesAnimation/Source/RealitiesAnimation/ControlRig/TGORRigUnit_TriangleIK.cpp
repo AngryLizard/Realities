@@ -196,7 +196,7 @@ FTGORRigUnit_DigitigradeIK_Execute()
 
 			// Compute directions
 			const FVector FootDirection = EEForwardTarget * (EEUpTarget | ObjectiveNormal) - EEUpTarget * (EEForwardTarget | ObjectiveNormal);
-			const FVector LowerDirection = FVector::VectorPlaneProject(FootDirection * (Lengths.X + Lengths.Y) + LegDirection * Lengths.Z, ObjectiveNormal).GetSafeNormal();
+			const FVector LowerDirection = FVector::VectorPlaneProject(FootDirection * (Lengths.X + Lengths.Y) + LegDirection * Lengths.Z * AnkleKneeDirectionWeight, ObjectiveNormal).GetSafeNormal();
 
 			if (DebugSettings.bEnabled)
 			{
@@ -227,7 +227,7 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			float KneeKath = 0.0f;
 			float KneeHeight = 0.0f;
 			ComputeTriangle(Lengths.X, Lengths.Y, UpperDistance, KneeHeight, KneeKath);
-			const FVector UpperDirection = FVector::VectorPlaneProject(LowerDirection * Lengths.X + LegDirection * Lengths.Y, UpperNormal).GetSafeNormal();
+			const FVector UpperDirection = FVector::VectorPlaneProject(LowerDirection * Lengths.X * KneeHipDirectionWeight + LegDirection * Lengths.Y, UpperNormal).GetSafeNormal();
 
 			const FVector KneeDelta = UpperNormal * KneeKath + UpperDirection * KneeHeight;
 			const FVector KneeLocation = UpperLeg.GetLocation() + KneeDelta;

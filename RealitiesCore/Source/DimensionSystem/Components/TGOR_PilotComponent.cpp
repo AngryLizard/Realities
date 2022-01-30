@@ -17,6 +17,7 @@
 
 #include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
 
+#include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "Engine/NetConnection.h"
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
@@ -31,8 +32,6 @@ UTGOR_PilotComponent::UTGOR_PilotComponent()
 void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	SetComponentPosition(ComputePosition());
 }
 
 void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
@@ -136,24 +135,29 @@ void UTGOR_PilotComponent::OnPositionChange(const FTGOR_MovementPosition& Positi
 	if (PilotSlots.Num() > 0)
 	{
 		UTGOR_PilotTask* PilotTask = GetPilotTask();
-		ATGOR_PhysicsVolume* Volume = QueryVolume(Position.Linear, SurroundingVolume.Get());
-		if (Volume != SurroundingVolume || !IsValid(PilotTask))
+		ATGOR_PhysicsVolume* PreviousVolume = SurroundingVolume.Get();
+		ATGOR_PhysicsVolume* Volume = QueryVolume(Position.Linear, PreviousVolume);
+		if (Volume != PreviousVolume || !IsValid(PilotTask))
 		{
 			// Notify owner
-			OnVolumeChanged.Broadcast(SurroundingVolume.Get(), Volume);
 			SurroundingVolume = Volume;
+			OnVolumeChanged.Broadcast(PreviousVolume);
 
-			// Notify owner once if we are left without volume
 			if (SurroundingVolume.IsValid())
 			{
-				UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
-				if (IsValid(Movement))
+				// Attach to new volume if we were parented to the previous one (or to nothing at all)
+				if (!IsValid(PilotTask) || (IsValid(PreviousVolume) && HasParent(PreviousVolume->GetMovement())))
 				{
-					Movement->ParentLinear(this, INDEX_NONE, ComputeSpace());
+					UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
+					if (IsValid(Movement))
+					{
+						Movement->ParentLinear(this, INDEX_NONE, ComputeSpace());
+					}
 				}
 			}
 			else
 			{
+				// Notify owner once if we are left without volume
 				OnOutOfLevel.Broadcast();
 			}
 		}
@@ -461,7 +465,8 @@ TArray<UTGOR_PilotTask*> UTGOR_PilotComponent::GetPilotListOfType(TSubclassOf<UT
 
 void UTGOR_PilotComponent::RepNotifyPilotState(const FTGOR_PilotState& Old)
 {
-	SetComponentPosition(ComputePosition());
+	// TODO: This may not be necessary
+	OnPositionChange(ComputePosition());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

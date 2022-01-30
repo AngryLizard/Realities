@@ -172,4 +172,12 @@ protected:
 	/** Ground contact */
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
 		FTGOR_MovementContact MovementContact;
+
+	/** Maximum ground ratio supported by current leg setup */
+	UPROPERTY( BlueprintReadOnly, Category = "!TGOR Movement")
+		float MaxGroundRatio = 1.0f;
+
+	/** Minimum ground ratio supported by current leg setup */
+	UPROPERTY( BlueprintReadOnly, Category = "!TGOR Movement")
+		float MinGroundRatio = 0.0f;
 };

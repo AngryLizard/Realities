@@ -71,7 +71,8 @@ const FAnimGroupInstance& FTGOR_AnimInstanceProxy::GetSyncGroupInstance(const FN
 }
 
 UTGOR_AnimInstance::UTGOR_AnimInstance(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+	: Super(ObjectInitializer),
+	DefaultBlendTime(0.25f)
 {
 }
 
@@ -114,13 +115,13 @@ FTGOR_SubAnimBlend UTGOR_AnimInstance::GetBlendInfo(TSubclassOf<UTGOR_Performanc
 			{
 				Blend.IsSwitched = Ptr->IsSwitched;
 
-				float CurrBlend = 0.0f;
+				float CurrBlend = DefaultBlendTime;
 				if (Ptr->Current.IsValid() && Ptr->Current->AnimatedTask.IsValid())
 				{
 					CurrBlend = Ptr->Current->AnimatedTask->BlendTime;
 				}
 
-				float PrevBlend = 0.0f;
+				float PrevBlend = DefaultBlendTime;
 				if (Ptr->Previous.IsValid() && Ptr->Previous->AnimatedTask.IsValid())
 				{
 					PrevBlend = Ptr->Previous->AnimatedTask->BlendTime;

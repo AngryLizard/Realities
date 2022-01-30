@@ -125,10 +125,23 @@ FTGOR_MovementSpace UTGOR_LinearPilotTask::ComputeParentSpace() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void UTGOR_LinearPilotTask::InitDynamic(const FTGOR_MovementDynamic& Dynamic)
+{
+
+}
+
 void UTGOR_LinearPilotTask::SimulateDynamic(const FTGOR_MovementDynamic& Dynamic)
 {
+	if (IsValid(Identifier.Component))
+	{
+		Identifier.Component->OnPositionChange(Dynamic);
+	}
 }
 
 void UTGOR_LinearPilotTask::SimulatePosition(const FTGOR_MovementPosition& Position)
 {
+	if (IsValid(Identifier.Component))
+	{
+		Identifier.Component->OnPositionChange(Position);
+	}
 }

@@ -17,7 +17,9 @@
 #include "ActionSystem/Content/Events/TGOR_Event.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
+#include "MovementSystem/Components/TGOR_MovementComponent.h"
 
+#include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "GameFramework/PlayerState.h"
 #include "Templates/SubclassOf.h"
 #include "Net/UnrealNetwork.h"

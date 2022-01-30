@@ -12,7 +12,7 @@
 
 
 UTGOR_AnimatedTask::UTGOR_AnimatedTask()
-	: Super(), BlendTime(0.5f)
+	: Super(), BlendTime(0.5f), AnimRootMotionTranslationScale(0.01f)
 {
 	InstanceClass = UTGOR_SubAnimInstance::StaticClass();
 }
@@ -80,6 +80,45 @@ void UTGOR_AnimatedTask::ResetAnimation()
 			Component->SwitchAnimation(Slot, nullptr);
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(float DeltaTime)
+{
+	FTGOR_MovementPosition Position;
+	if (FMath::IsNearlyZero(DeltaTime))
+	{
+		return Position;
+	}
+
+	TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
+	if (!Owner)
+	{
+		return Position;
+	}
+
+	UTGOR_AnimationComponent* Component = Owner->GetAnimationComponent();
+	if (!IsValid(Component))
+	{
+		return Position;
+	}
+
+	// Grab root motion now that we have ticked the pose
+	if (Component->IsPlayingRootMotion())
+	{
+		FRootMotionMovementParams RootMotion = Component->ConsumeRootMotion();
+		if (RootMotion.bHasRootMotion)
+		{
+			RootMotion.ScaleRootMotionTranslation(AnimRootMotionTranslationScale);
+
+			const FTransform Transform = Component->ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform());
+			Position.Linear = Transform.GetTranslation();
+			Position.Angular = Transform.GetRotation();
+		}
+	}
+
+	return Position;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

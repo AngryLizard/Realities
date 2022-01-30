@@ -134,11 +134,15 @@ public:
 	
 protected:
 
+	/** Default blend time for undefined animation slots */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Animation")
+		float DefaultBlendTime;
+
 	UPROPERTY(BlueprintReadOnly)
 		UTGOR_Archetype* Archetype;
 
 	/** Called when a new archetype was defined. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
 		void OnSetupArchetype();
 
 
