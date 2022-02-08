@@ -194,9 +194,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		UTGOR_Action* GetAction(int32 Identifier) const;
 
+	/** Get more specific information about the state of a given slot. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool CollectDebugInfo(int32 Identifier, float Duration, FTGOR_ActionDebugInfo& Info) const;
+
 	/** Get more specific information about the state of all slots. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void CollectDebugInfo(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const;
+		void CollectDebugInfos(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const;
 
 	/** Get callable action slots of given type.
 		This does _not_ update context updates before testing. */

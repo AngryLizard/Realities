@@ -23,6 +23,11 @@ void UTGOR_WalkingTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& 
 
 }
 
+float UTGOR_WalkingTask::GetMaxSpeed() const
+{
+	return MaximumSpeed;
+}
+
 void UTGOR_WalkingTask::Initialise()
 {
 	Super::Initialise();
@@ -37,7 +42,6 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 	// Parent implements damping
 	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
 
-	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 

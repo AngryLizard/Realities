@@ -132,7 +132,16 @@ void Straighten(TArray<FTransform>& Transforms, const TArray<FTransform>& Rest)
 	}
 }
 
-void InitialiseBendTransforms(const FRigUnitContext& Context, const FRigUnit_DebugSettings& DebugSettings, const FRigElementKeyCollection& Chain, const FTransform& StartEE, const FTransform& EndEE, TArray<FTransform>& Rest, TArray<FTransform>& StartChain, TArray<FTransform>& EndChain, TArray<FTransform>& Transforms)
+void InitialiseBendTransforms(
+	const FRigUnitContext& Context, 
+	const FRigUnit_DebugSettings& DebugSettings, 
+	const FRigElementKeyCollection& Chain, 
+	const FTransform& StartEE, const FVector& StartOffset, float StartRadius,
+	const FTransform& EndEE, const FVector& EndOffset, float EndRadius,
+	TArray<FTransform>& Rest, 
+	TArray<FTransform>& StartChain, 
+	TArray<FTransform>& EndChain, 
+	TArray<FTransform>& Transforms)
 {
 	const int32 ChainNum = Chain.Num();
 
@@ -148,6 +157,14 @@ void InitialiseBendTransforms(const FRigUnitContext& Context, const FRigUnit_Deb
 		StartChain.Emplace(StartEE);
 		EndChain.Emplace(EndEE);
 	}
+
+	const FQuat StartOffsetRotation = FQuat(StartOffset.GetSafeNormal(), FMath::DegreesToRadians(StartOffset.Size()));
+	const FQuat StartLimited = FTGORRigUnit_LimitRotation::SoftLimitRotation(StartOffsetRotation * StartEE.GetRotation().Inverse() * Transforms.Last().GetRotation(), FMath::DegreesToRadians(StartRadius));
+	StartChain[0].SetRotation(StartEE.GetRotation()* StartOffsetRotation.Inverse()* StartLimited);
+
+	const FQuat EndOffsetRotation = FQuat(EndOffset.GetSafeNormal(), FMath::DegreesToRadians(EndOffset.Size()));
+	const FQuat EndLimited = FTGORRigUnit_LimitRotation::SoftLimitRotation(EndOffsetRotation * EndEE.GetRotation().Inverse() * Transforms.Last().GetRotation(), FMath::DegreesToRadians(EndRadius));
+	EndChain.Last().SetRotation(EndEE.GetRotation() * EndOffsetRotation.Inverse() * EndLimited);
 
 	// Compute separate global transforms assuming rest pose for both ends
 	for (int32 Index = 1; Index < ChainNum; Index++)
@@ -220,7 +237,7 @@ FTGORRigUnit_BendIK_Execute()
 			const FTransform EndEE = ComputeObjectiveTransform(Hierarchy, ObjectiveSettings, Chain.Last(), Objective);
 
 			TArray<FTransform> Rest, StartChain, EndChain, Transforms;
-			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, EndEE, Rest, StartChain, EndChain, Transforms);
+			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, ObjectiveLimitOffset, ObjectiveLimitRadius, EndEE, AnchorLimitOffset, AnchorLimitRadius, Rest, StartChain, EndChain, Transforms);
 			
 			// Collapse start and end chain into one
 			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
@@ -239,6 +256,9 @@ FTGORRigUnit_BendIK_Execute()
 
 			// Make sure all bones are properly rotated
 			Straighten(Transforms, Rest);
+
+			Transforms[0] = StartEE;
+			Transforms.Last() = EndEE;
 
 			// Set bones to transforms
 			Hierarchy->SetGlobalTransform(Chain.First(), Transforms[0], PropagateToChildren != ETGOR_Propagation::Off);
@@ -283,7 +303,7 @@ FTGORRigUnit_SingleBendIK_Execute()
 
 			// Populate transform lists
 			TArray<FTransform> Rest, StartChain, EndChain, Transforms;
-			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, EndEE, Rest, StartChain, EndChain, Transforms);
+			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, ObjectiveLimitOffset, ObjectiveLimitRadius, EndEE, AnchorLimitOffset, AnchorLimitRadius, Rest, StartChain, EndChain, Transforms);
 
 			// Collapse start and end chain into one
 			WeightedMean(Transforms, StartChain, EndChain, 0.0f);

@@ -88,11 +88,34 @@ public:
 	UPROPERTY(meta = (Input))
 		float MaxObjectiveAngle = 40.0f;
 
+	/**
+	 * Objective limit offset in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		FVector ObjectiveLimitOffset = FVector::ZeroVector;
+	/**
+	 * Objective limit radius in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float ObjectiveLimitRadius = 0.0f;
+
 	/*
 	 * Max angle change per segment towards the anchor
 	 */
 	UPROPERTY(meta = (Input))
 		float MaxAnchorAngle = 20.0f;
+
+	/**
+	 * Anchor limit offset in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		FVector AnchorLimitOffset = FVector::ZeroVector;
+
+	/**
+	 * Anchor limit radius in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float AnchorLimitRadius = 0.0f;
 
 	/**
 	 * Bending iterations
@@ -145,11 +168,34 @@ public:
 	UPROPERTY(meta = (Input))
 		float MaxObjectiveAngle = 40.0f;
 
+	/**
+	 * Objective limit offset in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		FVector ObjectiveLimitOffset = FVector::ZeroVector;
+	/**
+	 * Objective limit radius in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float ObjectiveLimitRadius = 0.0f;
+
 	/*
 	 * Max angle change per segment towards the anchor
 	 */
 	UPROPERTY(meta = (Input))
 		float MaxAnchorAngle = 20.0f;
+
+	/**
+	 * Anchor limit offset in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		FVector AnchorLimitOffset = FVector::ZeroVector;
+
+	/**
+	 * Anchor limit radius in degrees
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float AnchorLimitRadius = 0.0f;
 
 	/**
 	 * Bending iterations

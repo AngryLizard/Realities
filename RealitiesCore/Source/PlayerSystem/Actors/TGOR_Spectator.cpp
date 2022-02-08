@@ -17,7 +17,6 @@
 #include "PlayerSystem/Gameplay/TGOR_PlayerController.h"
 
 #include "CoreSystem/Gameplay/TGOR_GameInstance.h"
-#include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
 #include "CoreSystem/Storage/TGOR_Package.h"
 
 #include "PlayerSystem/Gameplay/TGOR_OnlineController.h"

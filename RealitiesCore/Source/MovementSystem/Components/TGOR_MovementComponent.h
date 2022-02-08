@@ -11,7 +11,7 @@
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "PhysicsSystem/Components/TGOR_RigidPawnComponent.h"
 #include "TGOR_MovementComponent.generated.h"
 
 class UTGOR_Mobile;
@@ -28,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovementUpdateDelegate);
  * 
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class MOVEMENTSYSTEM_API UTGOR_MovementComponent : public UTGOR_RigidComponent, public ITGOR_AnimationInterface, public ITGOR_SpawnerInterface, public ITGOR_RegisterInterface, public ITGOR_AttributeInterface
+class MOVEMENTSYSTEM_API UTGOR_MovementComponent : public UTGOR_RigidPawnComponent, public ITGOR_AnimationInterface, public ITGOR_SpawnerInterface, public ITGOR_RegisterInterface, public ITGOR_AttributeInterface
 {
 	GENERATED_BODY()
 
@@ -51,6 +51,10 @@ public:
 
 	virtual TSubclassOf<UTGOR_Performance> GetPerformanceType() const override;
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
+
+	virtual float GetMaxSpeed() const override;
+	virtual void RequestDirectMove(const FVector& MoveVelocity, bool bForceMaxSpeed) override;
+	virtual void RequestPathMove(const FVector& MoveInput) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -115,18 +119,9 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/** Compute transformed input vector from the currently active movement */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void GetMovementInput(FVector& Input, FVector& View) const;
-
 	/** Sets local input and computes view input */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void SetInput(const FVector& Input, float Strength);
-
-	/** Sets direct input and view input */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void ForwardInput(const FVector& Input, const FQuat& View);
-
+		void AddLocalInputVector(const FVector& Input, float Strength);
 
 	/** Find whether we are knocked out. Both movement master and authority can knock the pawn out, only server can recover. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
@@ -146,15 +141,6 @@ protected:
 	/** Local input strength */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
 		float InputStrength;
-
-	/** Camera rotation in world space */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
-		FQuat InputRotation;
-
-	/** Whether RawInput and InputRotation are directly forwarded to movement (instead of according to movement mode) */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Movement")
-		bool DirectInput;
-
 
 	/** Threshold for which pawn counts as being knocked out */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Internal")
@@ -204,12 +190,12 @@ protected:
 		TArray<UTGOR_MovementTask*> MovementSlots;
 
 	/** Currently scheduled movement */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = RepNotifyMovementState)
-		FTGOR_MovementState MovementState;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = RepNotifyMovementTaskState)
+		FTGOR_MovementState MovementTaskState;
 
 	/** Update movement on replication */
 	UFUNCTION()
-		void RepNotifyMovementState(const FTGOR_MovementState& Old);
+		void RepNotifyMovementTaskState(const FTGOR_MovementState& Old);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

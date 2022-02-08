@@ -394,7 +394,20 @@ UTGOR_Action* UTGOR_ActionComponent::GetAction(int32 Identifier) const
 	return nullptr;
 }
 
-void UTGOR_ActionComponent::CollectDebugInfo(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const
+bool UTGOR_ActionComponent::CollectDebugInfo(int32 Identifier, float Duration, FTGOR_ActionDebugInfo& Info) const
+{
+	if (ActionSlots.IsValidIndex(Identifier))
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[Identifier];
+		if (IsValid(ActionSlot))
+		{
+			return ActionSlot->CollectDebugInfo(Duration, Info);
+		}
+	}
+	return false;
+}
+
+void UTGOR_ActionComponent::CollectDebugInfos(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const
 {
 	const int32 SlotNum = ActionSlots.Num();
 	for (int32 Slot = 0; Slot < SlotNum; Slot++)

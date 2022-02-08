@@ -43,6 +43,7 @@ public:
 
 	UTGOR_ClimbingTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual float GetMaxSpeed() const override;
 
 	virtual void Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;

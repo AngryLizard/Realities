@@ -3,10 +3,12 @@
 
 #include "TGOR_CameraComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 
+#include "CoreSystem/TGOR_Singleton.h"
 #include "CameraSystem/Content/TGOR_Camera.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
-#include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
+#include "PhysicsSystem/Interfaces/TGOR_PilotSimulationInterface.h"
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 
 #include "Engine.h"

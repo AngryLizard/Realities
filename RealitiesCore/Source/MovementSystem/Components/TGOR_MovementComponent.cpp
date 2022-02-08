@@ -44,8 +44,6 @@ UTGOR_MovementComponent::UTGOR_MovementComponent()
 	
 	RawInput(FVector::ZeroVector),
 	InputStrength(0.0f),
-	InputRotation(FRotator::ZeroRotator),
-	DirectInput(false),
 
 	KnockoutThreshold(0.1f),
 	KnockoutHeadThreshold(230'000.0),
@@ -55,6 +53,16 @@ UTGOR_MovementComponent::UTGOR_MovementComponent()
 
 void UTGOR_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
 {
+	const FVector ConsumedInput = ConsumeInputVector();
+
+	// Grab input
+	APawn* Pawn = GetPawnOwner();
+	if (Pawn->IsLocallyControlled())
+	{
+		MovementInput.View = Pawn->GetViewRotation().Vector();
+		MovementInput.Input = ConsumedInput;
+	}
+
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)
@@ -72,7 +80,7 @@ void UTGOR_MovementComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProper
 	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementInput, COND_SimulatedOnly);
 
 	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementSlots, COND_None); // This MUST be replicated before setup
-	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementState, COND_None);
+	DOREPLIFETIME_CONDITION(UTGOR_MovementComponent, MovementTaskState, COND_None);
 }
 
 TSet<UTGOR_CoreContent*> UTGOR_MovementComponent::GetActiveContent_Implementation() const
@@ -178,7 +186,28 @@ TSubclassOf<UTGOR_Performance> UTGOR_MovementComponent::GetPerformanceType() con
 
 UTGOR_AnimationComponent* UTGOR_MovementComponent::GetAnimationComponent() const
 {
-	return GetOwnerComponent<UTGOR_AnimationComponent>();
+	AActor* Actor = GetOwner();
+	return Actor->FindComponentByClass<UTGOR_AnimationComponent>();
+}
+
+float UTGOR_MovementComponent::GetMaxSpeed() const
+{
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (IsValid(CurrentTask))
+	{
+		return CurrentTask->GetMaxSpeed();
+	}
+	return 0.0f;
+}
+
+void UTGOR_MovementComponent::RequestDirectMove(const FVector& MoveVelocity, bool bForceMaxSpeed)
+{
+	ERROR("Requesting DirectMove", Error);
+}
+
+void UTGOR_MovementComponent::RequestPathMove(const FVector& MoveInput)
+{
+	Super::RequestPathMove(MoveInput * 0.5f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -227,44 +256,19 @@ const FTGOR_MovementFrame& UTGOR_MovementComponent::GetFrame() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_MovementComponent::GetMovementInput(FVector& Input, FVector& View) const
-{
-	if (DirectInput)
-	{
-		Input = RawInput;
-		View = InputRotation.GetAxisX();
-	}
-	else
-	{
-		// Get input vector locally
-		UTGOR_MovementTask* CurrentTask = GetMovementTask();
-		if (IsValid(CurrentTask))
-		{
-			CurrentTask->QueryInput(Input, View);
-		}
-	}
-}
-
-void UTGOR_MovementComponent::SetInput(const FVector& Input, float Strength)
+void UTGOR_MovementComponent::AddLocalInputVector(const FVector& Input, float Strength)
 {
 	RawInput = Input;
-	DirectInput = false;
 	InputStrength = Strength;
 
-	InputRotation = FQuat::Identity;
-	if (UCameraComponent* Camera = GetOwnerComponent<UCameraComponent>())
+	// Get input vector locally
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (IsValid(CurrentTask))
 	{
-		InputRotation = Camera->GetComponentQuat();
+		FVector Vector, View;
+		CurrentTask->QueryInput(Vector, View);
+		AddInputVector(Vector);
 	}
-}
-
-void UTGOR_MovementComponent::ForwardInput(const FVector& Input, const FQuat& View)
-{
-	RawInput = Input;
-	DirectInput = true;
-	InputStrength = 1.0f;
-
-	InputRotation = View;
 }
 
 bool UTGOR_MovementComponent::IsKnockedOut() const
@@ -281,29 +285,28 @@ void UTGOR_MovementComponent::Knockin(float Speed)
 
 UTGOR_MovementTask* UTGOR_MovementComponent::GetMovementTask() const
 {
-	if (MovementSlots.IsValidIndex(MovementState.ActiveSlot))
+	if (MovementSlots.IsValidIndex(MovementTaskState.ActiveSlot))
 	{
-		return MovementSlots[MovementState.ActiveSlot];
+		return MovementSlots[MovementTaskState.ActiveSlot];
 	}
 	return nullptr;
 }
 
-
 bool UTGOR_MovementComponent::IsMovingWith(int32 Identifier) const
 {
-	return MovementState.ActiveSlot == Identifier;
+	return MovementTaskState.ActiveSlot == Identifier;
 }
 
 void UTGOR_MovementComponent::MoveWith(int32 Identifier)
 {
-	if (Identifier != MovementState.ActiveSlot)
+	if (Identifier != MovementTaskState.ActiveSlot)
 	{
 		if (UTGOR_MovementTask* Task = GetMovementTask())
 		{
 			Task->Interrupt();
 		}
 
-		MovementState.ActiveSlot = Identifier;
+		MovementTaskState.ActiveSlot = Identifier;
 
 		if (UTGOR_MovementTask* Task = GetMovementTask())
 		{
@@ -331,7 +334,7 @@ UTGOR_MovementTask* UTGOR_MovementComponent::GetMovementOfType(TSubclassOf<UTGOR
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_MovementComponent::RepNotifyMovementState(const FTGOR_MovementState& Old)
+void UTGOR_MovementComponent::RepNotifyMovementTaskState(const FTGOR_MovementState& Old)
 {
 }
 
@@ -349,7 +352,8 @@ float UTGOR_MovementComponent::GetInputStrength() const
 
 FQuat UTGOR_MovementComponent::GetInputRotation() const
 {
-	return InputRotation;
+	APawn* Pawn = GetPawnOwner();
+	return FQuat(Pawn->GetControlRotation());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -486,7 +490,7 @@ bool UTGOR_MovementComponent::ServerInputLight_Validate(FTGOR_MovementInput Upda
 
 void UTGOR_MovementComponent::ServerKnockout_Implementation()
 {
-	APawn* Pawn = Cast<APawn>(GetOwner());
+	APawn* Pawn = GetPawnOwner();
 	if (Pawn->IsLocallyControlled())
 	{
 		OnKnockout.Broadcast();
@@ -503,12 +507,6 @@ bool UTGOR_MovementComponent::ServerKnockout_Validate()
 
 void UTGOR_MovementComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
 {
-	// Grab input
-	APawn* Pawn = Cast<APawn>(GetOwner());
-	if (Pawn->IsLocallyControlled())
-	{
-		GetMovementInput(MovementInput.Input, MovementInput.View);
-	}
 	Super::PreComputePhysics(Tick);
 }
 
@@ -535,6 +533,10 @@ void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const F
 	{
 		SCOPE_CYCLE_COUNTER(STAT_MovementTick);
 		CurrentTask->Update(Space, External, Tick, Output);
+
+		// Update space
+		UTGOR_PilotComponent* RootPilot = GetRootPilot();
+		Space = RootPilot->ComputeSpace();
 
 		// Restrict this to only animate if necessary
 		CurrentTask->Animate(Space, Tick.DeltaTime);

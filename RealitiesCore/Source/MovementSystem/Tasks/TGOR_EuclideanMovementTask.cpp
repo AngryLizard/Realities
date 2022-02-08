@@ -36,7 +36,7 @@ bool UTGOR_EuclideanMovementTask::Invariant(const FTGOR_MovementSpace& Space, co
 		return false;
 	}
 
-	UTGOR_EuclideanPilotTask* Task = EuclideanTask.IsValid() ? EuclideanTask.Get() : RootComponent->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
+	UTGOR_EuclideanPilotTask* Task = RootComponent->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
 	if (!RootComponent.IsValid() || !IsValid(Task))
 	{
 		return false;

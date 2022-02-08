@@ -42,8 +42,8 @@ void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTG
 
 			Output.Torque += (SwivelTorque - Correction);
 
-			GetDampingForce(Tick, Space.RelativeLinearVelocity, 0.0f, Output);
-			GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping, Output);
+			Output.AddDampingForce(Tick, Space.RelativeLinearVelocity, 0.0f);
+			Output.AddDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping);
 
 			const FTGOR_MovementBody& MovementBody = RootPilot->GetBody();
 			FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Output, External, Tick.DeltaTime);

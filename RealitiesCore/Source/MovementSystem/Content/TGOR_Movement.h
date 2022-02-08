@@ -17,9 +17,12 @@ class UTGOR_MovementComponent;
 UENUM(BlueprintType)
 enum class ETGOR_MovementEnumeration : uint8
 {
-	Queued, // Queued movement, all movements above the queue override even with true invariant
-	Sticky, // Queued movement, but doesn't get overridden by movements above the queue
-	Manual // Needs to be executed by preemption, only disappears once invariant is false
+	// Queued movement, all movements above the queue override even with true invariant
+	Queued,
+	// Queued movement, but doesn't get overridden by movements above the queue
+	Sticky,
+	// Needs to be executed by preemption, only disappears once invariant is false
+	Manual 
 };
 
 /**

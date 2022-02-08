@@ -79,7 +79,8 @@ void UTGOR_WaterTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Movem
 
 bool UTGOR_WaterTask::CanSwimInCurrentSurroundings(const FTGOR_MovementExternal& External) const
 {
-	return Identifier.Component->GetBouyancyRatio(External.Surroundings) > BouyancyThreshold;
+	const FTGOR_MovementBody& Body = RootComponent->GetBody();
+	return Body.GetBouyancyRatio(External.Surroundings) > BouyancyThreshold;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +88,6 @@ bool UTGOR_WaterTask::CanSwimInCurrentSurroundings(const FTGOR_MovementExternal&
 float UTGOR_WaterTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, FTGOR_MovementOutput& Out) const
 {
 	// Dampen to prevent oscillation
-	Identifier.Component->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping, Out);
+	Out.AddDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping);
 	return 0.0f;
 }

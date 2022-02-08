@@ -28,6 +28,6 @@ void UTGOR_ActionDebugQuery::AssignComponent(UTGOR_ActionComponent* Component, f
 	Entries.Empty();
 	if (IsValid(Component))
 	{
-		Component->CollectDebugInfo(Duration, Entries);
+		Component->CollectDebugInfos(Duration, Entries);
 	}
 }

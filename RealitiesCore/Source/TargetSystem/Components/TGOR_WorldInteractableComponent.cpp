@@ -16,15 +16,6 @@ UTGOR_WorldInteractableComponent::UTGOR_WorldInteractableComponent(const FObject
 void UTGOR_WorldInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Fetch all targets
-	SINGLETON_CHK;
-	UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
-
-	for (TSubclassOf<UTGOR_Target> TargetClass : TargetClasses)
-	{
-		Targets.Append(ContentManager->GetTListFromType(TargetClass));
-	}
 }
 
 void UTGOR_WorldInteractableComponent::Influence(const FTGOR_InfluenceInstance& Influence)

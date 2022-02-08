@@ -25,6 +25,7 @@ public:
 
 	UTGOR_WalkingTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual float GetMaxSpeed() const override;
 	virtual void Initialise() override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

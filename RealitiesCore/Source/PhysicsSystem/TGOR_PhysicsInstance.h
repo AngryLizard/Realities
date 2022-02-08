@@ -80,6 +80,12 @@ struct PHYSICSSYSTEM_API FTGOR_MovementOutput : public FTGOR_MovementForce
 
 		FTGOR_MovementOutput();
 
+	/** Adds Damping force against an linear velocity including oscillation prevention */
+	void AddDampingForce(const FTGOR_MovementTick& Tick, const FVector& LinearVelocity, float Damping);
+
+	/** Adds Damping force against a angular velocity including oscillation prevention */
+	void AddDampingTorque(const FTGOR_MovementTick& Tick, const FVector& AngularVelocity, float Damping);
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Orientation force in kg*m^2/s^2 */

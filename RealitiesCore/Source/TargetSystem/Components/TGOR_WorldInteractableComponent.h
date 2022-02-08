@@ -38,12 +38,5 @@ public:
 		void ReplicateInfluence();
 		virtual void ReplicateInfluence_Implementation();
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-	
-	/** Array of automatically loaded target classes */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Target")
-		TArray<TSubclassOf<UTGOR_Target>> TargetClasses;
-
 private:
 };

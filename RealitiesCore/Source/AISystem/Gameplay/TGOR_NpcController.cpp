@@ -7,6 +7,8 @@
 #include "CoreSystem/Gameplay/TGOR_GameInstance.h"
 #include "CreatureSystem/Actors/TGOR_Pawn.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
+#include "DimensionSystem/Components/TGOR_MobilityComponent.h"
+#include "DimensionSystem/Components/TGOR_ColliderComponent.h"
 #include "AISystem/Content/TGOR_Behaviour.h"
 
 #include "Net/UnrealNetwork.h"
@@ -167,14 +169,14 @@ void ATGOR_NpcController::Tick(float DeltaTime)
 				NextInput = FVector::ZeroVector;
 				NextView = FQuat::Identity;
 			}
-			Movement->ForwardInput(PrevInput, PrevView);
+			//Movement->ForwardInput(PrevInput, PrevView);
 		}
 		else
 		{
 			const float Ratio = FMath::Clamp(time / PerceptionUpdateTime, 0.0f, 1.0f);
 			const FVector Input = FMath::Lerp(PrevInput, NextInput, Ratio);
 			const FQuat View = FMath::Lerp(PrevView, NextView, Ratio);
-			Movement->ForwardInput(Input, View);
+			//Movement->ForwardInput(Input, View);
 		}
 	}
 }

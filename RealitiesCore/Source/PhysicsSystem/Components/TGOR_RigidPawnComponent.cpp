@@ -1,6 +1,6 @@
 // The Gateway of Realities: Planes of Existence.
 
-#include "TGOR_RigidComponent.h"
+#include "TGOR_RigidPawnComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/Actor.h"
 
@@ -19,20 +19,37 @@
 DECLARE_CYCLE_STAT(TEXT("Simulation"), STAT_Simulation, STATGROUP_RIGID);
 DECLARE_CYCLE_STAT(TEXT("Physics"), STAT_Physics, STATGROUP_RIGID);
 
-
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Movement damping factor"), STAT_DampingFactor, STATGROUP_RIGID);
 
-UTGOR_RigidComponent::UTGOR_RigidComponent()
+UTGOR_RigidPawnComponent::UTGOR_RigidPawnComponent()
 :	Super(),
 
 	MaxDampingStratification(5.0f),
 	SweepsCollision(true),
-	StratisfyTimestep(false)
+	OrientationSpeed(10.0f),
+	SimulationTimestep(0.0f)
 {
 }
 
+void UTGOR_RigidPawnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// We always stratify on very slow frames (other parts of the game will take the hit, surely)
+	// Otherwise some parts of the simulation might flip their shit and go Nan
+	TickStratified(DeltaTime, FMath::Min(DeltaTime, 0.05f));
+}
+
+void UTGOR_RigidPawnComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Replicate to everyone
+	DOREPLIFETIME_CONDITION(UTGOR_RigidPawnComponent, Capture, COND_None);
+}
+
 /*
-void UTGOR_RigidComponent::InflictPointImpact(const FVector& Point, const FVector& Impulse)
+void UTGOR_RigidPawnComponent::InflictPointImpact(const FVector& Point, const FVector& Impulse)
 {
 	Super::InflictPointImpact(Point, Impulse);
 
@@ -47,7 +64,7 @@ void UTGOR_RigidComponent::InflictPointImpact(const FVector& Point, const FVecto
 	InflictLinearMomentum(Dynamic, Impulse, false);
 }
 
-void UTGOR_RigidComponent::InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime)
+void UTGOR_RigidPawnComponent::InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime)
 {
 	Super::InflictPointForce(Point, Force, DeltaTime);
 
@@ -62,7 +79,26 @@ void UTGOR_RigidComponent::InflictPointForce(const FVector& Point, const FVector
 }
 */
 
-float UTGOR_RigidComponent::TickPhysics(float Time)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FVector UTGOR_RigidPawnComponent::ComputePhysicsUpVector() const
+{
+	// Stored in local space
+	UTGOR_PilotComponent* RootPilot = GetRootPilot();
+	if (IsValid(RootPilot))
+	{
+		const FTGOR_MovementPosition Position = RootPilot->ComputeBase();
+		return Position.Angular * Capture.UpVector;
+	}
+	return Capture.UpVector;
+}
+
+AActor* UTGOR_RigidPawnComponent::GetPilotOwner() const
+{
+	return GetOwner();
+}
+
+float UTGOR_RigidPawnComponent::TickPhysics(float Time)
 {
 	SCOPE_CYCLE_COUNTER(STAT_Simulation);
 
@@ -163,23 +199,18 @@ float UTGOR_RigidComponent::TickPhysics(float Time)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_RigidComponent::GetDampingForce(const FTGOR_MovementTick& Tick, const FVector& LinearVelocity, float Damping, FTGOR_MovementOutput& Output) const
+void UTGOR_RigidPawnComponent::RepNotifyCapture(const FTGOR_MovementCapture& Old)
 {
-	const float FinalDamping = FMath::Min(Tick.MaxLinearDamping, Damping);
-	Output.MaxLinearDamping = FMath::Max(Output.MaxLinearDamping, FinalDamping);
-	Output.Force -= LinearVelocity * FinalDamping;
 }
 
-void UTGOR_RigidComponent::GetDampingTorque(const FTGOR_MovementTick& Tick, const FVector& AngularVelocity, float Damping, FTGOR_MovementOutput& Output) const
+const FTGOR_MovementCapture& UTGOR_RigidPawnComponent::GetCapture() const
 {
-	const float FinalDamping = FMath::Min(Tick.MaxAngularDamping, Damping);
-	Output.MaxAngularDamping = FMath::Max(Output.MaxAngularDamping, FinalDamping);
-	Output.Torque -= AngularVelocity * FinalDamping;
+	return Capture;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_RigidComponent::PopulateMovementTick(float Time, FTGOR_MovementTick& OutTick) const
+bool UTGOR_RigidPawnComponent::PopulateMovementTick(float Time, FTGOR_MovementTick& OutTick) const
 {
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
 	if (IsValid(RootPilot))
@@ -191,23 +222,23 @@ bool UTGOR_RigidComponent::PopulateMovementTick(float Time, FTGOR_MovementTick& 
 	}
 
 	// Adaptive timestep
-	if (StratisfyTimestep)
+	if (FMath::IsNearlyZero(SimulationTimestep))
 	{
-		OutTick.DeltaTime = SimulationTimestep;
-		return (Time >= SimulationTimestep);
+		// We always stratify on very slow frames (other parts of the game will take the hit, surely)
+		// Otherwise some parts of the simulation might flip their shit and go Nan
+		OutTick.DeltaTime = FMath::Min(Time, 0.033f);
+		return (OutTick.DeltaTime >= SMALL_NUMBER);
 	}
 	else
 	{
-		// Stratisfy always on very slow frames (other parts of the game will take the hit mkay?)
-		// Otherwise some of the simulation will go Nan-bread
-		OutTick.DeltaTime = FMath::Min(Time, 0.05f);
-		return (OutTick.DeltaTime >= SMALL_NUMBER);
+		OutTick.DeltaTime = SimulationTimestep;
+		return Time >= SimulationTimestep;
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_RigidComponent::InflictLinearMomentum(const FTGOR_MovementDynamic& Dynamic, FVector InMomentum, bool CounteractVelocity)
+void UTGOR_RigidPawnComponent::InflictLinearMomentum(const FTGOR_MovementDynamic& Dynamic, FVector InMomentum, bool CounteractVelocity)
 {
 	// Make sure velocity doesn't get counted "double" due to replication
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
@@ -223,7 +254,7 @@ void UTGOR_RigidComponent::InflictLinearMomentum(const FTGOR_MovementDynamic& Dy
 	}
 }
 
-void UTGOR_RigidComponent::InflictAngularMomentum(const FTGOR_MovementDynamic& Dynamic, FVector InAngular, bool CounteractAngular)
+void UTGOR_RigidPawnComponent::InflictAngularMomentum(const FTGOR_MovementDynamic& Dynamic, FVector InAngular, bool CounteractAngular)
 {
 	// Make sure velocity doesn't get counted "double" due to replication
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
@@ -239,7 +270,7 @@ void UTGOR_RigidComponent::InflictAngularMomentum(const FTGOR_MovementDynamic& D
 	}
 }
 
-void UTGOR_RigidComponent::InflictForceTorque(const FVector& Force, const FVector& Torque, float DeltaTime)
+void UTGOR_RigidPawnComponent::InflictForceTorque(const FVector& Force, const FVector& Torque, float DeltaTime)
 {
 	if (CanInflict())
 	{
@@ -250,23 +281,23 @@ void UTGOR_RigidComponent::InflictForceTorque(const FVector& Force, const FVecto
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_RigidComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
+void UTGOR_RigidPawnComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
 {
 }
 
-void UTGOR_RigidComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
+void UTGOR_RigidPawnComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
 }
 
-void UTGOR_RigidComponent::PostComputePhysics(const FTGOR_MovementSpace& Space, float Energy, float DeltaTime)
+void UTGOR_RigidPawnComponent::PostComputePhysics(const FTGOR_MovementSpace& Space, float Energy, float DeltaTime)
 {
 	if (Energy > SMALL_NUMBER)
 	{
-		OnEnergyUsage.Broadcast(Energy);
+		//OnEnergyUsage.Broadcast(Energy);
 	}
 }
 
-bool UTGOR_RigidComponent::CanInflict() const
+bool UTGOR_RigidPawnComponent::CanInflict() const
 {
 	return true;
 }

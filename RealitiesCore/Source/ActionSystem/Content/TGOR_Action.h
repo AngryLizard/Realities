@@ -198,7 +198,7 @@ protected:
 public:
 
 	/** Inputs captured by this action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName="Captured Inputs"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName= "Captured Inputs"))
 		TArray<TSubclassOf<UTGOR_Input>> InputInsertions;
 	DECL_INSERTION(InputInsertions);
 

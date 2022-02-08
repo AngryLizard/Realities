@@ -90,4 +90,18 @@ void FTGOR_MovementOutput::SetBaseFromVolume(ATGOR_PhysicsVolume* Volume, const 
 }
 */
 
+void FTGOR_MovementOutput::AddDampingForce(const FTGOR_MovementTick& Tick, const FVector& LinearVelocity, float Damping)
+{
+	const float FinalDamping = FMath::Min(Tick.MaxLinearDamping, Damping);
+	MaxLinearDamping = FMath::Max(MaxLinearDamping, FinalDamping);
+	Force -= LinearVelocity * FinalDamping;
+}
+
+void FTGOR_MovementOutput::AddDampingTorque(const FTGOR_MovementTick& Tick, const FVector& AngularVelocity, float Damping)
+{
+	const float FinalDamping = FMath::Min(Tick.MaxAngularDamping, Damping);
+	MaxAngularDamping = FMath::Max(MaxAngularDamping, FinalDamping);
+	Torque -= AngularVelocity * FinalDamping;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////

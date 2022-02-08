@@ -424,7 +424,7 @@ bool UTGOR_ActionTask::HasValidMovement() const
 	{
 		// Check whether movement mode is supported
 		UTGOR_MovementTask* CurrentTask = MovementComponent->GetMovementTask();
-		return (!Identifier.Content->CheckMovement || Identifier.Content->Instanced_MovementInsertions.Contains(CurrentTask->GetMovement()));
+		return (!Identifier.Content->CheckMovement || (IsValid(CurrentTask) && Identifier.Content->Instanced_MovementInsertions.Contains(CurrentTask->GetMovement())));
 	}
 	return false;
 }

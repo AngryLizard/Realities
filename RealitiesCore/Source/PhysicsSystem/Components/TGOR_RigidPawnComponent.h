@@ -3,41 +3,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PhysicsSystem/TGOR_PhysicsInstance.h"
 #include "DimensionSystem/TGOR_PilotInstance.h"
 
-#include "TGOR_PhysicsComponent.h"
-#include "TGOR_RigidComponent.generated.h"
+#include "GameFramework/PawnMovementComponent.h"
+#include "PhysicsSystem/Interfaces/TGOR_PilotSimulationInterface.h"
+#include "TGOR_RigidPawnComponent.generated.h"
 
-DECLARE_STATS_GROUP(TEXT("Rigid Movement"), STATGROUP_RIGID, STATCAT_Advanced);
-/*
-UENUM(BlueprintType)
-enum class ETGOR_BufferUpdateMode : uint8
-{
-	NoBuffer			UMETA(DisplayName = "No buffer recording"),
-	BufferOnSimulated	UMETA(DisplayName = "Record buffer on simulated client"),
-	BufferOnAutonomous	UMETA(DisplayName = "Record buffer on autonomous client"),
-	BufferOnAuthority	UMETA(DisplayName = "Record buffer on authoritive client")
-};
-*/
+DECLARE_STATS_GROUP(TEXT("Rigid Pawn Movement"), STATGROUP_RIGID, STATCAT_Advanced);
 
 ///////////////////////////////////////////// DELEGATES ///////////////////////////////////////////////////
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnergyUsageDelegate, float, Energy);
 
 /**
-* TGOR_RigidComponent automatically integrates velocity and location
+* TGOR_RigidPawnComponent automatically integrates velocity and location
 */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class PHYSICSSYSTEM_API UTGOR_RigidComponent : public UTGOR_PhysicsComponent
+class PHYSICSSYSTEM_API UTGOR_RigidPawnComponent : public UPawnMovementComponent, public ITGOR_PilotSimulationInterface
 {
 	GENERATED_BODY()
 
 public:
-	UTGOR_RigidComponent();
+	UTGOR_RigidPawnComponent();
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	//virtual void InflictPointImpact(const FVector& Point, const FVector& Impulse) override;
-	//virtual void InflictPointForce(const FVector& Point, const FVector& Force, float DeltaTime) override;
-
+	virtual FVector ComputePhysicsUpVector() const override;
+	virtual AActor* GetPilotOwner() const override;
 	virtual float TickPhysics(float Time) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
@@ -46,15 +39,18 @@ public:
 		FEnergyUsageDelegate OnEnergyUsage;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
-	/** Computes Damping force against an linear velocity including oscillation prevention */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		void GetDampingForce(const FTGOR_MovementTick& Tick, const FVector& LinearVelocity, float Damping, FTGOR_MovementOutput& Output) const;
+	/** Current capture */
+	UPROPERTY(ReplicatedUsing = RepNotifyCapture)
+		FTGOR_MovementCapture Capture;
 
-	/** Computes Damping force against a angular velocity including oscillation prevention */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
-		void GetDampingTorque(const FTGOR_MovementTick& Tick, const FVector& AngularVelocity, float Damping, FTGOR_MovementOutput& Output) const;
+	UFUNCTION()
+		virtual void RepNotifyCapture(const FTGOR_MovementCapture& Old);
+
+	/** Get current movement capture */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		const FTGOR_MovementCapture& GetCapture() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -81,7 +77,6 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-
 	/** Max damping time factor */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float MaxDampingStratification;
@@ -90,9 +85,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Internal")
 		bool SweepsCollision;
 
-	/** Stratisfy timestep into equally sized slizes */
+	/** Speed with which up-vector is lerped */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement|Internal")
-		bool StratisfyTimestep;
+		float OrientationSpeed;
+
+	/** Timestep per simulation tick, 0 for non-stratified */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement|Internal")
+		float SimulationTimestep;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

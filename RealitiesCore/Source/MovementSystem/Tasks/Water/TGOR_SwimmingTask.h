@@ -25,6 +25,7 @@ public:
 	UTGOR_SwimmingTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const override;
+	virtual float GetMaxSpeed() const override;
 
 	/** Max speed for swimming movement */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")

@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 
-#include "TGOR_RigidComponent.h"
+#include "TGOR_RigidPawnComponent.h"
 #include "TGOR_LinearComponent.generated.h"
 
 /**
  * UTGOR_LinearComponent physically moves an object without rotation (making collisions more stable).
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class PHYSICSSYSTEM_API UTGOR_LinearComponent : public UTGOR_RigidComponent
+class PHYSICSSYSTEM_API UTGOR_LinearComponent : public UTGOR_RigidPawnComponent
 {
 	GENERATED_BODY()
 

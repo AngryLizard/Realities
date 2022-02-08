@@ -46,7 +46,6 @@ float UTGOR_UprightTask::ComputeCrouchSpeedRatio(float GroundRatio) const
 
 float UTGOR_UprightTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const
 {
-	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
 	const float X = (State.Input | External.UpVector);

@@ -7,7 +7,7 @@
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Components/TGOR_AttachComponent.h"
 #include "AnimationSystem/Components/TGOR_HandleComponent.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "PhysicsSystem/Components/TGOR_RigidPawnComponent.h"
 #include "MovementSystem/Content/TGOR_Movement.h"
 
 #include "CoreSystem/TGOR_Singleton.h"

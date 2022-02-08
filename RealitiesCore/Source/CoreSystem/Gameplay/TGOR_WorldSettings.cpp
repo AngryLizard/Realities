@@ -4,6 +4,7 @@
 #include "TGOR_WorldSettings.h"
 #include "Engine/World.h"
 
+#include "TGOR_GameMode.h"
 #include "TGOR_GameState.h"
 
 
@@ -20,6 +21,14 @@ void ATGOR_WorldSettings::NotifyBeginPlay()
 	UWorld* World = GetWorld();
 	if (IsValid(World))
 	{
+		// When rendering sequences we have a gamemode that isn't our TGOR_Gamemode, start BeginPlay so we start rendering properly
+		AGameModeBase* GameMode = World->GetAuthGameMode();
+		if (IsValid(GameMode) && !GameMode->IsA<ATGOR_GameMode>())
+		{
+			Super::NotifyBeginPlay();
+			return;
+		}
+
 		ATGOR_GameState* GameState = Cast<ATGOR_GameState>(World->GetGameState());
 		if (IsValid(GameState))
 		{

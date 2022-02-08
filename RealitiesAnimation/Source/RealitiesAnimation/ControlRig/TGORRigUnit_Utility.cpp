@@ -266,15 +266,16 @@ FQuat FTGORRigUnit_LimitRotation::SoftLimitRotation(const FQuat& Quat, float Lim
 	// Compute acceptable W
 	const FVector A = FVector(Quat.X, Quat.Y, Quat.Z);
 	const float Sq = A.SizeSquared();
+	const float WSign = FMath::Sign(Quat.W);
 
 	const float Ls = 1.0f - FMath::Cos(Limit * 0.5f);
-	const float W = 1.0f - FTGORRigUnit_SoftBoundaries::SoftBoundaries(1.0f - Quat.W, Ls);
+	const float W = 1.0f - FTGORRigUnit_SoftBoundaries::SoftBoundaries(1.0f - WSign * Quat.W, Ls);
 	const float V = 1.0f - W * W;
 
 	if (!FMath::IsNearlyZero(Sq))
 	{
 		const float InvS = FMath::Sqrt(V / Sq);
-		return FQuat(A.X * InvS, A.Y * InvS, A.Z * InvS, W);
+		return FQuat(A.X * InvS, A.Y * InvS, A.Z * InvS, WSign * W);
 	}
 	return FQuat::Identity;
 }

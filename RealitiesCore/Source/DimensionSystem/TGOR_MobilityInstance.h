@@ -393,6 +393,9 @@ public:
 	/** Get mass of matter of surroundings */
 	float GetDisplacedMass(const FTGOR_PhysicsProperties& Surroundings) const;
 
+	/** Get bouyancy ratio to determined how much we're currently floating */
+	float GetBouyancyRatio(const FTGOR_PhysicsProperties& Surroundings) const;
+
 	/** Drag response computation given a velocity and drag coefficient. */
 	float ComputeDragResponse(const FTGOR_MovementPosition& Position, const FTGOR_PhysicsProperties& Surroundings, const FVector& RelativeVelocity, float Coeff) const;
 

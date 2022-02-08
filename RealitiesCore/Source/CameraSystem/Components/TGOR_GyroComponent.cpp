@@ -4,8 +4,9 @@
 #include "TGOR_GyroComponent.h"
 
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
-#include "PhysicsSystem/Components/TGOR_PhysicsComponent.h"
+#include "PhysicsSystem/Interfaces/TGOR_PilotSimulationInterface.h"
 #include "RealitiesUtility/Utility/TGOR_Math.h"
+#include "RealitiesUtility/Utility/TGOR_Error.h"
 
 #include "Engine.h"
 #include "Net/UnrealNetwork.h"
@@ -22,7 +23,7 @@ void UTGOR_GyroComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (PhysicsComponent.IsValid())
+	if (PhysicsComponent)
 	{
 		UTGOR_PilotComponent* Pilot = PhysicsComponent->GetRootPilot();
 		if (IsValid(Pilot))
@@ -38,9 +39,10 @@ void UTGOR_GyroComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		const FVector& UpVector = PhysicsComponent->ComputePhysicsUpVector();
 		const FVector Right = GyroRotation.GetAxisX() ^ UpVector;
 		const FVector Axis = Right ^ GyroRotation.GetAxisY();
-		const float Angle = Axis.Size();
-		if (Angle >= SMALL_NUMBER)
+		const float AngleSq = Axis.SizeSquared();
+		if (AngleSq >= SMALL_NUMBER)
 		{
+			const float Angle = FMath::Sqrt(AngleSq);
 			GyroRotation = (FQuat(Axis / Angle, Angle * Stabilisation * DeltaTime) * GyroRotation).GetNormalized();
 		}
 	}
@@ -53,7 +55,14 @@ void UTGOR_GyroComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PhysicsComponent = GetOwnerComponent<UTGOR_PhysicsComponent>();
+	AActor* Actor = GetOwner();
+	TArray<UActorComponent*> Components = Actor->GetComponentsByInterface(UTGOR_PilotSimulationInterface::StaticClass());
+	if (Components.Num() == 0)
+	{
+		ERROR("No PilotSimulation found", Error);
+	}
+
+	PhysicsComponent = TScriptInterface<ITGOR_PilotSimulationInterface>(Components[0]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

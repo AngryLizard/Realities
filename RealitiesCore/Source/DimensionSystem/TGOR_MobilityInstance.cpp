@@ -584,6 +584,16 @@ float FTGOR_MovementBody::GetDisplacedMass(const FTGOR_PhysicsProperties& Surrou
 	return 0.0f;
 }
 
+float FTGOR_MovementBody::GetBouyancyRatio(const FTGOR_PhysicsProperties& Surroundings) const
+{
+	if (Mass >= SMALL_NUMBER)
+	{
+		const float Displaced = GetDisplacedMass(Surroundings);
+		return Displaced / Mass;
+	}
+	return 0.0f;
+}
+
 float FTGOR_MovementBody::ComputeDragResponse(const FTGOR_MovementPosition& Position, const FTGOR_PhysicsProperties& Surroundings, const FVector& RelativeVelocity, float Coeff) const
 {
 	// Ignore zero velocity

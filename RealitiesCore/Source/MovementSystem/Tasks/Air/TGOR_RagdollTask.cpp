@@ -47,14 +47,13 @@ void UTGOR_RagdollTask::QueryInput(FVector& OutInput, FVector& OutView) const
 
 void UTGOR_RagdollTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
-	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
 	// Dampen forces
-	Identifier.Component->GetDampingForce(Tick, Space.RelativeLinearVelocity, BrakeCoefficient * Frame.Strength, Out);
-	Identifier.Component->GetDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength, Out);
+	Out.AddDampingForce(Tick, Space.RelativeLinearVelocity, BrakeCoefficient * Frame.Strength);
+	Out.AddDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength);
 
 	// Force towards upright
 	const FVector UpVector = Space.Angular.GetAxisZ();

@@ -30,6 +30,11 @@ void UTGOR_ClimbingTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >&
 
 }
 
+float UTGOR_ClimbingTask::GetMaxSpeed() const
+{
+	return MaximumSpeed;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_ClimbingTask::Initialise()
@@ -44,7 +49,6 @@ bool UTGOR_ClimbingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR
 		return false;
 	}
 
-	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	const FVector Forward = Space.Angular.GetAxisX();

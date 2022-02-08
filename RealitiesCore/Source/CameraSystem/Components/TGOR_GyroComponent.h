@@ -9,6 +9,7 @@
 #include "CoreSystem/Components/TGOR_SceneComponent.h"
 #include "TGOR_GyroComponent.generated.h"
 
+class ITGOR_PilotSimulationInterface;
 class UTGOR_PhysicsComponent;
 
 /**
@@ -41,6 +42,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 
-	UPROPERTY(Transient)
-		TWeakObjectPtr<UTGOR_PhysicsComponent> PhysicsComponent;
+	/** Associated source for up-vector */
+	UPROPERTY()
+		TScriptInterface<ITGOR_PilotSimulationInterface> PhysicsComponent;
 };

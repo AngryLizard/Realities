@@ -4,7 +4,7 @@
 
 #include "TGOR_AttachComponent.h"
 #include "TGOR_AnimationComponent.h"
-#include "PhysicsSystem/Components/TGOR_RigidComponent.h"
+#include "PhysicsSystem/Components/TGOR_RigidPawnComponent.h"
 #include "CustomisationSystem/Components/TGOR_ControlSkeletalMeshComponent.h"
 #include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
 #include "DimensionSystem/Content/TGOR_Pilot.h"

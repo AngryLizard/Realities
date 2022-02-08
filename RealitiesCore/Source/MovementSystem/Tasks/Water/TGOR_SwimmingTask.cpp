@@ -47,12 +47,16 @@ void UTGOR_SwimmingTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	OutInput = FVector::ZeroVector;
 }
 
+float UTGOR_SwimmingTask::GetMaxSpeed() const
+{
+	return MaximumSpeed;
+}
+
 float UTGOR_SwimmingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, FTGOR_MovementOutput& Out) const
 {
 	// Parent implements damping
 	Super::GetInputForce(Tick, Space, External, Out);
 
-	const FTGOR_MovementCapture& Capture = Identifier.Component->GetCapture();
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();

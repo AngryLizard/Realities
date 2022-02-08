@@ -105,9 +105,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void OnTarget();
 
-	/** Condition if action can be started.
+	/** Condition if action can be running.
 		If false user can neither schedule this action
-		nor will it be visible for players.*/
+		nor will it be visible for them. If the action is already running it will be terminated. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void OnCondition(ETGOR_ValidEnumeration& Branches) const;
 
