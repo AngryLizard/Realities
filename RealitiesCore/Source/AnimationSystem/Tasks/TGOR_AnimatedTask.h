@@ -62,6 +62,9 @@ protected:
 	/** Tick animation and extract root motion */
 		FTGOR_MovementPosition TickAnimationRootMotion(float DeltaTime);
 
+	/** Overrideable root motion conversion */
+		virtual FTransform ConvertLocalRootMotionToWorld(const FTransform& LocalRootMotionTransform, UTGOR_AnimationComponent* Component, float DeltaSeconds);
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 

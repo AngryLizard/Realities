@@ -62,13 +62,6 @@ public:
 		FMovementUpdateDelegate OnMovementChanged;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-protected:
-
-	/** Movements to this component */
-	UPROPERTY()
-		TArray<UTGOR_Movement*> Movements;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Movement types this movement spawns with. */
@@ -173,14 +166,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		void MoveWith(int32 Identifier);
 
-	/** Get attached movement task */
+	/** Get attached pilot task */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
-		UTGOR_MovementTask* GetMovementOfType(TSubclassOf<UTGOR_MovementTask> Type) const;
+		UTGOR_MovementTask* GetCurrentMovementOfType(TSubclassOf<UTGOR_MovementTask> Type) const;
 
-	template<typename T> T* GetMOfType() const
+	template<typename T> T* GetCurrentMOfType() const
 	{
-		return Cast<T>(GetMovementOfType(T::StaticClass()));
+		return Cast<T>(GetCurrentMovementOfType(T::StaticClass()));
 	}
+
+	/** Get all pilot tasks of given type */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		TArray<UTGOR_MovementTask*> GetMovementListOfType(TSubclassOf<UTGOR_MovementTask> Type) const;
+
+	template<typename T> TArray<T*> GetMListOfType() const
+	{
+		TArray<T*> Output;
+		TArray<UTGOR_MovementTask*> Movements = GetMovementListOfType(T::StaticClass());
+		for (UTGOR_MovementTask* Movement : Movements)
+		{
+			Output.Emplace(Cast<T>(Movement));
+		}
+		return Output;
+	}
+
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

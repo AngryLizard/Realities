@@ -112,7 +112,7 @@ FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(float DeltaTi
 		{
 			RootMotion.ScaleRootMotionTranslation(AnimRootMotionTranslationScale);
 
-			const FTransform Transform = Component->ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform());
+			const FTransform Transform = ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform(), Component, DeltaTime);
 			Position.Linear = Transform.GetTranslation();
 			Position.Angular = Transform.GetRotation();
 		}
@@ -143,3 +143,10 @@ void UTGOR_AnimatedTask::PostEditChangeProperty(struct FPropertyChangedEvent& Pr
 }
 
 #endif // WITH_EDITOR
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTransform UTGOR_AnimatedTask::ConvertLocalRootMotionToWorld(const FTransform& LocalRootMotionTransform, UTGOR_AnimationComponent* Component, float DeltaSeconds)
+{
+	return Component->ConvertLocalRootMotionToWorld(LocalRootMotionTransform);
+}

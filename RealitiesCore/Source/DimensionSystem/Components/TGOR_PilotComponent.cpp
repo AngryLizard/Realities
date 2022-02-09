@@ -50,7 +50,7 @@ void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotSlots, COND_None);
-	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotState, COND_None);
+	DOREPLIFETIME_CONDITION(UTGOR_PilotComponent, PilotTaskState, COND_None);
 }
 
 void UTGOR_PilotComponent::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& Objs)
@@ -382,9 +382,9 @@ FTGOR_MovementDynamic UTGOR_PilotComponent::ComputeBase() const
 
 UTGOR_PilotTask* UTGOR_PilotComponent::GetPilotTask() const
 {
-	if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+	if (PilotSlots.IsValidIndex(PilotTaskState.ActiveSlot))
 	{
-		return PilotSlots[PilotState.ActiveSlot];
+		return PilotSlots[PilotTaskState.ActiveSlot];
 	}
 	return nullptr;
 }
@@ -413,23 +413,23 @@ bool UTGOR_PilotComponent::Detach()
 
 bool UTGOR_PilotComponent::IsAttachedWith(int32 Identifier) const
 {
-	return PilotState.ActiveSlot == Identifier;
+	return PilotTaskState.ActiveSlot == Identifier;
 }
 
 void UTGOR_PilotComponent::AttachWith(int32 Identifier)
 {
-	if (Identifier != PilotState.ActiveSlot)
+	if (Identifier != PilotTaskState.ActiveSlot)
 	{
-		if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+		if (PilotSlots.IsValidIndex(PilotTaskState.ActiveSlot))
 		{
-			PilotSlots[PilotState.ActiveSlot]->Unregister();
+			PilotSlots[PilotTaskState.ActiveSlot]->Unregister();
 		}
 
-		PilotState.ActiveSlot = Identifier;
+		PilotTaskState.ActiveSlot = Identifier;
 
-		if (PilotSlots.IsValidIndex(PilotState.ActiveSlot))
+		if (PilotSlots.IsValidIndex(PilotTaskState.ActiveSlot))
 		{
-			PilotSlots[PilotState.ActiveSlot]->Register();
+			PilotSlots[PilotTaskState.ActiveSlot]->Register();
 		}
 		OnPilotChanged.Broadcast();
 	}
@@ -437,9 +437,9 @@ void UTGOR_PilotComponent::AttachWith(int32 Identifier)
 
 UTGOR_PilotTask* UTGOR_PilotComponent::GetCurrentPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const
 {
-	if (PilotSlots.IsValidIndex(PilotState.ActiveSlot) && PilotSlots[PilotState.ActiveSlot]->IsA(Type))
+	if (PilotSlots.IsValidIndex(PilotTaskState.ActiveSlot) && PilotSlots[PilotTaskState.ActiveSlot]->IsA(Type))
 	{
-		return PilotSlots[PilotState.ActiveSlot];
+		return PilotSlots[PilotTaskState.ActiveSlot];
 	}
 	return nullptr;
 }
@@ -462,8 +462,7 @@ TArray<UTGOR_PilotTask*> UTGOR_PilotComponent::GetPilotListOfType(TSubclassOf<UT
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-void UTGOR_PilotComponent::RepNotifyPilotState(const FTGOR_PilotState& Old)
+void UTGOR_PilotComponent::RepNotifyPilotTaskState(const FTGOR_PilotState& Old)
 {
 	// TODO: This may not be necessary
 	OnPositionChange(ComputePosition());

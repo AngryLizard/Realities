@@ -14,8 +14,6 @@ UTGOR_MotionWarpingNotifyState::UTGOR_MotionWarpingNotifyState(const FObjectInit
 void UTGOR_MotionWarpingNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration);
-
-
 }
 
 void UTGOR_MotionWarpingNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime)

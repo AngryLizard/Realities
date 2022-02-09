@@ -554,7 +554,7 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTG
 
 	// Make sure updated component is at the right location
 
-	if (Timestep >= SMALL_NUMBER)
+	if (Timestep >= SMALL_NUMBER && Sweep)
 	{
 		INC_DWORD_STAT_BY(STAT_Iteration, 1);
 
@@ -566,6 +566,9 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTG
 	}
 	else
 	{
+		Space.Linear = Offset.Linear + Space.Linear;
+		Space.Angular = Offset.Angular * Space.Angular;
+
 		// Update position
 		SetWorldLocationAndRotation(Space.Linear, Space.Angular, false, nullptr, ETeleportType::TeleportPhysics);
 	}

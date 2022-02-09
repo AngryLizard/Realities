@@ -118,7 +118,7 @@ void UTGOR_MovementComponent::UpdateContent_Implementation(FTGOR_SpawnerDependen
 	MovementSlots.Empty();
 
 	// Get installed movement modes
-	Movements = Dependencies.Spawner->GetMListFromType<UTGOR_Movement>(SpawnMovements);
+	TArray<UTGOR_Movement*> Movements = Dependencies.Spawner->GetMListFromType<UTGOR_Movement>(SpawnMovements);
 
 	// Get all candidates that are part of the movement queue
 	for (UTGOR_Movement* Movement : Movements)
@@ -171,10 +171,10 @@ TMap<int32, UTGOR_SpawnModule*> UTGOR_MovementComponent::GetModuleType_Implement
 {
 	TMap<int32, UTGOR_SpawnModule*> Modules;
 
-	const int32 Num = Movements.Num();
-	for (int32 Index = 0; Index < Num; Index++)
+	const int32 Num = MovementSlots.Num();
+	for (UTGOR_MovementTask* MovementSlot : MovementSlots)
 	{
-		Modules.Emplace(Index, Movements[Index]);
+		Modules.Emplace(MovementSlot->Identifier.Slot, MovementSlot->Identifier.Content);
 	}
 	return Modules;
 }
@@ -317,19 +317,29 @@ void UTGOR_MovementComponent::MoveWith(int32 Identifier)
 	}
 }
 
-UTGOR_MovementTask* UTGOR_MovementComponent::GetMovementOfType(TSubclassOf<UTGOR_MovementTask> Type) const
+UTGOR_MovementTask* UTGOR_MovementComponent::GetCurrentMovementOfType(TSubclassOf<UTGOR_MovementTask> Type) const
 {
+	if (MovementSlots.IsValidIndex(MovementTaskState.ActiveSlot) && MovementSlots[MovementTaskState.ActiveSlot]->IsA(Type))
+	{
+		return MovementSlots[MovementTaskState.ActiveSlot];
+	}
+	return nullptr;
+}
+
+TArray<UTGOR_MovementTask*> UTGOR_MovementComponent::GetMovementListOfType(TSubclassOf<UTGOR_MovementTask> Type) const
+{
+	TArray<UTGOR_MovementTask*> Movements;
 	if (*Type)
 	{
 		for (UTGOR_MovementTask* MovementSlot : MovementSlots)
 		{
 			if (MovementSlot->IsA(Type))
 			{
-				return MovementSlot;
+				Movements.Emplace(MovementSlot);
 			}
 		}
 	}
-	return nullptr;
+	return Movements;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

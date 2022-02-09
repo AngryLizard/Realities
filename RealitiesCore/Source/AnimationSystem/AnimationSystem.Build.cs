@@ -8,44 +8,38 @@ public class AnimationSystem : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"RealitiesUGC",
-				"RealitiesUtility",
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"RealitiesUGC",
+			"RealitiesUtility",
 
-				"CoreSystem",
-				"DimensionSystem",
-				"CustomisationSystem",
-				"InventorySystem",
-				"PhysicsSystem",
-				"SocketSystem",
+			"CoreSystem",
+			"DimensionSystem",
+			"CustomisationSystem",
+			"InventorySystem",
+			"PhysicsSystem",
+			"SocketSystem",
 
-				"Core",
-			}
-			);
-			
+			"Core"
+		});
 		
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"ControlRig",
-				"AnimGraphRuntime",
-			}
-			);
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"CoreUObject",
+			"Engine",
+			"Slate",
+			"SlateCore",
+			"ControlRig",
+			"AnimGraphRuntime",
+			"MotionWarping"
+		});
 
 		if (Target.bBuildEditor)
 		{
-			PrivateDependencyModuleNames.AddRange(
-				new string[]
-				{
-					"UnrealEd"
-				}
-				);
+			PrivateDependencyModuleNames.AddRange(new string[]
+			{
+				"UnrealEd"
+			});
 		}
 
 		PublicDefinitions.Add("USE_RTTI");

@@ -200,12 +200,12 @@ protected:
 		TArray<UTGOR_PilotTask*> PilotSlots;
 
 	/** Currently scheduled pilot */
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = RepNotifyPilotState)
-		FTGOR_PilotState PilotState;
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = RepNotifyPilotTaskState)
+		FTGOR_PilotState PilotTaskState;
 
 	/** Fast forward pilot on replication */
 	UFUNCTION()
-		void RepNotifyPilotState(const FTGOR_PilotState& Old);
+		void RepNotifyPilotTaskState(const FTGOR_PilotState& Old);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
