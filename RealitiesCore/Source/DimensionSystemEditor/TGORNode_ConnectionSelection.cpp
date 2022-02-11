@@ -47,6 +47,8 @@ void FTGORNode_ConnectionSelection::CustomizeHeader(TSharedRef<class IPropertyHa
 	
 	ParseValue();
 
+	TSharedPtr<FString> SelectedConnection = PopulateList(false);
+
 	HeaderRow.NameContent()
 		[
 			ConnectionSelectionUPropertyHandle->CreatePropertyNameWidget(ConnectionSelectionUPropertyHandle->GetPropertyDisplayName(), ConnectionSelectionUPropertyHandle->GetPropertyDisplayName(), false)
@@ -62,13 +64,12 @@ void FTGORNode_ConnectionSelection::CustomizeHeader(TSharedRef<class IPropertyHa
 			+ SVerticalBox::Slot()
 			[
 				SAssignNew(ConnectionSelection, STextComboBox)
+				.InitiallySelectedItem(SelectedConnection)
 				.OptionsSource(&AttributesList)
 				.OnComboBoxOpening(this, &FTGORNode_ConnectionSelection::OnComboBoxOpening)
 				.OnSelectionChanged(this, &FTGORNode_ConnectionSelection::OnAttributeSelected)
 			]
 		];
-
-	PopulateList();
 }
 
 void FTGORNode_ConnectionSelection::ParseValue()
@@ -105,7 +106,7 @@ void FTGORNode_ConnectionSelection::WriteValue()
 }
 
 
-void FTGORNode_ConnectionSelection::PopulateList()
+TSharedPtr<FString> FTGORNode_ConnectionSelection::PopulateList(bool UpdateValues)
 {
 	NamesList.Empty();
 	AttributesList.Empty();
@@ -122,23 +123,37 @@ void FTGORNode_ConnectionSelection::PopulateList()
 		}
 	}
 
+	TSharedPtr<FString> SelectedConnection;
+
 	const int32 Selected = GetSelected();
 	if (AttributesList.IsValidIndex(Selected))
 	{
-		// Get pin entry
-		ConnectionSelection->SetSelectedItem(AttributesList[Selected]);
+		SelectedConnection = AttributesList[Selected];
+		if (UpdateValues)
+		{
+			ConnectionSelection->SetSelectedItem(SelectedConnection);
+		}
 	}
 	else if (AttributesList.Num() > 0)
 	{
-		ConnectionSelection->SetSelectedItem(AttributesList[0]);
-		OnAttributeSelected(AttributesList[0], ESelectInfo::Type::Direct);
+		SelectedConnection = AttributesList[0];
+		if (UpdateValues)
+		{
+			ConnectionSelection->SetSelectedItem(SelectedConnection);
+			OnAttributeSelected(SelectedConnection, ESelectInfo::Type::Direct);
+		}
 	}
 	else
 	{
-		TSharedPtr<FString> NoConnection = TSharedPtr<FString>(new FString("No Connection available"));
-		ConnectionSelection->SetSelectedItem(NoConnection);
-		OnAttributeSelected(NoConnection, ESelectInfo::Type::Direct);
+		SelectedConnection = TSharedPtr<FString>(new FString("No Connection available"));
+		if (UpdateValues)
+		{
+			ConnectionSelection->SetSelectedItem(SelectedConnection);
+			OnAttributeSelected(SelectedConnection, ESelectInfo::Type::Direct);
+		}
 	}
+
+	return SelectedConnection;
 }
 
 int32 FTGORNode_ConnectionSelection::GetSelected()
@@ -231,8 +246,6 @@ TSharedRef<SWidget> FTGORNode_ConnectionSelection::OnGetDimensionSelection() con
 	Options.DisplayMode = EClassViewerDisplayMode::ListView;
 	Options.bAllowViewOptions = false;
 
-	FOnClassPicked OnPicked(FOnClassPicked::CreateRaw(const_cast<FTGORNode_ConnectionSelection*>(this), &FTGORNode_ConnectionSelection::OnDimensionSelected));
-
 	return SNew(SBox)
 		.WidthOverride(280)
 		[
@@ -241,7 +254,7 @@ TSharedRef<SWidget> FTGORNode_ConnectionSelection::OnGetDimensionSelection() con
 			.AutoHeight()
 			.MaxHeight(500)
 			[
-				FModuleManager::LoadModuleChecked<FClassViewerModule>("ClassViewer").CreateClassViewer(Options, OnPicked)
+				FModuleManager::LoadModuleChecked<FClassViewerModule>("ClassViewer").CreateClassViewer(Options, FOnClassPicked::CreateRaw(const_cast<FTGORNode_ConnectionSelection*>(this), &FTGORNode_ConnectionSelection::OnDimensionSelected))
 			]
 		];
 }
@@ -279,7 +292,7 @@ void FTGORNode_ConnectionSelection::OnDimensionSelected(UClass* InClass)
 	}
 	
 	DimensionSelection->SetIsOpen(false);
-	PopulateList();
+	PopulateList(true);
 }
 
 

@@ -65,6 +65,7 @@ void UTGOR_DimensionReceiverComponent::EnterSelf(UTGOR_PilotComponent* Component
 	else
 	{
 		//DrawDebugCoordinateSystem(GetWorld(), Target, Rotation.Rotator(), 10.0f, false, 10.0f, 0, 5.0f);
+		IsMidTeleport = false;
 		ERROR("Actor couldn't teleport: Didn't fit.", Error);
 	}
 

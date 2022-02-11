@@ -76,7 +76,7 @@ bool UTGOR_PersistentSetup::Attempt_Implementation(bool IsServer)
 				UTGOR_WorldComponent* WorldComponent = LocalController->FindComponentByClass<UTGOR_WorldComponent>();
 				if (!IsValid(WorldComponent))
 				{
-					SetLoadingStatus(LOCTEXT("ClientManagerWaiting", "Waiting for world manager..."));
+					SetLoadingStatus(LOCTEXT("ClientManagerWaiting", "Used controller doesn't own a WorldComponent..."));
 					return false;
 				}
 

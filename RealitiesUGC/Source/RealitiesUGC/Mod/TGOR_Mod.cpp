@@ -5,8 +5,7 @@
 
 
 UTGOR_Mod::UTGOR_Mod(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer),
-	CoreOnly(false)
+	: Super(ObjectInitializer)
 {
 	Entry.Name = L"Mod";
 	Entry.Version = 0;

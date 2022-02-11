@@ -10,13 +10,13 @@
 
 #include "GameSystem/TGOR_ContentVirtualisationSingleton.h"
 #include "GameSystem/UI/TGOR_ContentVirtualisationWidget.h"
-#include "GameSystem/Content/TGOR_CoreMod.h"
+#include "GameSystem/Content/TGOR_GameMod.h"
 
 UTGOR_ContentVirtualisationComponent::UTGOR_ContentVirtualisationComponent()
 	: Super()
 {
 	VirtualSingleton = nullptr;
-	VirtualisedMod = UTGOR_CoreMod::StaticClass();
+	VirtualisedMod = UTGOR_GameMod::StaticClass();
 }
 
 UTGOR_ContentVirtualisationWidget* UTGOR_ContentVirtualisationComponent::CreateVirtualisationWidget()

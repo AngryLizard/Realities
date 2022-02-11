@@ -24,6 +24,6 @@ public:
 
 	/* Core mod to load for this world */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR System", Meta = (Keywords = "C++"))
-		TSubclassOf<UTGOR_Mod> CoreModType;
+		TSubclassOf<UTGOR_CoreMod> CoreModType;
 
 };

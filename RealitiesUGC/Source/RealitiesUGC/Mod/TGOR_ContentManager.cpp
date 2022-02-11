@@ -502,7 +502,7 @@ FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Regi
 		// Make sure mod actually exists
 		if (CheckDependency(UsedMods, Mod))
 		{
-			if (Mod->CoreOnly)
+			if (Mod->IsA<UTGOR_CoreMod>())
 			{
 				if (*CoreModType && Mod->IsA(CoreModType) && !HasCore)
 				{
@@ -567,7 +567,7 @@ ETGOR_ModloadEnumeration UTGOR_ContentManager::LoadModSetup(UTGOR_ModRegistry* R
 
 				TArray<FTGOR_ContentLink> Links = Load(Registry, Mod);
 
-				if (Mod->CoreOnly)
+				if (Mod->IsA<UTGOR_CoreMod>())
 				{
 					Links.Append(LoadCore());
 				}

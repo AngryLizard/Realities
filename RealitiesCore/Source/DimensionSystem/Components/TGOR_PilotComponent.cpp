@@ -325,6 +325,7 @@ bool UTGOR_PilotComponent::Teleport(const FTGOR_MovementDynamic& Dynamic)
 			if (Movement->ParentLinear(this, INDEX_NONE, Dynamic))
 			{
 				OnTeleportedMovement.Broadcast(Old, Dynamic, Volume);
+				return true;
 			}
 		}
 	}

@@ -28,10 +28,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")
 		FTGOR_ModEntry Entry;
 
-	/** Whether this mod can only be a core mod */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")
-		bool CoreOnly;
-
 	/** Mod dependencies */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")
 		TArray<TSubclassOf<UTGOR_Mod>> Dependencies;
@@ -86,5 +82,12 @@ public:
 	/** Apply changes to content classes after all mods have been loaded and insertion lists of mods are created */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Content", Meta = (Keywords = "C++"))
 		void PostAllModLoad(UTGOR_Content* ContentRoot);
+};
+
+
+UCLASS(Blueprintable)
+class REALITIESUGC_API UTGOR_CoreMod : public UTGOR_Mod
+{
+	GENERATED_BODY()
 
 };

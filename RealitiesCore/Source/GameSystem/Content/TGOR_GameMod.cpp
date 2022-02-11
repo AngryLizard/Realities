@@ -1,7 +1,7 @@
 // The Gateway of Realities: Planes of Existence. By Salireths.
 
 
-#include "TGOR_CoreMod.h"
+#include "TGOR_GameMod.h"
 
 #include "CoreSystem/Setups/TGOR_BeginPlaySetup.h"
 #include "CoreSystem/Setups/TGOR_ConfigSetup.h"
@@ -14,13 +14,11 @@
 
 
 
-UTGOR_CoreMod::UTGOR_CoreMod(const FObjectInitializer& ObjectInitializer)
+UTGOR_GameMod::UTGOR_GameMod(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	Entry.Name = L"Core_C";
 	Entry.Version = 0;
-
-	CoreOnly = true;
 
 	Setups.Emplace(UTGOR_PossessionSetup::StaticClass());
 	Setups.Emplace(UTGOR_ConfigSetup::StaticClass());
@@ -29,12 +27,4 @@ UTGOR_CoreMod::UTGOR_CoreMod(const FObjectInitializer& ObjectInitializer)
 	Setups.Emplace(UTGOR_AwaitRequestsSetup::StaticClass());
 	Setups.Emplace(UTGOR_BeginPlaySetup::StaticClass());
 	Setups.Emplace(UTGOR_LoginSetup::StaticClass());
-}
-
-UTGOR_TestMod::UTGOR_TestMod(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-	Entry.Name = L"Test_C";
-
-	Setups.Emplace(UTGOR_SpawnSetup::StaticClass());
 }

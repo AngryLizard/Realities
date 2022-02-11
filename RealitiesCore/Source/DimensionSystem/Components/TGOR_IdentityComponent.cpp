@@ -9,6 +9,7 @@
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
+#include "DimensionSystem/Components/TGOR_ConnectionComponent.h"
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
@@ -264,4 +265,68 @@ void UTGOR_IdentityComponent::OnIdentityRepNotify(const FTGOR_SpawnIdentity& Old
 	UTGOR_Spawner* Spawner = DimensionIdentity.Spawner;
 	DimensionIdentity.Spawner = Old.Spawner;
 	SetActorSpawner(Spawner);
+}
+
+
+UTGOR_ConnectionComponent* GetConnectionFromSelection(UObject* WorldContextObject, const FTGOR_ConnectionSelection& Selection)
+{
+	UTGOR_Singleton* Singleton = UTGOR_GameInstance::EnsureSingletonFromWorld(WorldContextObject->GetWorld());
+	if (!IsValid(Singleton))
+	{
+		return nullptr;
+	}
+
+	UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
+	if (!IsValid(WorldData))
+	{
+		return nullptr;
+	}
+
+	ETGOR_FetchEnumeration State;
+	FName Identifier = WorldData->FindIdentifier(Selection.Dimension, Selection.Suffix, State);
+	if (State == ETGOR_FetchEnumeration::Empty)
+	{
+		return nullptr;
+	}
+
+	UTGOR_DimensionData* DimensionData = WorldData->GetDimension(Identifier, State);
+	if (!IsValid(DimensionData))
+	{
+		return nullptr;
+	}
+
+	return DimensionData->GetConnection(Selection.Connection);
+}
+
+
+AActor* UTGOR_IdentityComponent::GetActorFromSelection(UObject* WorldContextObject, const FTGOR_ConnectionSelection& Selection, TSubclassOf<AActor> Class, ETGOR_FetchEnumeration& Branches)
+{
+	Branches = ETGOR_FetchEnumeration::Empty;
+
+	UTGOR_ConnectionComponent* Connection = GetConnectionFromSelection(WorldContextObject, Selection);
+	if (!IsValid(Connection))
+	{
+		return nullptr;
+	}
+
+	AActor* Owner = Connection->GetOwner();
+	if (Owner->IsA(Class))
+	{
+		Branches = ETGOR_FetchEnumeration::Found;
+		return Owner;
+	}
+	return nullptr;
+}
+
+UActorComponent* UTGOR_IdentityComponent::GetComponentFromSelection(UObject* WorldContextObject, const FTGOR_ConnectionSelection& Selection, TSubclassOf<UActorComponent> Class, ETGOR_FetchEnumeration& Branches)
+{
+	Branches = ETGOR_FetchEnumeration::Empty;
+
+	UTGOR_ConnectionComponent* Connection = GetConnectionFromSelection(WorldContextObject, Selection);
+	if (!IsValid(Connection))
+	{
+		return nullptr;
+	}
+
+	return Connection->GetOwnerComponent(Class, Branches);
 }

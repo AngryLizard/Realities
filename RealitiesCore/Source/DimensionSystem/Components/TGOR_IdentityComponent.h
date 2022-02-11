@@ -112,4 +112,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR System")
 		TMap<FString, TScriptInterface<ITGOR_SaveInterface>> SaveObjects;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Get actor from connection */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "Class", ExpandEnumAsExecs = "Branches", Keywords = "C++"))
+		static AActor* GetActorFromSelection(UObject* WorldContextObject, const FTGOR_ConnectionSelection& Selection, TSubclassOf<AActor> Class, ETGOR_FetchEnumeration& Branches);
+
+	/** Get component from connection */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "Class", ExpandEnumAsExecs = "Branches", Keywords = "C++"))
+		static UActorComponent* GetComponentFromSelection(UObject* WorldContextObject, const FTGOR_ConnectionSelection& Selection, TSubclassOf<UActorComponent> Class, ETGOR_FetchEnumeration& Branches);
+
 };

@@ -112,7 +112,7 @@ FReply FTGORNode_DimensionDetails::ClickedOnUpdate()
 			UTGOR_Dimension* Dimension = SelectedSettings->Dimension->GetDefaultObject<UTGOR_Dimension>();
 			if (IsValid(Dimension) && Dimension->IsAbstract())
 			{
-				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("Error_WrongDimension", "Assigned dimension needs to be abstract."));
+				FMessageDialog::Open(EAppMsgType::Ok, LOCTEXT("Error_WrongDimension", "Assigned dimension needs to be non-abstract."));
 				return FReply::Handled();
 			}
 		}

@@ -9,6 +9,7 @@
 
 
 class UTGOR_Mod;
+class UTGOR_CoreMod;
 class UTGOR_Content;
 
 UENUM(BlueprintType)

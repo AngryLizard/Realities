@@ -21,7 +21,7 @@ public:
 	void ParseValue();
 	void WriteValue();
 
-	void PopulateList();
+	TSharedPtr<FString> PopulateList(bool UpdateValues);
 	int32 GetSelected();
 
 	TSharedRef<SWidget> OnCreateDimensionCombo();

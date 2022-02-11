@@ -27,13 +27,13 @@ bool UTGOR_ModRegistry::FindUGCPackages()
 {
 	const FProjectDescriptor* Project = IProjectManager::Get().GetCurrentProject();
 
-	FTGOR_UGCPackage CorePackage;
-	CorePackage.PackagePath = FName("/Game");
-	CorePackage.EngineVersion = *Project->EngineAssociation; //FEngineVersion::Current();
-	CorePackage.Author = TEXT("TGOR");
-	CorePackage.Description = *Project->Description;
-	CorePackage.IsCorePackage = true;
-	UGCPackages.Add(CorePackage);
+	FTGOR_UGCPackage GamePackage;
+	GamePackage.PackagePath = FName("/Game");
+	GamePackage.EngineVersion = *Project->EngineAssociation; //FEngineVersion::Current();
+	GamePackage.Author = TEXT("TGOR");
+	GamePackage.Description = *Project->Description;
+	GamePackage.IsCorePackage = false;
+	UGCPackages.Add(GamePackage);
 
 	TArray<TSharedRef<IPlugin>> EnabledPlugins = IPluginManager::Get().GetEnabledPlugins();
 	for (const TSharedRef<IPlugin>& Plugin : EnabledPlugins)
@@ -110,7 +110,7 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 	ARFilter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
 	ARFilter.PackagePaths.Add(Mod->PackagePath);
 
-	if (Mod->CoreOnly)
+	if (Mod->IsA<UTGOR_CoreMod>())
 	{
 		for (const FTGOR_UGCPackage& Package : UGCPackages)
 		{

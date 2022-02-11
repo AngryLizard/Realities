@@ -367,10 +367,9 @@ bool UTGOR_WorldData::AddIdentifier(UTGOR_Dimension* Content, const FName& Ident
 	return(true);
 }
 
-
-FName UTGOR_WorldData::EnsureIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FString& Suffix, ETGOR_PushEnumeration& Branches)
+FName UTGOR_WorldData::FindIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FString& Suffix, ETGOR_FetchEnumeration& Branches)
 {
-	Branches = ETGOR_PushEnumeration::Failed;
+	Branches = ETGOR_FetchEnumeration::Empty;
 
 	// Find first match
 	for (auto& Pair : Dimensions)
@@ -381,10 +380,24 @@ FName UTGOR_WorldData::EnsureIdentifier(TSubclassOf<UTGOR_Dimension> Class, cons
 			// Check for suffix
 			if (Suffix.IsEmpty() || Pair.Key.GetPlainNameString().Contains(Suffix))
 			{
-				Branches = ETGOR_PushEnumeration::Found;
+				Branches = ETGOR_FetchEnumeration::Found;
 				return(Pair.Key);
 			}
 		}
+	}
+	return "";
+}
+
+FName UTGOR_WorldData::EnsureIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FString& Suffix, ETGOR_PushEnumeration& Branches)
+{
+	Branches = ETGOR_PushEnumeration::Failed;
+
+	ETGOR_FetchEnumeration State;
+	FName Identifier = FindIdentifier(Class, Suffix, State);
+	if (State == ETGOR_FetchEnumeration::Found)
+	{
+		Branches = ETGOR_PushEnumeration::Found;
+		return Identifier;
 	}
 
 	// Get resourceable
@@ -397,7 +410,7 @@ FName UTGOR_WorldData::EnsureIdentifier(TSubclassOf<UTGOR_Dimension> Class, cons
 	}
 
 	// Get and register new identifier
-	FName Identifier = GetUniqueIdentifier(Content->GetDefaultName() + Suffix);
+	Identifier = GetUniqueIdentifier(Content->GetDefaultName() + Suffix);
 	if (AddIdentifier(Content, Identifier))
 	{
 		Branches = ETGOR_PushEnumeration::Created;

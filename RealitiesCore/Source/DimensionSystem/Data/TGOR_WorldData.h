@@ -134,6 +134,10 @@ public:
 		 bool AddIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FName& Identifier);
 		 bool AddIdentifier(UTGOR_Dimension* Content, const FName& Identifier);
 
+	 /** Tries to find identifier of any dimension with a given dimension class and suffix */
+	 UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (ExpandEnumAsExecs = "Branches", Keywords = "C++"))
+		 FName FindIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FString& Suffix, ETGOR_FetchEnumeration& Branches);
+
 	 /** Gets identifier of any dimension with a given dimension class and suffix, creates a new one otherwise */
 	 UFUNCTION(BlueprintCallable, Category = "!TGOR Dimension", Meta = (ExpandEnumAsExecs = "Branches", Keywords = "C++"))
 		 FName EnsureIdentifier(TSubclassOf<UTGOR_Dimension> Class, const FString& Suffix, ETGOR_PushEnumeration& Branches);
