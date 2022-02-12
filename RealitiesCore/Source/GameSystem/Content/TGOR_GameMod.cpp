@@ -10,9 +10,6 @@
 #include "DimensionSystem/Setups/TGOR_PersistentSetup.h"
 #include "PlayerSystem/Setups/TGOR_AccountSetup.h"
 #include "PlayerSystem/Setups/TGOR_LoginSetup.h"
-#include "PlayerSystem/Setups/TGOR_SpawnSetup.h"
-
-
 
 UTGOR_GameMod::UTGOR_GameMod(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

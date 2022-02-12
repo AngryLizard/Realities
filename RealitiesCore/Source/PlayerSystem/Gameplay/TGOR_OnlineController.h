@@ -102,7 +102,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "!TGOR Online")
 		FUserUpdateDelegate OnUserUpdate;
 
-
 	////////////////////////////////////////////////// COMPONENTS //////////////////////////////////////
 private:
 
@@ -344,8 +343,15 @@ protected:
 		float MaxCameraSwitchDistance;
 
 	/** Available bodies for this user */
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_BodyDisplay)
 		TArray<FTGOR_UserBodyDisplay> BodyDisplay;
+
+	UFUNCTION()
+		void OnRep_BodyDisplay();
+
+	/** Notifies client about a change in user bodies */
+	UPROPERTY(BlueprintAssignable, Category = "!TGOR Dimension")
+		FUserUpdateDelegate OnBodyDisplayUpdated;
 
 	/** Identifier of currently active body */
 	UPROPERTY(BlueprintReadOnly, Replicated)

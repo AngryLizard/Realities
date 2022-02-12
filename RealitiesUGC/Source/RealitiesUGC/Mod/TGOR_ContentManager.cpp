@@ -481,7 +481,7 @@ FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Regi
 		if (Class->IsChildOf(UTGOR_Mod::StaticClass()))
 		{
 			UTGOR_Mod* Mod = Class->GetDefaultObject<UTGOR_Mod>();
-			if (Mod == nullptr) continue;
+			if (Mod == nullptr || Mod->Ignore) continue;
 
 			Mods.Add(Mod);
 		}

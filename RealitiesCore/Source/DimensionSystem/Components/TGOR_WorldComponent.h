@@ -67,9 +67,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
 		void UpdateDimensionRequestsFromPlayers();
 
+	/** Get dimensions that ought to currently be open for a given actor */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
+		TSet<FName> GetDimensionRequestsForActor(AActor* Actor);
+
 	/** Get dimensions that ought to currently be open for a given pilot */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Dimension", Meta = (Keywords = "C++"))
-		TSet<FName> GetDimensionRequests(UTGOR_PilotComponent* Pilot);
+		TSet<FName> GetDimensionRequestsForPilot(UTGOR_PilotComponent* Pilot);
 
 	/** Sets the owning dimension */
 	//UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Dimension|Internal", Meta = (Keywords = "C++"))

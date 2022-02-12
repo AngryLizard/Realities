@@ -9,6 +9,8 @@ UTGOR_Mod::UTGOR_Mod(const FObjectInitializer& ObjectInitializer)
 {
 	Entry.Name = L"Mod";
 	Entry.Version = 0;
+
+	Ignore = false;
 }
 
 FString UTGOR_Mod::GetModIdentifier() const

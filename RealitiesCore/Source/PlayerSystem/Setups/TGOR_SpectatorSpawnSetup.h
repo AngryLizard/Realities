@@ -5,27 +5,23 @@
 #include "CoreMinimal.h"
 
 #include "CoreSystem/Setups/TGOR_Setup.h"
-#include "TGOR_SpawnSetup.generated.h"
+#include "TGOR_SpectatorSpawnSetup.generated.h"
 
 class UTGOR_Creature;
 
 /* Automatically spawn a creature from current spectator */
 UCLASS()
-class PLAYERSYSTEM_API UTGOR_SpawnSetup : public UTGOR_Setup
+class PLAYERSYSTEM_API UTGOR_SpectatorSpawnSetup : public UTGOR_Setup
 {
 	GENERATED_BODY()
 
 public:
-	UTGOR_SpawnSetup();
+	UTGOR_SpectatorSpawnSetup();
 	virtual bool Attempt_Implementation(bool IsServer) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/* Dimension this world is associated with */
+	/* Creature class to spawn with */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Player", Meta = (Keywords = "C++"))
 		TSubclassOf<UTGOR_Creature> DefaultBody;
-
-	/* Spawn server body only (skip clients) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Player", Meta = (Keywords = "C++"))
-		bool OnlySpawnServerBody;
 };

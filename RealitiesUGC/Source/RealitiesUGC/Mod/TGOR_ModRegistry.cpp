@@ -22,7 +22,6 @@ FTGOR_UGCPackage::FTGOR_UGCPackage()
 	IsCorePackage = false;
 }
 
-#pragma optimize( "", off )
 bool UTGOR_ModRegistry::FindUGCPackages()
 {
 	const FProjectDescriptor* Project = IProjectManager::Get().GetCurrentProject();
@@ -54,7 +53,6 @@ bool UTGOR_ModRegistry::FindUGCPackages()
 	
 	return UGCPackages.Num() > 0;
 }
-#pragma optimize( "", on )
 
 bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 {

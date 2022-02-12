@@ -11,6 +11,7 @@
 #include "DimensionSystem/Content/TGOR_Dimension.h"
 #include "DimensionSystem/Components/TGOR_DimensionLoaderComponent.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
+#include "DimensionSystem/Components/TGOR_IdentityComponent.h"
 
 #include "Engine/NetConnection.h"
 #include "Net/UnrealNetwork.h"
@@ -93,16 +94,19 @@ void UTGOR_WorldComponent::UpdateDimensionRequestsFromPawn(APawn* ControlledPawn
 	TSet<FName> RequestIdentifiers;
 	if (IsValid(ControlledPawn))
 	{
-		UTGOR_PilotComponent* PilotComponent = ControlledPawn->FindComponentByClass<UTGOR_PilotComponent>();
-		if (IsValid(PilotComponent))
+		UTGOR_IdentityComponent* Identity = ControlledPawn->FindComponentByClass<UTGOR_IdentityComponent>();
+		if (IsValid(Identity))
 		{
 			// Add owning dimension
 			ETGOR_FetchEnumeration State;
-			DimensionRequestList.Owner = PilotComponent->GetDimensionIdentifier(State);
-
-			// Add parent dimensions
-			RequestIdentifiers = GetDimensionRequests(PilotComponent);
+			DimensionRequestList.Owner = Identity->GetDimensionIdentifier(State);
 		}
+
+		// Gather owned loaders
+		RequestIdentifiers.Append(GetDimensionRequestsForActor(ControlledPawn));
+
+		// Gather from parent
+		RequestIdentifiers.Append(GetDimensionRequestsForPilot(ControlledPawn->FindComponentByClass<UTGOR_PilotComponent>()));
 	}
 	
 	if(RequestIdentifiers.Num() == 0)
@@ -185,7 +189,20 @@ void UTGOR_WorldComponent::UpdateDimensionRequestsFromPlayers()
 	}
 }
 
-TSet<FName> UTGOR_WorldComponent::GetDimensionRequests(UTGOR_PilotComponent* Pilot)
+TSet<FName> UTGOR_WorldComponent::GetDimensionRequestsForActor(AActor* Actor)
+{
+	TSet<FName> Identifiers;
+	// Add loaded dimensions (e.g. pocket dimension)
+	TArray<UTGOR_DimensionLoaderComponent*> LoaderComponents;
+	Actor->GetComponents(LoaderComponents);
+	for (UTGOR_DimensionLoaderComponent* LoaderComponent : LoaderComponents)
+	{
+		Identifiers.Add(LoaderComponent->GetLoadedIdentifier());
+	}
+	return Identifiers;
+}
+
+TSet<FName> UTGOR_WorldComponent::GetDimensionRequestsForPilot(UTGOR_PilotComponent* Pilot)
 {
 	TSet<FName> Identifiers;
 	if (IsValid(Pilot))
@@ -194,17 +211,16 @@ TSet<FName> UTGOR_WorldComponent::GetDimensionRequests(UTGOR_PilotComponent* Pil
 		ETGOR_FetchEnumeration State;
 		Identifiers.Add(Pilot->GetDimensionIdentifier(State));
 
-		// Add loaded dimensions (e.g. pocket dimension)
-		TArray<UTGOR_DimensionLoaderComponent*> LoaderComponents = Pilot->GetOwnerComponents<UTGOR_DimensionLoaderComponent>();
-		for (UTGOR_DimensionLoaderComponent* LoaderComponent : LoaderComponents)
+		UTGOR_MobilityComponent* Parent = Pilot->GetParent();
+		if (IsValid(Parent))
 		{
-			Identifiers.Add(LoaderComponent->GetLoadedIdentifier());
+			// Get parent actor requests
+			GetDimensionRequestsForActor(Parent->GetOwner());
+
+			// Append parent dimensions
+			Identifiers.Append(GetDimensionRequestsForPilot(Cast<UTGOR_PilotComponent>(Parent)));
 		}
-
-		// Append parent dimensions
-		Identifiers.Append(GetDimensionRequests(Cast<UTGOR_PilotComponent>(Pilot->GetParent())));
 	}
-
 	return Identifiers;
 }
 

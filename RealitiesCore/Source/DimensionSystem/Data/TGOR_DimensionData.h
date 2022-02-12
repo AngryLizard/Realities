@@ -211,13 +211,13 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintAuthorityOnly, Category = "!TGOR Dimension", Meta = (DeterminesOutputType = "Class", Keywords = "C++"))
 		UTGOR_ConnectionComponent* GetConnectionOfType(const FName& ConnectionName, TSubclassOf<UTGOR_ConnectionComponent> Class) const;
 
-	template<typename T> TArray<T*> GetCOfType(const FName& ConnectionName, TSubclassOf<T> Type) const
+	template<typename T> T* GetCOfType(const FName& ConnectionName, TSubclassOf<T> Type) const
 	{
 		return Cast<T>(GetConnectionOfType(ConnectionName, Type));
 	}
-	template<typename T> TArray<T*> GetCOfType(const FName& ConnectionName) const
+	template<typename T> T* GetCOfType(const FName& ConnectionName) const
 	{
-		return GetCListOfType<T>(T::StaticClass());
+		return GetCOfType<T>(ConnectionName, T::StaticClass());
 	}
 
 	/** Return connection of given type */

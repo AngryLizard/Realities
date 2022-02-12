@@ -1,47 +1,54 @@
 // The Gateway of Realities: Planes of Existence.
 
-#include "TGOR_SpawnSetup.h"
+#include "TGOR_SpectatorSpawnSetup.h"
 #include "GameFramework/PlayerController.h"
 
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "CoreSystem/TGOR_Singleton.h"
+#include "PlayerSystem/Gameplay/TGOR_OnlineController.h"
 #include "PlayerSystem/Content/TGOR_DefaultPawnSpawner.h"
 #include "PlayerSystem/Actors/TGOR_Spectator.h"
 
 
-#define LOCTEXT_NAMESPACE "TGOR_SpawnSetup"
+#define LOCTEXT_NAMESPACE "TGOR_SpectatorSpawnSetup"
 
-UTGOR_SpawnSetup::UTGOR_SpawnSetup()
+UTGOR_SpectatorSpawnSetup::UTGOR_SpectatorSpawnSetup()
 	: Super()
 {
 	SetupName = LOCTEXT("SpawnSetupName", "Spawn player");
 	SetupOwner = ETGOR_SetupOwnerEnumeration::All;
 
-	DefaultBody = UTGOR_DefaultPawnSpawner::StaticClass();
-	OnlySpawnServerBody = false;
+	DefaultBody = UTGOR_Creature::StaticClass();
 }
 
-bool UTGOR_SpawnSetup::Attempt_Implementation(bool IsServer)
+bool UTGOR_SpectatorSpawnSetup::Attempt_Implementation(bool IsServer)
 {
 	SetLoadingStatus(LOCTEXT("SingletonWaiting", "Creating Singleton..."));
 	SINGLETON_RETCHK(false);
 
-	// Only spawn player if we're not dedicated server
-	APlayerController* LocalController = GetLocalPlayerController();
-	if (!IsValid(LocalController))
+	if (IsServer)
 	{
-		return Super::Attempt_Implementation(IsServer);
-	}
+		// Only spawn player if we're not dedicated server
+		ATGOR_OnlineController* LocalController = Cast<ATGOR_OnlineController>(GetLocalPlayerController());
+		if (!IsValid(LocalController))
+		{
+			return Super::Attempt_Implementation(IsServer);
+		}
 
-	UWorld* World = GetWorld();
-	if (!IsValid(World))
-	{
-		SetLoadingStatus(LOCTEXT("WorldWaiting", "Loading World..."));
-		return false;
-	}
+		UWorld* World = GetWorld();
+		if (!IsValid(World))
+		{
+			SetLoadingStatus(LOCTEXT("WorldWaiting", "Loading World..."));
+			return false;
+		}
 
-	if (IsServer || !OnlySpawnServerBody)
-	{
+		UTGOR_WorldData* WorldData = Singleton->GetData<UTGOR_WorldData>();
+		if (!IsValid(WorldData))
+		{
+			SetLoadingStatus(LOCTEXT("WorldDataWaiting", "Loading World data..."));
+			return false;
+		}
+
 		UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
 		UTGOR_Creature* Creature = ContentManager->GetTFromType<UTGOR_Creature>(DefaultBody);
 		if (IsValid(Creature))
@@ -53,7 +60,7 @@ bool UTGOR_SpawnSetup::Attempt_Implementation(bool IsServer)
 			{
 				FTGOR_CreateBodySetup Setup;
 				Setup.Creature = Creature;
-				Spectator->RequestNewBody(Setup);
+				Spectator->GetSpawn()->RequestNewBody(LocalController, Setup, true);
 			}
 			else
 			{

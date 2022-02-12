@@ -1259,6 +1259,11 @@ APawn* ATGOR_OnlineController::GetBodyPawn(int32 Identifier) const
 	return nullptr;
 }
 
+void ATGOR_OnlineController::OnRep_BodyDisplay()
+{
+	OnBodyDisplayUpdated.Broadcast();
+}
+
 void ATGOR_OnlineController::UpdateBodyDisplay()
 {
 	BodyDisplay.Reset();
@@ -1289,6 +1294,8 @@ void ATGOR_OnlineController::UpdateBodyDisplay()
 			}
 		}
 	}
+
+	OnBodyDisplayUpdated.Broadcast();
 }
 
 void ATGOR_OnlineController::RequestBodySwitch_Implementation(int32 Identifier)
