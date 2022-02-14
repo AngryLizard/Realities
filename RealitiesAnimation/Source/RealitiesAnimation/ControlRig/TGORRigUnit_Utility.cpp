@@ -4,6 +4,8 @@
 #include "TGORRigUnit_Utility.h"
 #include "ControlRig.h"
 
+#include "RealitiesUtility/Utility/TGOR_Error.h"
+
 #include "RealitiesUtility/Structures/TGOR_Matrix3x3.h"
 #include "Units/RigUnitContext.h"
 
@@ -13,34 +15,53 @@
 FVector ComputeScaleBetween(const FVector& S, const FVector& A, const FVector& B)
 {
 	FVector Scale = S;
-	if (!FMath::IsNearlyZero(A.X, 0.1f))
+	if (!FMath::IsNearlyZero(A.X, 0.01f))
 	{
 		Scale.X = B.X / A.X;
 	}
-	if (!FMath::IsNearlyZero(A.Y, 0.1f))
+	if (!FMath::IsNearlyZero(A.Y, 0.01f))
 	{
 		Scale.Y = B.Y / A.Y;
 	}
-	if (!FMath::IsNearlyZero(A.Z, 0.1f))
+	if (!FMath::IsNearlyZero(A.Z, 0.01f))
 	{
 		Scale.Z = B.Z / A.Z;
 	}
 	return Scale;
 }
 
-void FTGORRigUnit_Propagate::PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+FTransform FTGORRigUnit_Propagate::PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
 {
 	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
 	const FTransform Local = Hierarchy->GetLocalTransform(Next);
 
 	// Rotate to match
+	const FVector CurrentLocation = Transform.GetLocation();
 	const FVector CurrentDelta = Transform.TransformVectorNoScale(Local.GetLocation());
-	const FVector TargetDelta = FMath::Lerp(CurrentDelta, Target - Transform.GetLocation(), Intensity);
+	const FVector TargetDelta = FMath::Lerp(CurrentDelta, Target - CurrentLocation, Intensity);
 	const FQuat Rotation = FQuat::FindBetweenVectors(CurrentDelta, TargetDelta);
 	Transform.SetRotation(Rotation * Transform.GetRotation());
 
-	// Scale to match
-	//Transform.SetScale3D(ComputeScaleBetween(Transform.GetScale3D(), Local.GetLocation(), Transform.InverseTransformVectorNoScale(TargetDelta)));
+	// Update chain element
+	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
+
+	FTransform NextTransform(Transform.GetRotation() * Local.GetRotation(), CurrentLocation + TargetDelta, Transform.GetScale3D() * Local.GetScale3D());
+	Hierarchy->SetGlobalTransform(Next, NextTransform, false);
+
+	return Transform;
+}
+
+FTransform FTGORRigUnit_Propagate::PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+{
+	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
+	const FTransform Local = Hierarchy->GetLocalTransform(Next);
+
+	// Rotate to match
+	const FVector CurrentLocation = Transform.GetLocation();
+	const FVector CurrentDelta = Transform.TransformVectorNoScale(Local.GetLocation());
+	const FVector TargetDelta = FMath::Lerp(CurrentDelta, Target - CurrentLocation, Intensity);
+	const FQuat Rotation = FQuat::FindBetweenVectors(CurrentDelta, TargetDelta);
+	Transform.SetRotation(Rotation * Transform.GetRotation());
 
 	// Update chain element
 	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
@@ -50,6 +71,44 @@ void FTGORRigUnit_Propagate::PropagateChainTorwards(const FRigElementKey& Curren
 	{
 		Hierarchy->SetGlobalTransform(Next, Local * Transform, false);
 	}
+
+	return Transform;
+}
+
+FTransform FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+{
+	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
+	const FTransform Local = Hierarchy->GetLocalTransform(Next);
+	const FVector LocalLocation = Local.GetLocation();
+
+	// Rotate to match
+	const FVector CurrentLocation = Transform.GetLocation();
+	const FVector CurrentDelta = Transform.TransformVectorNoScale(LocalLocation);
+	const FVector TargetDelta = FMath::Lerp(CurrentDelta, Target - CurrentLocation, Intensity);
+	const FQuat Rotation = FQuat::FindBetweenVectors(CurrentDelta, TargetDelta);
+	Transform.SetRotation(Rotation * Transform.GetRotation());
+
+	// Scale to match
+	//const FVector Scale = ComputeScaleBetween(Transform.GetScale3D(), Local.GetLocation(), Transform.InverseTransformVectorNoScale(TargetDelta));
+	//Transform.SetScale3D(Transform.GetScale3D() * Scale);
+
+	const float LocationSize = Transform.TransformVector(LocalLocation).Size();
+	if (!FMath::IsNearlyZero(LocationSize))
+	{
+		const float AxisScale = TargetDelta.Size() / LocationSize - 1.0f;
+		Transform.SetScale3D(Transform.GetScale3D() * (FVector::OneVector + AxisScale * LocalLocation.GetSafeNormal().GetAbs()));
+	}
+
+	// Update chain element
+	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
+
+	// Propagate to only next in line if propagation is turned off
+	if (!bPropagateToChildren)
+	{
+		Hierarchy->SetGlobalTransform(Next, Local * Transform, false);
+	}
+
+	return Transform;
 }
 
 FTGORRigUnit_Propagate_Execute()
@@ -62,7 +121,7 @@ FTGORRigUnit_Propagate_Execute()
 	}
 	else
 	{
-		PropagateChainTorwards(Key, NextKey, TargetLocation, Hierarchy, PropagateToChildren != ETGOR_Propagation::Off, Alpha);
+		PropagateChainTowards(Key, NextKey, TargetLocation, Hierarchy, PropagateToChildren != ETGOR_Propagation::Off, Alpha);
 	}
 }
 

@@ -330,7 +330,7 @@ FTGORRigUnit_EllipsoidChainCollide_Execute()
 				}
 				else
 				{
-					FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[Index - 1], Chain[Index], Start + Delta, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+					FTGORRigUnit_Propagate::PropagateChainTowards(Chain[Index - 1], Chain[Index], Start + Delta, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 					Transform = Hierarchy->GetGlobalTransform(Chain[Index]);
 				}
 

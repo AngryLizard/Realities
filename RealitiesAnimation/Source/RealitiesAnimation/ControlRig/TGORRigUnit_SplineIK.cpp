@@ -49,7 +49,7 @@ FTGORRigUnit_SplineChainIK_Execute()
 			}
 			else
 			{
-				const float InvTotalDistance = 1.0f / TotalDistance;
+				const float InvTotalDistance = PositionAlongSpline / TotalDistance;
 
 				// Define B-Spline
 				const FTransform Origin = Hierarchy->GetGlobalTransform(Chain.First());
@@ -70,16 +70,21 @@ FTGORRigUnit_SplineChainIK_Execute()
 					const FVector NextLocation = LerpSpline(NextDistance);
 					Distance = NextDistance;
 
+					if (DebugSettings.bEnabled)
+					{
+						Context.DrawInterface->DrawPoint(FTransform::Identity, NextLocation, DebugSettings.Scale * 2.0f, FLinearColor::Red);
+					}
+
 					// Compute transform and prepare next iteration
-					FTransform Local = Hierarchy->GetLocalTransform(Chain[Index]);
-					FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[Index-1], Chain[Index], NextLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+					FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[Index-1], Chain[Index], NextLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 				}
 				
 				// Set last member of chain
 				FTransform EE = Hierarchy->GetGlobalTransform(Chain.Last());
-				EE.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
+				const FQuat HeadingRotation = FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget);
+				EE.SetRotation(FQuat::Slerp(HeadingRotation, EE.GetRotation(), RotateWithTangent));
 				EE.SetScale3D(Objective.GetScale3D());
-				EE.SetLocation(Objective.GetLocation());
+				EE.SetLocation(EE.GetLocation());
 				Hierarchy->SetGlobalTransform(Chain.Last(), EE, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}

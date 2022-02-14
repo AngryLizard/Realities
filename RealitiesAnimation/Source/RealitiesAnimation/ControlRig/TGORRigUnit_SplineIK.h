@@ -45,6 +45,17 @@ public:
 	UPROPERTY(meta = (Input))
 		FVector TangentEnd = FVector::BackwardVector;
 
+	/**
+	 * How much objective should rotate with last tangent instead of objective
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		float RotateWithTangent = 1.0f;
+
+	/**
+	 * Position along spline between (0 for start and 1 for end)
+	 */
+	UPROPERTY(meta = (Input))
+		float PositionAlongSpline = 1.0f;
 
 	/**
 	 * Bendiness of the chain

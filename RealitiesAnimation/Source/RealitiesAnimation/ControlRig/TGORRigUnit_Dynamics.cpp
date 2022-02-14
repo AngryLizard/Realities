@@ -110,7 +110,7 @@ FTGORRigUnit_SplineChainDynamics_Execute()
 							Context.DrawInterface->DrawLine(FTransform::Identity, Current.GetLocation(), Position, FLinearColor::Blue, DebugSettings.Scale * 0.5f);
 						}
 
-						FTGORRigUnit_Propagate::PropagateChainTorwards(WorkData.CachedItems[Index - 1], Element, Position, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+						FTGORRigUnit_Propagate::PropagateChainTowards(WorkData.CachedItems[Index - 1], Element, Position, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 					}
 
 					Current = Hierarchy->GetGlobalTransform(Element);

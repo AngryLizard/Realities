@@ -101,8 +101,8 @@ FTGORRigUnit_HingeIK_Execute()
 			}
 
 			// Transform to propagate along the hinge
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[0], Chain[1], HingeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[1], Chain[2], Objective.GetLocation(), Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], HingeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], Objective.GetLocation(), Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			EE.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
@@ -128,7 +128,7 @@ FString FTGORRigUnit_HingeIK::ProcessPinLabelForInjection(const FString& InLabel
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#pragma optimize( "", off )
 FTGORRigUnit_DigitigradeIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
@@ -156,6 +156,13 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			const FTransform InitialAnkle = Hierarchy->GetInitialGlobalTransform(Chain[2]);
 			const FTransform InitialFoot = Hierarchy->GetInitialGlobalTransform(Chain[3]);
 
+			// Compute objective deltas
+			const FTransform UpperLeg = Hierarchy->GetGlobalTransform(Chain[0]);
+			const FVector PelvisLocation = UpperLeg.GetLocation();
+			const FVector ObjectiveDelta = EELocation - PelvisLocation;
+			const float ObjectiveNorm = ObjectiveDelta.Size();
+			const FVector ObjectiveNormal = ObjectiveDelta / ObjectiveNorm;
+
 			FVector Lengths;
 			Lengths.X = (InitialUpperLeg.GetLocation() - InitialLowerLeg.GetLocation()).Size() * Customisation.X;
 			Lengths.Y = (InitialLowerLeg.GetLocation() - InitialAnkle.GetLocation()).Size() * Customisation.Y;
@@ -175,12 +182,7 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			const float CosMinHeelAngle = FMath::Cos(MinHeelRadians + FMath::DegreesToRadians(MinAnkleAngle));
 			const float MinLegDistance = FMath::Sqrt(HypothSqr + Lengths.Z * Lengths.Z - 2.0f * Hypoth * Lengths.Z * CosMinHeelAngle);
 
-			// Compute objective deltas
-			const FTransform UpperLeg = Hierarchy->GetGlobalTransform(Chain[0]);
-			const FVector PelvisLocation = UpperLeg.GetLocation();
-			const FVector ObjectiveDelta = EELocation - PelvisLocation;
-			const float ObjectiveNorm = ObjectiveDelta.Size();
-			const FVector ObjectiveNormal = ObjectiveDelta / ObjectiveNorm;
+			// Compute projected objective
 			const float ObjectiveDistance = FMath::Max(ObjectiveNorm, MinLegDistance);
 			const FVector ObjectiveLocation = PelvisLocation + ObjectiveNormal * ObjectiveDistance;
 
@@ -243,9 +245,9 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			}
 
 			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			FTransform Foot;
@@ -264,7 +266,7 @@ FTGORRigUnit_DigitigradeIK_Execute()
 		}
 	}
 }
-
+#pragma optimize( "", on )
 FString FTGORRigUnit_DigitigradeIK::ProcessPinLabelForInjection(const FString& InLabel) const
 {
 	FString Formula;
@@ -387,9 +389,9 @@ FTGORRigUnit_ClavicleIK_Execute()
 			}
 
 			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTorwards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			FTransform EE;

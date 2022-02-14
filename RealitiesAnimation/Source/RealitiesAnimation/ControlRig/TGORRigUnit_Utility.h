@@ -151,7 +151,9 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 
 	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
 
-	static void PropagateChainTorwards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
 
 	/**
 	 */
