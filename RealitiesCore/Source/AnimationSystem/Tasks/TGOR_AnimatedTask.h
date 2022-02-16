@@ -40,6 +40,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
 		float AnimRootMotionTranslationScale;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
+		bool TransformRootMotionToLinearVelocity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
+		bool TransformRootMotionToAngularVelocity;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
@@ -60,7 +66,7 @@ protected:
 		void ResetAnimation();
 
 	/** Tick animation and extract root motion */
-		FTGOR_MovementPosition TickAnimationRootMotion(float DeltaTime);
+		FTGOR_MovementPosition TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime);
 
 	/** Overrideable root motion conversion */
 		virtual FTransform ConvertLocalRootMotionToWorld(const FTransform& LocalRootMotionTransform, UTGOR_AnimationComponent* Component, float DeltaSeconds);

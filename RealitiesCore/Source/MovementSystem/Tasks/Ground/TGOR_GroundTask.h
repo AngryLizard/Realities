@@ -70,6 +70,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
 		float LeanCoefficient = 15.0f;
 
+	/** Jump Force coefficient */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
+		float JumpCoefficient = 1.0f;
+
 
 
 	/** Friction coeffiecient for ground movement */

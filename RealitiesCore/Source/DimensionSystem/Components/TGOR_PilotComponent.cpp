@@ -246,6 +246,8 @@ void UTGOR_PilotComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencie
 
 	FTGOR_MovementBody NewBody;
 	NewBody.SetFromCapsule(SpawnSurfaceArea, GetScaledCapsuleRadius(), GetScaledCapsuleHalfHeight(), SpawnWeight * Strength);
+	NewBody.Elasticity = BodyElasticity;
+	NewBody.Friction = BodyFriction;
 	SetBody(NewBody);
 }
 

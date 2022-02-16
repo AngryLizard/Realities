@@ -69,7 +69,7 @@ void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& 
 	FTGOR_MovementSpace Out = MovementBody.SimulateForce(Space, Force, External, DeltaTime);
 
 	// Consume root motion
-	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(DeltaTime);
+	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Out, DeltaTime);
 
 	// Simulate move
 	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep);

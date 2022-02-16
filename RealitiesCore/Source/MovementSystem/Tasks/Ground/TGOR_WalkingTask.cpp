@@ -77,7 +77,9 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 			const float ForwardRatio = MovementContact.FrameForward | Input.Direction;
 			const float StrengthRatio = Identifier.Component->ComputeDirectionRatio(ForwardRatio, SpeedRatio, LockMovementWithTurning);
 			const float Direct = StrengthRatio * Input.Magnitude * MaximumLegStrength;
-			Out.Force += Identifier.Component->ComputeForceTowards(MovementContact.FrameForward, Out.Force, Direct, SpeedRatio);
+
+			const FVector Direction = FMath::Lerp(MovementContact.FrameForward, Input.Direction, DirectMovement).GetSafeNormal();
+			Out.Force += Identifier.Component->ComputeForceTowards(Direction, Out.Force, Direct, SpeedRatio);
 
 			// Apply centripetal forces for nice curves
 			Out.Force += Body.GetMassedLinear(MovementContact.FrameAngular ^ MovementContact.FrameVelocity);

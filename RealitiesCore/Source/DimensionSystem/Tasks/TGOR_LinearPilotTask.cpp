@@ -90,6 +90,11 @@ bool UTGOR_LinearPilotTask::CanParent(const UTGOR_MobilityComponent* Parent, int
 	return IsValid(Parent) && Identifier.Component->CanParent(Parent) && Parent->IsValidIndex(Index);
 }
 
+void UTGOR_LinearPilotTask::ResetToComponent(UTGOR_MobilityComponent* Owner)
+{
+	SimulatePosition(Owner->GetComponentPosition());
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGOR_MovementPosition UTGOR_LinearPilotTask::ComputeParentPosition() const

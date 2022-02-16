@@ -16,6 +16,8 @@ UTGOR_MobilityComponent::UTGOR_MobilityComponent()
 :	Super()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	ParentRestriction = UTGOR_LinearPilotTask::StaticClass();
 }
 
 void UTGOR_MobilityComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -116,7 +118,7 @@ bool UTGOR_MobilityComponent::ParentLinear(UTGOR_PilotComponent* Attachee, int32
 {
 	if (IsValid(Attachee))
 	{
-		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>();
+		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>(ParentRestriction);
 		for (UTGOR_LinearPilotTask* Task : Tasks)
 		{
 			if (IsValid(Task) && Task->CanParent(this, Index))
@@ -141,7 +143,7 @@ bool UTGOR_MobilityComponent::CanParentLinear(UTGOR_PilotComponent* Attachee, in
 {
 	if (IsValid(Attachee))
 	{
-		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>();
+		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>(ParentRestriction);
 		for (UTGOR_LinearPilotTask* Task : Tasks)
 		{
 			if (IsValid(Task) && Task->CanParent(this, Index))

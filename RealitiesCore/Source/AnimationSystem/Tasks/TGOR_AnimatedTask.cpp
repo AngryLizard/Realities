@@ -12,9 +12,11 @@
 
 
 UTGOR_AnimatedTask::UTGOR_AnimatedTask()
-	: Super(), BlendTime(0.5f), AnimRootMotionTranslationScale(0.01f)
+	: Super(), BlendTime(0.5f), 
+	AnimRootMotionTranslationScale(1.00f),
+	TransformRootMotionToLinearVelocity(false),
+	TransformRootMotionToAngularVelocity(false)
 {
-	InstanceClass = UTGOR_SubAnimInstance::StaticClass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,6 +56,11 @@ UTGOR_AnimInstance* UTGOR_AnimatedTask::GetAnimationInstance()
 
 void UTGOR_AnimatedTask::PlayAnimation()
 {
+	if (!*InstanceClass)
+	{
+		return;
+	}
+
 	TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
 	if (Owner)
 	{
@@ -70,6 +77,11 @@ void UTGOR_AnimatedTask::PlayAnimation()
 
 void UTGOR_AnimatedTask::ResetAnimation()
 {
+	if (!*InstanceClass)
+	{
+		return;
+	}
+
 	TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
 	if (Owner)
 	{
@@ -84,7 +96,7 @@ void UTGOR_AnimatedTask::ResetAnimation()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(float DeltaTime)
+FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime)
 {
 	FTGOR_MovementPosition Position;
 	if (FMath::IsNearlyZero(DeltaTime))
@@ -115,6 +127,22 @@ FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(float DeltaTi
 			const FTransform Transform = ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform(), Component, DeltaTime);
 			Position.Linear = Transform.GetTranslation();
 			Position.Angular = Transform.GetRotation();
+
+			if (TransformRootMotionToLinearVelocity)
+			{
+				const FVector VelocityDelta = Position.Linear / DeltaTime - Space.RelativeLinearVelocity;
+				Space.RelativeLinearVelocity += VelocityDelta;
+				Space.LinearVelocity += VelocityDelta;
+				Position.Linear = FVector::ZeroVector;
+			}
+
+			if(TransformRootMotionToAngularVelocity)
+			{
+				const FVector VelocityDelta = Position.Angular.GetRotationAxis() * (Position.Angular.GetAngle() / DeltaTime) - Space.RelativeAngularVelocity;
+				Space.RelativeAngularVelocity += VelocityDelta;
+				Space.AngularVelocity += VelocityDelta;
+				Position.Angular = FQuat::Identity;
+			}
 		}
 	}
 

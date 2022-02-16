@@ -3,14 +3,15 @@
 
 #include "CoreMinimal.h"
 
-#include "TGOR_LinearPilotTask.h"
-#include "TGOR_AttachedPilotTask.generated.h"
+#include "TGOR_EuclideanPilotTask.h"
+#include "TGOR_FreePilotTask.generated.h"
+
 
 /**
-* Position
+* Free position, velocity and acceleration
 */
 UCLASS(Blueprintable)
-class DIMENSIONSYSTEM_API UTGOR_AttachedPilotTask : public UTGOR_LinearPilotTask
+class DIMENSIONSYSTEM_API UTGOR_FreePilotTask : public UTGOR_EuclideanPilotTask
 {
 	GENERATED_BODY()
 
@@ -20,7 +21,7 @@ public:
 	//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	UTGOR_AttachedPilotTask();
+	UTGOR_FreePilotTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,10 +38,10 @@ private:
 
 	/** Dynamic relative to parent */
 	UPROPERTY(ReplicatedUsing = RepNotifyLocal)
-		FTGOR_MovementPosition Local;
+		FTGOR_MovementDynamic Local;
 
 	/** Do network smoothing */
 	UFUNCTION()
-		void RepNotifyLocal(const FTGOR_MovementPosition& Old);
+		void RepNotifyLocal(const FTGOR_MovementDynamic& Old);
 
 };

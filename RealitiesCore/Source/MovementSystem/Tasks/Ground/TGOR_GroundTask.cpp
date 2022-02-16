@@ -117,8 +117,8 @@ void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Move
 	FTGOR_MovementRepel Repel;
 	//GetRepelForce(Component, Tick, Space, Repel, Out);
 
-	MaxGroundRatio = FMath::Clamp(2.0f - MovementContact.MaxGroundRatio, 0.0f, 1.0f);
-	MinGroundRatio = FMath::Clamp(1.0f - MovementContact.MinGroundRatio, 0.0f, MaxGroundRatio);
+	MaxGroundRatio = 1.0f; //FMath::Clamp(2.0f - MovementContact.MaxGroundRatio, 0.0f, 1.0f);
+	MinGroundRatio = 0.0f; // FMath::Clamp(1.0f - MovementContact.MinGroundRatio, 0.0f, MaxGroundRatio);
 
 	// Compute input force
 	const float RawRatio = GetInputForce(Tick, Space, Orientation, External, Repel, Output);
@@ -220,6 +220,7 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 		MovementContact.Slope = 0.0f;
 		MovementContact.GroundRatio = TraceLengthMultiplier;
 		MovementContact.SurfaceOffset = FVector::ZeroVector;
+		MinRatio = MaxRatio = 1.0f;
 	}
 	else
 	{
@@ -369,10 +370,10 @@ void UTGOR_GroundTask::GetStandingForce(const FTGOR_MovementTick& Tick, const FT
 	// Jumping, apply upwards force either when already going up or when staying still enough
 	const float UpInput = FMath::Max(0.0f, MovementContact.FrameOrtho);
 	const float Relative = (Normal | Space.RelativeLinearVelocity);
-	if ((MovementContact.GroundRatio < 1.0f && Relative > 10.0f) || Relative > SMALL_NUMBER)
+	if ((MovementContact.GroundRatio < MaxGroundRatio && Relative > 10.0f) || Relative > SMALL_NUMBER)
 	{
 		const float JumpForce = UpInput * MaximumLegStrength * Frame.Strength;
-		Out.Force += External.UpVector * JumpForce;
+		Out.Force += External.UpVector * JumpForce * JumpCoefficient;
 	}
 }
 

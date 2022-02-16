@@ -92,6 +92,12 @@ public:
 		virtual bool CanParent(const UTGOR_MobilityComponent* Parent, int32 Index) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Reset base to current position of owner component */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		void ResetToComponent(UTGOR_MobilityComponent* Owner);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 
 	/** Parenting data */

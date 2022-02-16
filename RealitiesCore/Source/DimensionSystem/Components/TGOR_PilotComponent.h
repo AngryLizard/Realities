@@ -89,6 +89,12 @@ public:
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
+		float BodyElasticity = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
+		float BodyFriction = 0.1f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
 		float SpawnWeight = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
@@ -172,24 +178,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		UTGOR_PilotTask* GetCurrentPilotOfType(TSubclassOf<UTGOR_PilotTask> Type) const;
 
+	template<typename T> T* GetCurrentPOfType(TSubclassOf<T> Type) const
+	{
+		return Cast<T>(GetCurrentPilotOfType(Type));
+	}
+
 	template<typename T> T* GetCurrentPOfType() const
 	{
-		return Cast<T>(GetCurrentPilotOfType(T::StaticClass()));
+		return GetCurrentPOfType<T>(T::StaticClass());
 	}
 
 	/** Get all pilot tasks of given type */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		TArray<UTGOR_PilotTask*> GetPilotListOfType(TSubclassOf<UTGOR_PilotTask> Type) const;
 
-	template<typename T> TArray<T*> GetPListOfType() const
+	template<typename T> TArray<T*> GetPListOfType(TSubclassOf<T> Type) const
 	{
 		TArray<T*> Output;
-		TArray<UTGOR_PilotTask*> Pilots = GetPilotListOfType(T::StaticClass());
+		TArray<UTGOR_PilotTask*> Pilots = GetPilotListOfType(Type);
 		for (UTGOR_PilotTask* Pilot : Pilots)
 		{
 			Output.Emplace(Cast<T>(Pilot));
 		}
 		return Output;
+	}
+
+	template<typename T> TArray<T*> GetPListOfType() const
+	{
+		return GetPListOfType<T>(T::StaticClass());
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

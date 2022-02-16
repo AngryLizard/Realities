@@ -143,10 +143,11 @@ bool UTGOR_MontageMovementTask::Invariant(const FTGOR_MovementSpace& Space, cons
 
 void UTGOR_MontageMovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
-	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Tick.DeltaTime);
+	FTGOR_MovementSpace Out = Space;
+
+	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Out, Tick.DeltaTime);
 
 	// Simulate move
-	FTGOR_MovementSpace Out = Space;
 	RootComponent->SimulateMove(Out, Offset, Tick.DeltaTime, false);
 	AttachedTask->SimulateDynamic(Out);
 

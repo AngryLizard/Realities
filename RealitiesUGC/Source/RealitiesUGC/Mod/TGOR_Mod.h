@@ -37,7 +37,7 @@ public:
 		FGameplayTagContainer FilterTags;
 
 	/** Whether this mod should be ignored by local mod setup */
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")
 		bool Ignore;
 
 	/** Mod plugin path */

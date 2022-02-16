@@ -39,6 +39,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		float LockMovementWithTurning = 4.0f;
 
+	/** Ratio for how much character moves in input direction opposed to forward ([0, 1], 1 for movement in input direction) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		float DirectMovement = 0.0f;
+
 
 	/** Rotational slowdown with speed ([0, 1], 1 for off) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")

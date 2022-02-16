@@ -11,63 +11,11 @@ UTGOR_EuclideanPilotTask::UTGOR_EuclideanPilotTask()
 {
 }
 
-void UTGOR_EuclideanPilotTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void UTGOR_EuclideanPilotTask::EnsureRelativeVelocityAlong(const FVector& Normal, float Velocity, float Alpha)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME_CONDITION(UTGOR_EuclideanPilotTask, Local, COND_None);
-}
-
-FTGOR_MovementPosition UTGOR_EuclideanPilotTask::ComputePosition() const
-{
-	return Local.BaseToPosition(ComputeParentPosition());
-}
-
-FTGOR_MovementSpace UTGOR_EuclideanPilotTask::ComputeSpace() const
-{
-	return Local.BaseToSpace(ComputeParentSpace());
-}
-
-void UTGOR_EuclideanPilotTask::InitDynamic(const FTGOR_MovementDynamic& Dynamic)
-{
-	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
-	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Super::InitDynamic(Dynamic);
-}
-
-void UTGOR_EuclideanPilotTask::SimulateDynamic(const FTGOR_MovementDynamic& Dynamic)
-{
-	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
-	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Super::SimulatePosition(Dynamic);
-}
-
-void UTGOR_EuclideanPilotTask::SimulatePosition(const FTGOR_MovementPosition& Position)
-{
-	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
-	Local.PositionToBase(ParentPosition, Position);
-	Super::SimulatePosition(Position);
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void UTGOR_EuclideanPilotTask::ResetToComponent(UTGOR_MobilityComponent* Owner)
-{
-	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
-	Local.PositionToBase(ParentPosition, Owner->GetComponentPosition());
-}
-
-void UTGOR_EuclideanPilotTask::RepNotifyLocal(const FTGOR_MovementDynamic& Old)
-{
-	if (IsValid(Identifier.Component))
-	{
-		ENetRole Role = Identifier.Component->GetOwnerRole();
-		if (Role == ENetRole::ROLE_AutonomousProxy)
-		{
-			if (Old.CompareDynamic(Local, Identifier.Component->AdjustThreshold) < 1.0f)
-			{
-				Local = Old;
-			}
-		}
-	}
+	FTGOR_MovementSpace Space = ComputeSpace();
+	const FVector VelocityDelta = Normal * ((Velocity - (Space.RelativeLinearVelocity | Normal)) * Alpha);
+	Space.RelativeLinearVelocity += VelocityDelta;
+	Space.LinearVelocity += VelocityDelta;
+	SimulateDynamic(Space);
 }

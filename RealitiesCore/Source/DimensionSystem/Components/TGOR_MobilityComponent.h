@@ -134,6 +134,10 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** Restriction on the kind of task that may be parented to this */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TSubclassOf<UTGOR_LinearPilotTask> ParentRestriction;
+
 	/** Parents a component to this mobility using the Parent socket at a given world dynamic. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		bool ParentLinear(UTGOR_PilotComponent* Attachee, int32 Index, const FTGOR_MovementDynamic& Dynamic);
