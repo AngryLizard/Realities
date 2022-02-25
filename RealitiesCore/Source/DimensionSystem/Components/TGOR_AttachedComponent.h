@@ -25,12 +25,4 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	/** Parents a component to this mobility using the Parent socket at a given world position. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool ParentAttached(UTGOR_PilotComponent* Attachee, int32 Index, const FTGOR_MovementPosition& Position);
-
-	/** Parents a component to this mobility using the Parent socket. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		bool CanParentAttached(UTGOR_PilotComponent* Attachee, int32 Index) const;
 };

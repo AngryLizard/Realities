@@ -2,7 +2,7 @@
 
 
 #include "TGOR_ItemQuery.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 #include "InventorySystem/Components/TGOR_InventoryComponent.h"
 #include "InventorySystem/Content/TGOR_Item.h"
 
@@ -14,6 +14,7 @@ UTGOR_ItemQuery::UTGOR_ItemQuery()
 TArray<UTGOR_CoreContent*> UTGOR_ItemQuery::QueryContent() const
 {
 	TArray<UTGOR_CoreContent*> Contents;
+	/*
 	if (OwnerComponent.IsValid())
 	{
 		for (int32 SlotIdentifier : SlotIdentifiers)
@@ -25,6 +26,7 @@ TArray<UTGOR_CoreContent*> UTGOR_ItemQuery::QueryContent() const
 			}
 		}
 	}
+	*/
 	return Contents;
 }
 
@@ -38,11 +40,12 @@ void UTGOR_ItemQuery::AssignComponent(UTGOR_InventoryComponent* InventoryCompone
 
 bool UTGOR_ItemQuery::FilterItem(UTGOR_Item* Item) const
 {
-	return Item->IsSupportedBy(SlotFilter);
+	return false;// Item->IsSupportedBy(SlotFilter);
 }
 
 void UTGOR_ItemQuery::RefreshItems()
 {
+	/*
 	SlotIdentifiers.Reset();
 	if (OwnerComponent.IsValid())
 	{
@@ -56,4 +59,5 @@ void UTGOR_ItemQuery::RefreshItems()
 			return true;
 		});
 	}
+	*/
 }

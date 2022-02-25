@@ -6,6 +6,7 @@
 
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "DimensionSystem/Tasks/TGOR_LinearPilotTask.h"
+#include "DimensionSystem/Tasks/TGOR_AttachedPilotTask.h"
 
 #include "CoreSystem/TGOR_Singleton.h"
 
@@ -145,6 +146,47 @@ bool UTGOR_MobilityComponent::CanParentLinear(UTGOR_PilotComponent* Attachee, in
 	{
 		TArray<UTGOR_LinearPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_LinearPilotTask>(ParentRestriction);
 		for (UTGOR_LinearPilotTask* Task : Tasks)
+		{
+			if (IsValid(Task) && Task->CanParent(this, Index))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool UTGOR_MobilityComponent::ParentAttached(UTGOR_PilotComponent* Attachee, int32 Index, const FTGOR_MovementPosition& Position)
+{
+	if (IsValid(Attachee))
+	{
+		TArray<UTGOR_AttachedPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_AttachedPilotTask>();
+		for (UTGOR_AttachedPilotTask* Task : Tasks)
+		{
+			if (IsValid(Task) && Task->CanParent(this, Index))
+			{
+				Task->Parent(this, Index);
+
+				// Set location without triggering any movement events (prevent infinite loops when parent volume changes)
+				Task->InitDynamic(Position);
+
+				Attachee->AttachWith(Task->Identifier.Slot);
+
+				// Trigger movement events now
+				Attachee->OnPositionChange(Position);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool UTGOR_MobilityComponent::CanParentAttached(UTGOR_PilotComponent* Attachee, int32 Index) const
+{
+	if (IsValid(Attachee))
+	{
+		TArray<UTGOR_AttachedPilotTask*> Tasks = Attachee->GetPListOfType<UTGOR_AttachedPilotTask>();
+		for (UTGOR_AttachedPilotTask* Task : Tasks)
 		{
 			if (IsValid(Task) && Task->CanParent(this, Index))
 			{

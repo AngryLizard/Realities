@@ -22,21 +22,23 @@ class INVENTORYSYSTEM_API UTGOR_Science : public UTGOR_MatterProcess
 public:
 	UTGOR_Science();
 
+	/*
 	virtual float Process(UTGOR_ProcessComponent* Owner, UTGOR_ProcessStorage* Storage, float Antimatter) override;
 	virtual bool CanProcess(UTGOR_ProcessComponent* Owner, UTGOR_ProcessStorage* Storage) const override;
 	virtual void BuildStorage(UTGOR_ProcessStorage* Storage) override;
 	virtual void PostBuildResource() override;
+	*/
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Tick this science with given storage and owner, return actually used antimatter after process has concluded. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		float OnProcess(UTGOR_StorageComponent* Sockets, UTGOR_ProcessStorage* Storage, float Antimatter);
+		float OnProcess(UTGOR_StorageComponent* Sockets, UTGOR_ProcessTask* Task, float Antimatter);
 
 	/** Check whether this science is still valid to be processed. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		bool OnCanProcess(UTGOR_StorageComponent* Sockets, UTGOR_ProcessStorage* Storage) const;
+		bool OnCanProcess(UTGOR_StorageComponent* Sockets, UTGOR_ProcessTask* Task) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

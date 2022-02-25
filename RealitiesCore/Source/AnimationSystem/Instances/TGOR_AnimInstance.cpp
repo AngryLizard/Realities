@@ -85,6 +85,7 @@ void UTGOR_AnimInstance::NativeInitializeAnimation()
 void UTGOR_AnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	UpdateHandles();
+	AnimationTaskLock = false;
 
 	Super::NativeUpdateAnimation(DeltaSeconds);
 }
@@ -159,76 +160,104 @@ FName UTGOR_AnimInstance::GetSubAnimName(UTGOR_Performance* Performance) const
 	return FName(*(Performance->SubAnimIdentifier + "_Off"));
 }
 
-void UTGOR_AnimInstance::AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask)
+void UTGOR_AnimInstance::AddAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask)
 {
+	if (!IsValid(Performance))
+	{
+		return;
+	}
+
 	// Wait on parallel tasks to finish (This is arguably an engine bug)
 	// DO NOT DELETE UNTIL LinkAnimGraphByTag IS MADE THREAD-SAFE
 	GetProxyOnAnyThread<FAnimInstanceProxy>();
 
-	if (IsValid(Performance))
+	if (IsValid(AnimatedTask))
 	{
-		if (IsValid(AnimatedTask))
+		// Get or add instance to queue
+		FTGOR_SubAnimationInstance& Instance = AnimationInstanceQueues.FindOrAdd(Performance);
+		if (!AnimationTaskLock)
 		{
-			// Get or add instance to queue
-			FTGOR_SubAnimationInstance& Instance = AnimationInstanceQueues.FindOrAdd(Performance);
 			Instance.IsSwitched = !Instance.IsSwitched;
-			Instance.Previous = Instance.Current;
-			if (Instance.Previous.IsValid())
-			{
-				Instance.Previous->OnRemovedFromParent();
-			}
+			AnimationTaskLock = true;
+		}
+		Instance.Previous = Instance.Current;
+		if (Instance.Previous.IsValid())
+		{
+			Instance.Previous->OnRemovedFromParent();
+		}
 
-			const FName AnimationKey = GetSubAnimName(Performance);
-			TSubclassOf<UTGOR_SubAnimInstance>& Default = Instance.IsSwitched ? Instance.DefaultOn : Instance.DefaultOff;
-			if (!IsValid(Default))
+		const FName AnimationKey = GetSubAnimName(Performance);
+		TSubclassOf<UTGOR_SubAnimInstance>& Default = Instance.IsSwitched ? Instance.DefaultOn : Instance.DefaultOff;
+		if (!IsValid(Default))
+		{
+			// Set default to current state if not already set
+			UAnimInstance* AnimInstance = GetLinkedAnimGraphInstanceByTag(AnimationKey);
+			UTGOR_SubAnimInstance* CurrentInstance = Cast<UTGOR_SubAnimInstance>(AnimInstance);
+			if (IsValid(CurrentInstance))
 			{
-				// Set default to current state if not already set
-				UAnimInstance* AnimInstance = GetLinkedAnimGraphInstanceByTag(AnimationKey);
-				UTGOR_SubAnimInstance* CurrentInstance = Cast<UTGOR_SubAnimInstance>(AnimInstance);
-				if (IsValid(CurrentInstance))
-				{
-					Default = CurrentInstance->GetClass();
-				}
-			}
-
-			// Check that instance can produce an animation instance
-			if (IAnimClassInterface::GetFromClass(AnimatedTask->InstanceClass))
-			{
-				// Set anim instance to graph and queue
-				LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
-				Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-				if (Instance.Current.IsValid())
-				{
-					Instance.Current->ParentInstance = this;
-					Instance.Current->AnimatedTask = AnimatedTask;
-					Instance.Current->ParentSlot = Performance;
-					Instance.Current->OnAddedToParent();
-				}
+				Default = CurrentInstance->GetClass();
 			}
 		}
-		else if (FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance))
-		{
-			// Set default value instead
-			Ptr->IsSwitched = !Ptr->IsSwitched;
-			Ptr->Previous = Ptr->Current;
-			if (Ptr->Previous.IsValid())
-			{
-				Ptr->Previous->OnRemovedFromParent();
-			}
 
-			const FName AnimationKey = GetSubAnimName(Performance);
-			const TSubclassOf<UTGOR_SubAnimInstance>& Default = Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff;
-			if (!IsValid(Default))
+		// Check that instance can produce an animation instance
+		if (IAnimClassInterface::GetFromClass(AnimatedTask->InstanceClass))
+		{
+			// Set anim instance to graph and queue
+			LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
+			Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
+			if (Instance.Current.IsValid())
 			{
-				LinkAnimGraphByTag(AnimationKey, Default);
-				Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
-				if (Ptr->Current.IsValid())
-				{
-					Ptr->Current->ParentInstance = this;
-					Ptr->Current->AnimatedTask = nullptr;
-					Ptr->Current->ParentSlot = Performance;
-					Ptr->Current->OnAddedToParent();
-				}
+				Instance.Current->ParentInstance = this;
+				Instance.Current->AnimatedTask = AnimatedTask;
+				Instance.Current->ParentSlot = Performance;
+				Instance.Current->OnAddedToParent();
+			}
+		}
+	}
+	else
+	{
+		// TODO: For now instances cannot be layered, implement a queue in case multiple tasks are active per peformance
+		RemoveAnimationInstance(Performance, AnimatedTask);
+	}
+}
+
+void UTGOR_AnimInstance::RemoveAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask)
+{
+	if (!IsValid(Performance))
+	{
+		return;
+	}
+
+	// Wait on parallel tasks to finish (This is arguably an engine bug)
+	// DO NOT DELETE UNTIL LinkAnimGraphByTag IS MADE THREAD-SAFE
+	GetProxyOnAnyThread<FAnimInstanceProxy>();
+
+	if (FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance))
+	{
+		// Set default value instead
+		if (!AnimationTaskLock)
+		{
+			Ptr->IsSwitched = !Ptr->IsSwitched;
+			AnimationTaskLock = true;
+		}
+		Ptr->Previous = Ptr->Current;
+		if (Ptr->Previous.IsValid())
+		{
+			Ptr->Previous->OnRemovedFromParent();
+		}
+
+		const FName AnimationKey = GetSubAnimName(Performance);
+		const TSubclassOf<UTGOR_SubAnimInstance>& Default = Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff;
+		if (!IsValid(Default))
+		{
+			LinkAnimGraphByTag(AnimationKey, Default);
+			Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
+			if (Ptr->Current.IsValid())
+			{
+				Ptr->Current->ParentInstance = this;
+				Ptr->Current->AnimatedTask = nullptr;
+				Ptr->Current->ParentSlot = Performance;
+				Ptr->Current->OnAddedToParent();
 			}
 		}
 	}

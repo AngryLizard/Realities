@@ -3,10 +3,10 @@
 
 #include "TGOR_ItemDropActor.h"
 
-#include "InventorySystem/Components/TGOR_ItemComponent.h"
+#include "InventorySystem/Components/TGOR_DropComponent.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 #include "InventorySystem/Content/TGOR_Item.h"
 
 #include "GameFramework/GameMode.h"
@@ -25,12 +25,13 @@ ATGOR_ItemDropActor::ATGOR_ItemDropActor(const FObjectInitializer& ObjectInitial
 	PilotComponent->SetIsReplicated(true);
 	SetRootComponent(PilotComponent);
 
-	ItemComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_ItemComponent>(this, FName(TEXT("Item")));
-	ItemComponent->SetIsReplicated(true);
+	DropComponent = ObjectInitializer.CreateDefaultSubobject<UTGOR_DropComponent>(this, FName(TEXT("Drop")));
+	DropComponent->SetIsReplicated(true);
 
 	bReplicates = true;
 }
 
+/*
 UTGOR_ItemStorage* ATGOR_ItemDropActor::AssignItem(UTGOR_ItemStorage* Storage, const FTGOR_MovementSpace& ParentSpace, const FVector& Impulse)
 {
 	// Set item
@@ -50,3 +51,4 @@ UTGOR_ItemStorage* ATGOR_ItemDropActor::AssignItem(UTGOR_ItemStorage* Storage, c
 	OnItemAssigned(Storage);
 	return Residual;
 }
+*/

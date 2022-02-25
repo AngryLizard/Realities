@@ -117,7 +117,7 @@ bool UTGOR_AnimationComponent::SwitchAnimation(TSubclassOf<UTGOR_Performance> Pe
 		{
 			if (PerformanceSlot->IsA(PerformanceType))
 			{
-				AnimInstance->AssignAnimationInstance(PerformanceSlot, AnimatedTask);
+				AnimInstance->AddAnimationInstance(PerformanceSlot, AnimatedTask);
 			}
 		}
 	}

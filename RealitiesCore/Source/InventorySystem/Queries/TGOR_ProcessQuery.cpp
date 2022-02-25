@@ -43,6 +43,7 @@ void UTGOR_ProcessQuery::AssignComponent(APawn* Pawn, UTGOR_ProcessComponent* Pr
 		const TArray<UTGOR_Process*> Unlocks = ContentManager->GetTListFromType<UTGOR_Process>(Type); // TODO: OnlineController->GetUnlock()->GetUListFromType<UTGOR_Process>(Type)
 		for (UTGOR_Process* Process : Unlocks)
 		{
+			/*
 			// Split into categories
 			if (Process->CanProcess(HostComponent, nullptr))
 			{
@@ -52,7 +53,7 @@ void UTGOR_ProcessQuery::AssignComponent(APawn* Pawn, UTGOR_ProcessComponent* Pr
 			{
 				if(!Match) Processes.Emplace(Process);
 			}
-
+			*/
 		}
 	}
 }

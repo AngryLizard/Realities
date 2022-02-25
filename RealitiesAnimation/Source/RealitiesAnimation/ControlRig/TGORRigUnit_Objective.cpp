@@ -81,3 +81,51 @@ FString FTGORRigUnit_ObjectivePlanarProject::ProcessPinLabelForInjection(const F
 	FString Formula;
 	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGORRigUnit_BulgeBellCurve_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+		ObjectCache.Reset();
+		BulgeCache.Reset();
+	}
+	else
+	{
+		if (!ObjectCache.UpdateCache(ObjectKey, Hierarchy))
+		{
+			UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Object '%s' is not valid."), *ObjectKey.ToString());
+		}
+		else if(!BulgeCache.UpdateCache(BulgeKey, Hierarchy))
+		{
+			UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Bulge '%s' is not valid."), *BulgeKey.ToString());
+		}
+		else
+		{
+			const FTransform Object = Hierarchy->GetGlobalTransform(ObjectCache);
+			const FTransform Bulge = Hierarchy->GetGlobalTransform(BulgeCache);
+
+			const FVector Reference = Bulge.TransformPosition(Offset);
+			if (DebugSettings.bEnabled)
+			{
+				Context.DrawInterface->DrawPoint(FTransform::Identity, Reference, 3.0f * DebugSettings.Scale, FLinearColor::Red);
+			}
+
+			const float Scale = 1.0f + FMath::Exp((Reference - Object.GetLocation()).SizeSquared() / -(Variance * Radius)) * Radius;
+
+			FTransform Transform = Bulge;
+			Transform.SetScale3D(Transform.GetScale3D() * Scale);
+			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false);
+		}
+	}
+}
+
+FString FTGORRigUnit_BulgeBellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}

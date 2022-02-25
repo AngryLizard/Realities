@@ -201,7 +201,7 @@ bool UTGOR_ColliderComponent::SimulateSweep(FTGOR_MovementDynamic& Dynamic, cons
 	}
 
 	// static things can move before they are registered (e.g. immediately after streaming), but not after.
-	if (IsPendingKill())
+	if (!IsValid(this))
 	{
 		Hit.Init();
 		return false;

@@ -36,10 +36,8 @@ struct ANIMATIONSYSTEM_API FTGOR_AnimInstanceProxy : public FAnimInstanceProxy
 public:
 };
 
-
-
 /**
- * 
+ *
  */
 USTRUCT(BlueprintType, Blueprintable)
 struct ANIMATIONSYSTEM_API FTGOR_SubAnimationInstance
@@ -54,7 +52,7 @@ public:
 
 	UPROPERTY()
 		TWeakObjectPtr<UTGOR_SubAnimInstance> Previous;
-	
+
 	UPROPERTY()
 		TWeakObjectPtr<UTGOR_SubAnimInstance> Current;
 
@@ -121,7 +119,10 @@ public:
 		FName GetSubAnimName(UTGOR_Performance* Performance) const;
 	
 	UFUNCTION()
-		void AssignAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask);
+		void AddAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask);
+
+	UFUNCTION()
+		void RemoveAnimationInstance(UTGOR_Performance* Performance, UTGOR_AnimatedTask* AnimatedTask);
 
 	UFUNCTION()
 		void ClearQueues();
@@ -182,6 +183,9 @@ protected:
 		TArray<UTGOR_HandleComponent*> HandleComponents;
 
 private:
+
+	// Lock preventing us from switching blends multiple times per frame
+	bool AnimationTaskLock = false;
 
 	// TODO: This pointer might be unsafe to keep?
 	FAnimNode_ControlRig* LinkedControlRig;

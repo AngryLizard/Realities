@@ -16,12 +16,13 @@ ProbeDistance(100.0f)
 {
 }
 
+/*
 void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
 	UTGOR_PilotComponent* RootPilot = GetRootPilot();
 	if (IsValid(RootPilot))
 	{
-		UTGOR_LinearPilotTask* PilotTask = RootPilot->GetCurrentPOfType<UTGOR_LinearPilotTask>();
+		UTGOR_LinearPilotTask* PilotTask = RootPilot->GetCurrentPOfType<UTGOR_EuclideanPilotTask>();
 		if (IsValid(PilotTask))
 		{
 			// Check for movement parent
@@ -52,3 +53,4 @@ void UTGOR_LinearComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTG
 		}
 	}
 }
+*/

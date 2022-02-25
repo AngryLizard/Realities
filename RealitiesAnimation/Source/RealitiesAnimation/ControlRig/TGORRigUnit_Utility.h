@@ -916,6 +916,94 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Bellcurve
+ */
+USTRUCT(meta = (DisplayName = "Bell Curve", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "BelLCurve", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_BellCurve : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_BellCurve() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * Input value
+	 */
+	UPROPERTY(meta = (Input))
+		float Value = 0.0f;
+
+	/**
+	 * Bellcurve strength
+	 */
+	UPROPERTY(meta = (Input))
+		float Variance = 1.0f;
+
+	/**
+	 * Output value
+	 */
+	UPROPERTY(meta = (Output))
+		float Output = 0.0f;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Bellcurve
+ */
+USTRUCT(meta = (DisplayName = "Distance Bell Curve", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "DistanceBellCurve", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_DistanceBellCurve : public FRigUnit
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_DistanceBellCurve() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * Input Location
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Location;
+
+	/**
+	 * Reference Location
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Reference;
+
+	/**
+	 * Bellcurve strength
+	 */
+	UPROPERTY(meta = (Input))
+		float Variance = 1.0f;
+
+	/**
+	 * Output value
+	 */
+	UPROPERTY(meta = (Output))
+		float Output = 0.0f;
+
+	/**
+	 * Output Delta
+	 */
+	UPROPERTY(meta = (Output))
+		FVector Delta;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 USTRUCT()
 struct REALITIESANIMATION_API FRigUnit_PreviewSettings
 {

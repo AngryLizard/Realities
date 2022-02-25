@@ -2,6 +2,7 @@
 
 
 #include "TGOR_ProjectedPilotTask.h"
+#include "DimensionSystem/TGOR_DimensionSettings.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 
 #include "Net/UnrealNetwork.h"
@@ -18,6 +19,14 @@ void UTGOR_ProjectedPilotTask::GetLifetimeReplicatedProps(TArray< FLifetimePrope
 	DOREPLIFETIME_CONDITION(UTGOR_ProjectedPilotTask, Local, COND_None);
 }
 
+void UTGOR_ProjectedPilotTask::Initialise()
+{
+	Super::Initialise();
+
+	const UTGOR_DimensionSettings* Settings = GetDefault<UTGOR_DimensionSettings>();
+	ProjectionAxis = Settings->PilotProjectionAxis;
+}
+
 FTGOR_MovementPosition UTGOR_ProjectedPilotTask::ComputePosition() const
 {
 	return Local.BaseToPosition(ComputeParentPosition());
@@ -32,9 +41,9 @@ void UTGOR_ProjectedPilotTask::InitDynamic(const FTGOR_MovementDynamic& Dynamic)
 {
 	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
 	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Local.Linear.Y = 0.0f;
-	Local.LinearVelocity.Y = 0.0f;
-	Local.LinearAcceleration.Y = 0.0f;
+	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
 	Super::InitDynamic(Dynamic);
 }
 
@@ -42,9 +51,9 @@ void UTGOR_ProjectedPilotTask::SimulateDynamic(const FTGOR_MovementDynamic& Dyna
 {
 	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
 	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Local.Linear.Y = 0.0f;
-	Local.LinearVelocity.Y = 0.0f;
-	Local.LinearAcceleration.Y = 0.0f;
+	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
 	Super::SimulatePosition(Dynamic);
 }
 
@@ -52,9 +61,9 @@ void UTGOR_ProjectedPilotTask::SimulatePosition(const FTGOR_MovementPosition& Po
 {
 	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
 	Local.PositionToBase(ParentPosition, Position);
-	Local.Linear.Y = 0.0f;
-	Local.LinearVelocity.Y = 0.0f;
-	Local.LinearAcceleration.Y = 0.0f;
+	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
 	Super::SimulatePosition(Position);
 }
 

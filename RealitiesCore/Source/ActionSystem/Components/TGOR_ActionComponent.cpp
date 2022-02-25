@@ -8,9 +8,6 @@
 #include "AnimationSystem/Instances/TGOR_AnimInstance.h"
 #include "AnimationSystem/Content/TGOR_Animation.h"
 #include "AnimationSystem/Content/TGOR_Performance.h"
-#include "InventorySystem/Components/TGOR_InventoryComponent.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
-#include "InventorySystem/Content/TGOR_Item.h"
 #include "ActionSystem/Tasks/TGOR_ActionTask.h"
 #include "ActionSystem/Content/TGOR_Action.h"
 #include "ActionSystem/Content/TGOR_Input.h"
@@ -144,28 +141,9 @@ bool UTGOR_ActionComponent::ReplicateSubobjects(class UActorChannel* Channel, cl
 	return WroteSomething;
 }
 
-
-bool UTGOR_ActionComponent::CanStoreItemAt(int32 Identifier, UTGOR_ItemStorage* Storage) const
-{
-	if (Super::CanStoreItemAt(Identifier, Storage))
-	{
-		if (ActionSlots.IsValidIndex(Identifier))
-		{
-			UTGOR_ActionTask* ActionSlot = ActionSlots[Identifier];
-			if (IsValid(ActionSlot))
-			{
-				UTGOR_Action* Action = ActionSlot->GetAction();
-				return IsValid(Action) && (!Storage || Action->SupportsItem(Storage->GetItem()));
-			}
-		}
-	}
-	return false;
-}
-
-
 TSet<UTGOR_CoreContent*> UTGOR_ActionComponent::GetActiveContent_Implementation() const
 {
-	TSet<UTGOR_CoreContent*> ActiveContent = Super::GetActiveContent_Implementation();
+	TSet<UTGOR_CoreContent*> ActiveContent;
 	const int32 Identifier = GetCurrentActionSlotIdentifier();
 
 	// Currently active action
@@ -173,13 +151,6 @@ TSet<UTGOR_CoreContent*> UTGOR_ActionComponent::GetActiveContent_Implementation(
 	if (IsValid(Action))
 	{
 		ActiveContent.Emplace(Action);
-	}
-
-	// Currently active item
-	UTGOR_ItemStorage* Storage = GetItemStorage(Identifier);
-	if (IsValid(Storage))
-	{
-		ActiveContent.Emplace(Storage->GetItem());
 	}
 
 	return ActiveContent;
@@ -836,7 +807,6 @@ void UTGOR_ActionComponent::SetInput(TSubclassOf<UTGOR_Input> InputType, float V
 
 	}
 
-
 	const int32 SlotNum = ActionSlots.Num();
 	for (int32 Slot = 0; Slot < SlotNum; Slot++)
 	{
@@ -880,7 +850,7 @@ void UTGOR_ActionComponent::UpdateContext(const FTGOR_AimInstance& Aim)
 
 bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 {
-	TMap<UTGOR_Action*, TArray<TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>>> Previous;
+	TMap<UTGOR_Action*, TArray<UTGOR_ActionTask*>> Previous;
 
 	// Remove slots but cache both instances and items in case the new loadout can use them
 	for (int Slot = 0; Slot < ActionSlots.Num(); Slot++)
@@ -888,8 +858,7 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
 		if (IsValid(ActionSlot))
 		{
-			UTGOR_ItemStorage* Storage = ActionSlot->SwapWithCurrentItem(nullptr);
-			Previous.FindOrAdd(ActionSlot->GetAction()).Add(TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>(ActionSlot, Storage));
+			Previous.FindOrAdd(ActionSlot->GetAction()).Add(ActionSlot);
 		}
 	}
 
@@ -946,13 +915,10 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 		{
 			UTGOR_ActionTask* ActionSlot = nullptr;
 
-			TArray<TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>>* Ptr = Previous.Find(Action);
+			TArray<UTGOR_ActionTask*>* Ptr = Previous.Find(Action);
 			if (Ptr && Ptr->Num() > 0)
 			{
-				TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*> Pair = Ptr->Pop();
-
-				DropItemStorage(Pair.Key->SwapWithCurrentItem(Pair.Value));
-				ActionSlot = Pair.Key;
+				ActionSlot = Ptr->Pop();
 			}
 			else
 			{
@@ -967,21 +933,12 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 		}
 	}
 
-	UTGOR_InventoryComponent* Inventory = GetOwnerComponent<UTGOR_InventoryComponent>();
-
-	// Push leftovers into inventory and/or drop them
+	// Discard tasks that got removed
 	for (const auto& Pair : Previous)
 	{
-		for (const TPair<UTGOR_ActionTask*, UTGOR_ItemStorage*>& Slot : Pair.Value)
+		for (UTGOR_ActionTask* ActionSlot : Pair.Value)
 		{
-			UTGOR_ItemStorage* Storage = Slot.Value;
-			if (IsValid(Inventory))
-			{
-				Storage = Inventory->PutItem(Storage);
-			}
-			DropItemStorage(Storage);
-
-			Pair.Key->MarkPendingKill();
+			ActionSlot->MarkPendingKill();
 		}
 	}
 

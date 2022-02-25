@@ -9,8 +9,6 @@
 #include "../Content/TGOR_Input.h"
 #include "../Content/Events/TGOR_Event.h"
 #include "TargetSystem/Content/TGOR_Target.h"
-#include "InventorySystem/Content/TGOR_Item.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
 #include "ActionSystem/Components/TGOR_ActionComponent.h"
 #include "AttributeSystem/Components/TGOR_AttributeComponent.h"
 #include "MovementSystem/Components/TGOR_MovementComponent.h"
@@ -295,64 +293,6 @@ float UTGOR_ActionTask::GetInputValue(TSubclassOf<UTGOR_Input> InputType) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UTGOR_ItemStorage* UTGOR_ActionTask::GetCurrentItem() const
-{
-	if (IsValid(Identifier.Component))
-	{
-		return Identifier.Component->GetItemStorage(Identifier.Slot);
-	}
-	return nullptr;
-}
-
-UTGOR_ItemStorage* UTGOR_ActionTask::SwapWithCurrentItem(UTGOR_ItemStorage* Storage)
-{
-	if (IsValid(Identifier.Component))
-	{
-		return Identifier.Component->SwapItemStorage(Identifier.Slot, Storage);
-	}
-	return Storage;
-}
-
-UTGOR_ItemStorage* UTGOR_ActionTask::TakeCurrentItem()
-{
-	if (IsValid(Identifier.Component))
-	{
-		return Identifier.Component->SwapItemStorage(Identifier.Slot, nullptr);
-	}
-	return nullptr;
-}
-
-bool UTGOR_ActionTask::HasMatter(UTGOR_Matter* Matter, int32 Quantity) const
-{
-	UTGOR_ItemStorage* Storage = GetCurrentItem();
-	if (IsValid(Storage))
-	{
-		return Storage->CountMatter(Matter) >= Quantity;
-	}
-	return Quantity <= 0;
-}
-
-int32 UTGOR_ActionTask::DepleteMatter(UTGOR_Matter* Matter, int32 Quantity)
-{
-	if (IsValid(Identifier.Component))
-	{
-		UTGOR_ItemStorage* Storage = GetCurrentItem();
-		if (IsValid(Storage))
-		{
-			const int32 Removed = Storage->RemoveMatter(Matter, Quantity);
-			if (!Storage->HasAnyMatter())
-			{
-				// Destroy if fully depleted
-				Identifier.Component->DestroyItemStorage(TakeCurrentItem());
-			}
-			return Removed;
-		}
-	}
-	return 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 UActorComponent* UTGOR_ActionTask::GetAimedComponent() const
 {
 	return LastAim.Component.Get();
@@ -440,11 +380,10 @@ bool UTGOR_ActionTask::IsInRange() const
 	{
 		// We use some linear combination of the shape radius/height for range checks
 		const FTGOR_MovementShape& Shape = PilotComponent->GetBody();
-		const float SquareShape = Shape.Radius * Shape.Radius + Shape.Height * Shape.Height / 4;
+		const float SquareShape = (Shape.Radius * Shape.Radius + Shape.Height * Shape.Height) / 4;
 
-		// Magical numbers but they're relative to something so it's okay, right?
-		const int32 Range = 7 * 7;
-		const int32 Reach = 4 * 4;
+		const int32 SquareReach = SquareShape * FMath::Square(Identifier.Content->AimReachDistance);
+		const int32 SquareRange = SquareShape * FMath::Square(Identifier.Content->AimRangeDistance);
 
 		const FVector AimLocation = GetAimedLocation(true);
 		const FTGOR_MovementPosition Position = PilotComponent->ComputePosition();
@@ -452,15 +391,15 @@ bool UTGOR_ActionTask::IsInRange() const
 
 		if (Identifier.Content->AimRange == ETGOR_AimDistanceEnumeration::InRange)
 		{
-			return (SquareDistance < SquareShape* Range);
+			return (SquareDistance < SquareRange);
 		}
 		else if (Identifier.Content->AimRange == ETGOR_AimDistanceEnumeration::InReach)
 		{
-			return (SquareDistance < SquareShape* Reach);
+			return (SquareDistance < SquareReach);
 		}
 		else
 		{
-			return (SquareShape * Reach < SquareDistance) && (SquareDistance < SquareShape* Range);
+			return (SquareReach < SquareDistance) && (SquareDistance < SquareRange);
 		}
 	}
 	return false;
@@ -483,8 +422,11 @@ bool UTGOR_ActionTask::CollectDebugInfo(float LogDuration, FTGOR_ActionDebugInfo
 		DebugInfo.HasValidMovement = HasValidMovement();
 		DebugInfo.IsInRange = IsInRange();
 
-		ETGOR_ValidEnumeration Invariance = ETGOR_ValidEnumeration::Valid;
-		OnCondition(Invariance);
+		ETGOR_ValidEnumeration Invariance = ETGOR_ValidEnumeration::Invalid;
+		if (CheckOwnerState())
+		{
+			OnCondition(Invariance);
+		}
 		DebugInfo.HasCondition = (Invariance == ETGOR_ValidEnumeration::Valid);
 		DebugInfo.IsRunning = IsRunning();
 
@@ -520,6 +462,11 @@ void UTGOR_ActionTask::Context(const FTGOR_AimInstance& Aim)
 	if (HasChanged)
 	{
 		OnTarget();
+	}
+
+	if (Identifier.Content->AutoTrigger && !Identifier.Component->IsRunningAny() && CanCall())
+	{
+		Identifier.Component->ScheduleSlotAction(Identifier.Slot);
 	}
 }
 

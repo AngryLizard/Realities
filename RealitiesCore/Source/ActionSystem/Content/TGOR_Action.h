@@ -141,6 +141,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ETGOR_AimDistanceEnumeration AimRange;
 
+	/** Multiple of owner radius/height for reach distance */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "AimRange == ETGOR_AimDistanceEnumeration::InReach || AimRange == ETGOR_AimDistanceEnumeration::OutReach"))
+		float AimReachDistance = 4.0f;
+
+	/** Multiple of owner radius/height for range distance */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "AimRange == ETGOR_AimDistanceEnumeration::InRange || AimRange == ETGOR_AimDistanceEnumeration::OutReach"))
+		float AimRangeDistance = 7.0f;
+	
 	/** Whether to check for current movement mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool CheckMovement;
@@ -163,16 +171,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool HasClientAuthority() const;
 
-	/** Checks whether this action supports a given item */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool SupportsItem(UTGOR_Item* Item) const;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Which type of input this action is triggered by */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<UTGOR_Input>> TriggerInputs;
+
+	/** Automatically trigger if valid condition */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool AutoTrigger;
 
 	/** Max time for equip */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR System")

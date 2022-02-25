@@ -24,6 +24,8 @@ public:
 	UTGOR_ProjectedPilotTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void Initialise() override;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -44,4 +46,6 @@ private:
 	UFUNCTION()
 		void RepNotifyLocal(const FTGOR_MovementDynamic& Old);
 
+	// Axis we're projecting along
+	EAxis::Type ProjectionAxis = EAxis::X;
 };

@@ -7,10 +7,11 @@
 #include "../TGOR_EventInstance.h"
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
+#include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
-#include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
 #include "AnimationSystem/Interfaces/TGOR_AnimationInterface.h"
-#include "InventorySystem/Components/TGOR_ItemRegisterComponent.h"
+#include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
+#include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "TGOR_ActionComponent.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActionScheduleDelegate, UTGOR_Actio
  * TGOR_ActionComponent allows equipment of actions
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_ItemRegisterComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface, public ITGOR_AttributeInterface
+class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_DimensionComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface, public ITGOR_AttributeInterface, public ITGOR_RegisterInterface
 {
 	GENERATED_BODY()
 
@@ -87,7 +88,6 @@ public:
 	virtual void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& Objs) override;
 	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 
-	virtual bool CanStoreItemAt(int32 Identifier, UTGOR_ItemStorage* Storage) const override;
 	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
 
 	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;

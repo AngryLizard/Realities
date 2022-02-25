@@ -1,7 +1,7 @@
 // The Gateway of Realities: Planes of Existence.
 
 #include "TGOR_MatterProcess.h"
-#include "InventorySystem/Storage/TGOR_ProcessStorage.h"
+#include "InventorySystem/Tasks/TGOR_ProcessTask.h"
 
 UTGOR_MatterProcess::UTGOR_MatterProcess()
 	: Super()

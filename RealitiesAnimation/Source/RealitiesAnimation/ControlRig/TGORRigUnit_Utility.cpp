@@ -842,6 +842,51 @@ FString FTGORRigUnit_SoftBoundaries::ProcessPinLabelForInjection(const FString& 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+FTGORRigUnit_BellCurve_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		Output = FMath::Exp(Value * Value / -Variance);
+	}
+}
+
+FString FTGORRigUnit_BellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGORRigUnit_DistanceBellCurve_Execute()
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
+	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+
+	if (Context.State == EControlRigState::Init)
+	{
+	}
+	else
+	{
+		Delta = Reference - Location;
+		Output = FMath::Exp(Delta.SizeSquared() / -Variance);
+	}
+}
+
+FString FTGORRigUnit_DistanceBellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
+{
+	FString Formula;
+	return FString::Printf(TEXT("%s: TODO"), *InLabel);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 FTGORRigUnit_PreviewAnimation_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()

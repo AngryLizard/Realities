@@ -57,9 +57,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		void AssignCapacities(UTGOR_MatterComponent* Component, TSubclassOf<UTGOR_Segment> Segment);
 
-	/** Add matter and capacity mapping from an item storage */
+	/** Add matter and capacity mapping from an item task */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		void AssignStorage(UTGOR_ItemStorage* Storage);
+		void AssignTask(UTGOR_ItemTask* Task);
 
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Inventory")
 		TArray<FTGOR_MatterPair> Instances;

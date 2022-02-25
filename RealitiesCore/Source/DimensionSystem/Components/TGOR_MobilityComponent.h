@@ -146,6 +146,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		bool CanParentLinear(UTGOR_PilotComponent* Attachee, int32 Index) const;
 
+	/** Parents a component to this mobility using the Parent index at a given world position. */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		bool ParentAttached(UTGOR_PilotComponent* Attachee, int32 Index, const FTGOR_MovementPosition& Position);
+
+	/** Parents a component to this mobility using the Parent index. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		bool CanParentAttached(UTGOR_PilotComponent* Attachee, int32 Index) const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 

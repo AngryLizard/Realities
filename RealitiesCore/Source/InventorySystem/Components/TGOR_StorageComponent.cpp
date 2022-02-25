@@ -6,8 +6,7 @@
 #include "InventorySystem/Content/TGOR_Item.h"
 #include "InventorySystem/Components/TGOR_ItemComponent.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
-#include "InventorySystem/Storage/Modules/TGOR_MatterModule.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 #include "SocketSystem/Tasks/TGOR_NamedSocketTask.h"
 #include "InventorySystem/Content/TGOR_Matter.h"
 
@@ -40,9 +39,11 @@ TArray<UTGOR_Item*> UTGOR_StorageComponent::GetAttachedItems() const
 	TArray<UTGOR_ItemComponent*> Containers = GetAttachedContainers();
 	for (UTGOR_ItemComponent* Container : Containers)
 	{
+		/*
 		UTGOR_ItemStorage* Storage = Container->PeekStorage();
 		UTGOR_Item* Item = Storage->GetItem();
 		Output.Emplace(Item);
+		*/
 	}
 	return Output;
 }
@@ -69,6 +70,7 @@ TArray<UTGOR_ItemComponent*> UTGOR_StorageComponent::GetAttachedContainers() con
 
 UTGOR_NamedSocket* UTGOR_StorageComponent::GetEmptySocketFor(UTGOR_Item* Item) const
 {
+	/*
 	const FTGOR_MovementShape Shape = Item->GetShape();
 	for (const auto& Pair : Attachments)
 	{
@@ -77,6 +79,7 @@ UTGOR_NamedSocket* UTGOR_StorageComponent::GetEmptySocketFor(UTGOR_Item* Item) c
 			return Pair.Key;
 		}
 	}
+	*/
 	return nullptr;
 }
 
@@ -90,8 +93,10 @@ TMap<UTGOR_Matter*, int32> UTGOR_StorageComponent::GetMissing() const
 	TMap<UTGOR_Matter*, int32> Missing;
 	for (UTGOR_ItemComponent* Container : Containers)
 	{
+		/*
 		UTGOR_ItemStorage* Slot = Container->PeekStorage();
 		Slot->CombineMissingOnto(Missing);
+		*/
 	}
 	return Missing;
 }
@@ -104,8 +109,10 @@ TMap<UTGOR_Matter*, int32> UTGOR_StorageComponent::GetComposition() const
 	TMap<UTGOR_Matter*, int32> Composition;
 	for (UTGOR_ItemComponent* Container : Containers)
 	{
+		/*
 		UTGOR_ItemStorage* Slot = Container->PeekStorage();
 		Slot->CombineCompositionOnto(Composition);
+		*/
 	}
 	return Composition;
 }
@@ -136,6 +143,7 @@ int32 UTGOR_StorageComponent::RemoveMatter(const TArray<UTGOR_ItemComponent*>& C
 	// Remove matter in order, remove items that are drained
 	for (UTGOR_ItemComponent* Container : Queue)
 	{
+		/*
 		UTGOR_ItemStorage* Slot = Container->PeekStorage();
 		Count += Slot->RemoveMatter(Matter, Quantity - Count);
 
@@ -148,6 +156,7 @@ int32 UTGOR_StorageComponent::RemoveMatter(const TArray<UTGOR_ItemComponent*>& C
 				Component->DestroyItemStorage(Slot);
 			}
 		}
+		*/
 	}
 	return Count;
 }
@@ -168,8 +177,10 @@ int32 UTGOR_StorageComponent::AddMatter(const TArray<UTGOR_ItemComponent*>& Cont
 	// Combine all item compositions
 	for (UTGOR_ItemComponent* Container : Containers)
 	{
+		/*
 		UTGOR_ItemStorage* Slot = Container->PeekStorage();
 		Quantity = Slot->AddMatter(Matter, Quantity);
+		*/
 	}
 	return Quantity;
 }

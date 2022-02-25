@@ -31,7 +31,9 @@ public class AnimationSystem : ModuleRules
 			"SlateCore",
 			"ControlRig",
 			"AnimGraphRuntime",
-			"MotionWarping"
+			"MotionWarping",
+			"MovieScene",
+			"LevelSequence"
 		});
 
 		if (Target.bBuildEditor)

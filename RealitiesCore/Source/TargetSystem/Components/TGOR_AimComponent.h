@@ -108,6 +108,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
 		void UnregisterHandle(UTGOR_CoreContent* Content);
 
+	/** Get nearby targets according to distance to aim-component */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
+		TArray<UTGOR_InteractableComponent*> GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 

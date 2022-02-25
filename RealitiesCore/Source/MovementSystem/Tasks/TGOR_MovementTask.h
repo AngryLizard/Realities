@@ -103,6 +103,9 @@ public:
 	/** Get current input vector and view, only called locally */
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const;
 
+	/** Process movement, only called once per engine tick (opposed to simulation tick) */
+	virtual void Process(float DeltaTime);
+
 	/** Simulate one movement tick */
 	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output);
 

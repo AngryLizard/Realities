@@ -96,24 +96,23 @@ void UTGOR_AnimatedTask::ResetAnimation()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime)
+void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 {
-	FTGOR_MovementPosition Position;
 	if (FMath::IsNearlyZero(DeltaTime))
 	{
-		return Position;
+		return;
 	}
 
 	TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
 	if (!Owner)
 	{
-		return Position;
+		return;
 	}
 
 	UTGOR_AnimationComponent* Component = Owner->GetAnimationComponent();
 	if (!IsValid(Component))
 	{
-		return Position;
+		return;
 	}
 
 	// Grab root motion now that we have ticked the pose
@@ -125,27 +124,42 @@ FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_Movemen
 			RootMotion.ScaleRootMotionTranslation(AnimRootMotionTranslationScale);
 
 			const FTransform Transform = ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform(), Component, DeltaTime);
-			Position.Linear = Transform.GetTranslation();
-			Position.Angular = Transform.GetRotation();
-
-			if (TransformRootMotionToLinearVelocity)
-			{
-				const FVector VelocityDelta = Position.Linear / DeltaTime - Space.RelativeLinearVelocity;
-				Space.RelativeLinearVelocity += VelocityDelta;
-				Space.LinearVelocity += VelocityDelta;
-				Position.Linear = FVector::ZeroVector;
-			}
-
-			if(TransformRootMotionToAngularVelocity)
-			{
-				const FVector VelocityDelta = Position.Angular.GetRotationAxis() * (Position.Angular.GetAngle() / DeltaTime) - Space.RelativeAngularVelocity;
-				Space.RelativeAngularVelocity += VelocityDelta;
-				Space.AngularVelocity += VelocityDelta;
-				Position.Angular = FQuat::Identity;
-			}
+			RootMotionDelta.Linear = Transform.GetTranslation();
+			RootMotionDelta.Angular = Transform.GetRotation();
+			RootMotionDelta.LinearVelocity = RootMotionDelta.Linear / DeltaTime;
+			RootMotionDelta.AngularVelocity = RootMotionDelta.Angular.GetRotationAxis() * (RootMotionDelta.Angular.GetAngle() / DeltaTime);
 		}
 	}
+}
 
+FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime)
+{
+	FTGOR_MovementPosition Position;
+	if (TransformRootMotionToLinearVelocity)
+	{
+		const FVector VelocityDelta = RootMotionDelta.LinearVelocity - Space.RelativeLinearVelocity;
+		Space.RelativeLinearVelocity += VelocityDelta;
+		Space.LinearVelocity += VelocityDelta;
+		Position.Linear = FVector::ZeroVector;
+	}
+	else
+	{
+		Position.Linear = RootMotionDelta.Linear;
+		RootMotionDelta.Linear = FVector::ZeroVector;
+	}
+
+	if(TransformRootMotionToAngularVelocity)
+	{
+		const FVector VelocityDelta = RootMotionDelta.AngularVelocity - Space.RelativeAngularVelocity;
+		Space.RelativeAngularVelocity += VelocityDelta;
+		Space.AngularVelocity += VelocityDelta;
+		Position.Angular = FQuat::Identity;
+	}
+	else
+	{
+		Position.Angular = RootMotionDelta.Angular;
+		RootMotionDelta.Angular = FQuat::Identity;
+	}
 	return Position;
 }
 

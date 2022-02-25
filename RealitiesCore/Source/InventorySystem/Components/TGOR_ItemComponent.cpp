@@ -2,7 +2,7 @@
 #include "TGOR_ItemComponent.h"
 
 #include "CoreSystem/Content/TGOR_CoreContent.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 #include "InventorySystem/Content/TGOR_Item.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
 
@@ -26,92 +26,96 @@ void UTGOR_ItemComponent::BeginPlay()
 void UTGOR_ItemComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (ItemSlot.Update(this, DeltaTime))
-	{
-		// TODO: Use this for deltaNetSerialize
-		ContainerUpdate();
-	}
 }
 
 void UTGOR_ItemComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION(UTGOR_ItemComponent, ItemSlot, COND_None);
-}
-
-TSet<UTGOR_CoreContent*> UTGOR_ItemComponent::GetActiveContent_Implementation() const
-{
-	TSet<UTGOR_CoreContent*> Active = Super::GetActiveContent();
-	if (IsValid(ItemSlot.Storage))
-	{
-		Active.Emplace(ItemSlot.Storage->GetItem());
-	}
-	return Active;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool UTGOR_ItemComponent::PurgeItemStorage(UTGOR_ItemStorage* Storage)
-{
-	if (ItemSlot.Storage == Storage)
-	{
-		// We don't remove the entry itself since this can be called from within a loop
-		ItemSlot.Storage = nullptr;
-		ContainerUpdate();
-		return true;
-	}
-	else if (IsValid(ItemSlot.Storage))
-	{
-		return ItemSlot.Storage->Purge(Storage);
-	}
-	return false;
+	DOREPLIFETIME_CONDITION(UTGOR_ItemComponent, ItemSlots, COND_None);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ItemComponent::RepNotifyItemSlot()
+void UTGOR_ItemComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies)
 {
-	ContainerUpdate();
+	TMap<UTGOR_Item*, TArray<UTGOR_ItemTask*>> Previous;
+
+	// Remove slots but cache both instances and items in case the new loadout can use them
+	for (int Slot = 0; Slot < ItemSlots.Num(); Slot++)
+	{
+		UTGOR_ItemTask* ItemSlot = ItemSlots[Slot];
+		if (IsValid(ItemSlot))
+		{
+			Previous.FindOrAdd(ItemSlot->GetItem()).Add(ItemSlot);
+		}
+	}
+
+	ItemSlots.Empty();
+
+	// Get installed item modes
+	TArray<UTGOR_Item*> Items = Dependencies.Spawner->GetMListFromType<UTGOR_Item>(SpawnItems);
+
+	// Get all candidates that are part of the movement queue
+	for (UTGOR_Item* Item : Items)
+	{
+		// Get slot from cache or create one
+		UTGOR_ItemTask* ItemSlot = nullptr;
+
+		TArray<UTGOR_ItemTask*>* Ptr = Previous.Find(Item);
+		if (Ptr && Ptr->Num() > 0)
+		{
+			ItemSlot = Ptr->Pop();
+		}
+		else
+		{
+			// No cache was found, create a new one
+			ItemSlot = Item->CreateItemTask(this, ItemSlots.Num());
+		}
+
+		// Initialise and add to slots
+		if (IsValid(ItemSlot))
+		{
+			ItemSlots.Add(ItemSlot);
+		}
+	}
+
+	// Discard tasks that got removed
+	for (const auto& Pair : Previous)
+	{
+		for (UTGOR_ItemTask* ItemSlot : Pair.Value)
+		{
+			ItemSlot->MarkPendingKill();
+		}
+	}
+}
+
+TMap<int32, UTGOR_SpawnModule*> UTGOR_ItemComponent::GetModuleType_Implementation() const
+{
+	TMap<int32, UTGOR_SpawnModule*> Modules;
+
+	const int32 Num = ItemSlots.Num();
+	for (UTGOR_ItemTask* ItemSlot : ItemSlots)
+	{
+		Modules.Emplace(ItemSlot->Identifier.Slot, ItemSlot->Identifier.Content);
+	}
+	return Modules;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UTGOR_ItemStorage* UTGOR_ItemComponent::PutItem(UTGOR_ItemStorage* Storage)
+TArray<UTGOR_ItemTask*> UTGOR_ItemComponent::GetItemListOfType(TSubclassOf<UTGOR_ItemTask> Type) const
 {
-	// Unpack first
-	OnUnpack.Broadcast(Storage);
-
-	// Store item into inventory
-	UTGOR_ItemStorage* Residual = ItemSlot.Storage;
-	ItemSlot.Storage = Storage;
-	ContainerUpdate();
-	return Residual;
-}
-
-UTGOR_ItemStorage* UTGOR_ItemComponent::PickItem()
-{
-	// Take item from inventory
-	UTGOR_ItemStorage* Storage = ItemSlot.Storage;
-	ItemSlot.Storage = nullptr;
-
-	// Pack first
-	OnPack.Broadcast(Storage);
-
-	// Despawn ItemDrop after removing item
-	UTGOR_PilotComponent* Pilot = GetOwnerComponent<UTGOR_PilotComponent>();
-	if (IsValid(Pilot))
+	TArray<UTGOR_ItemTask*> Items;
+	if (*Type)
 	{
-		Pilot->AttachWith(INDEX_NONE);
+		for (UTGOR_ItemTask* ItemSlot : ItemSlots)
+		{
+			if (ItemSlot->IsA(Type))
+			{
+				Items.Emplace(ItemSlot);
+			}
+		}
 	}
-
-	UTGOR_GameInstance::DespawnActor(GetOwner());
-	return Storage;
-}
-
-UTGOR_ItemStorage* UTGOR_ItemComponent::PeekStorage() const
-{
-	return ItemSlot.Storage;
+	return Items;
 }

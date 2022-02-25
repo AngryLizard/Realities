@@ -1,10 +1,8 @@
 // The Gateway of Realities: Planes of Existence.
 
-
 #include "TGOR_MatterQuery.h"
 
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
-#include "InventorySystem/Storage/Modules/TGOR_MatterModule.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 #include "InventorySystem/Components/TGOR_MatterComponent.h"
 
 #include "InventorySystem/Content/TGOR_Segment.h"
@@ -75,9 +73,9 @@ void UTGOR_MatterQuery::AssignCapacities(UTGOR_MatterComponent* Component, TSubc
 	}
 }
 
-
-void UTGOR_MatterQuery::AssignStorage(UTGOR_ItemStorage* Storage)
+void UTGOR_MatterQuery::AssignTask(UTGOR_ItemTask* Task)
 {
+	/*
 	AssignMap(Storage->GetComposition());
 
 	TMap<UTGOR_Matter*, int32> Missing = Storage->GetMissing();
@@ -85,4 +83,5 @@ void UTGOR_MatterQuery::AssignStorage(UTGOR_ItemStorage* Storage)
 	{
 		Instance.Capacity = Instance.Quantity + Missing[Instance.Matter];
 	}
+	*/
 }

@@ -3,9 +3,8 @@
 #include "TGOR_Science.h"
 //#include "InventorySystem/Content/TGOR_Matter.h"
 #include "InventorySystem/Content/TGOR_Item.h"
-#include "InventorySystem/Storage/Modules/TGOR_MatterModule.h"
-#include "InventorySystem/Storage/TGOR_ProcessStorage.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
+#include "InventorySystem/Tasks/TGOR_ProcessTask.h"
 #include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "InventorySystem/Components/TGOR_StorageComponent.h"
 #include "InventorySystem/Components/TGOR_ItemComponent.h"
@@ -17,9 +16,9 @@
 UTGOR_Science::UTGOR_Science()
 	: Super()
 {
-	Modules.Modules.Emplace("Matter", UTGOR_MatterModule::StaticClass());
 }
 
+/*
 float UTGOR_Science::Process(UTGOR_ProcessComponent* Owner, UTGOR_ProcessStorage* Storage, float Antimatter)
 {
 	Super::Process(Owner, Storage, Antimatter);
@@ -60,11 +59,13 @@ void UTGOR_Science::PostBuildResource()
 	SINGLETON_CHK;
 	UTGOR_ContentManager* ContentManager = Singleton->GetContentManager();
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool UTGOR_Science::IsValidInput(UTGOR_ItemComponent* Container) const
 {
+	/*
 	for (TSubclassOf<UTGOR_Item> InputItem : ItemInsertions)
 	{
 		UTGOR_ItemStorage* Storage = Container->PeekStorage();
@@ -74,12 +75,14 @@ bool UTGOR_Science::IsValidInput(UTGOR_ItemComponent* Container) const
 			return true;
 		}
 	}
+	*/
 	return false;
 }
 
 TArray<UTGOR_ItemComponent*> UTGOR_Science::FilterInput(const TArray<UTGOR_ItemComponent*>& Containers) const
 {
 	TArray<UTGOR_ItemComponent*> UsableItems;
+	/*
 	for (UTGOR_ItemComponent* Container : Containers)
 	{
 		if (IsValidInput(Container))
@@ -87,6 +90,7 @@ TArray<UTGOR_ItemComponent*> UTGOR_Science::FilterInput(const TArray<UTGOR_ItemC
 			UsableItems.Emplace(Container);
 		}
 	}
+	*/
 	return UsableItems;
 }
 

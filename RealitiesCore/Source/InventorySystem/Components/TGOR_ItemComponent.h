@@ -6,16 +6,22 @@
 
 #include "../TGOR_ItemInstance.h"
 
-#include "TGOR_ContainerComponent.h"
+#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
+#include "CoreSystem/Components/TGOR_SceneComponent.h"
 #include "TGOR_ItemComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemDropDelegate, UTGOR_ItemStorage*, Storage);
+class UTGOR_ItemTask;
+class UTGOR_Modifier;
+
+///////////////////////////////////////////// DELEGATES ///////////////////////////////////////////////////
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemFreedDelegate, UTGOR_ItemTask*, Task);
 
 /**
-* This component can be attached to every actor to give them the functionallity to store a item instance.
+* This component can be attached to every actor to give them the functionality to provide items.
 */
 UCLASS(BlueprintType, Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class INVENTORYSYSTEM_API UTGOR_ItemComponent : public UTGOR_ContainerComponent, public ITGOR_SaveInterface
+class INVENTORYSYSTEM_API UTGOR_ItemComponent : public UTGOR_SceneComponent, public ITGOR_DimensionInterface, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface
 {
 	GENERATED_BODY()
 
@@ -25,44 +31,44 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 
-	virtual TSet<UTGOR_CoreContent*> GetActiveContent_Implementation() const override;
-	virtual bool PurgeItemStorage(UTGOR_ItemStorage* Storage) override;
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
 	UPROPERTY(BlueprintAssignable, Category = "!TGOR Inventory")
-		FItemDropDelegate OnPack;
-
-	UPROPERTY(BlueprintAssignable, Category = "!TGOR Inventory")
-		FItemDropDelegate OnUnpack;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-private:
-
-	/** Currently included slots. */
-	UPROPERTY(ReplicatedUsing = RepNotifyItemSlot)
-		FTGOR_ItemInstance ItemSlot;
-
-	/**  */
-	UFUNCTION()
-		void RepNotifyItemSlot();
+		FItemFreedDelegate OnItemFreed;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Tries to pick up the item instance. On success the actor of this component will despawn and return the item. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* PutItem(UTGOR_ItemStorage* Storage);
+	/** Item types this container spawns with. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Inventory")
+		TArray<TSubclassOf<UTGOR_Item>> SpawnItems;
 
-	/** Tries to pick up the item instance. On success the actor of this component will despawn and return the item. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* PickItem();
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
 
-	/** Returns item storage. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* PeekStorage() const;
+	/** Get all item tasks of given type */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		TArray<UTGOR_ItemTask*> GetItemListOfType(TSubclassOf<UTGOR_ItemTask> Type) const;
 
+	template<typename T> TArray<T*> GetIListOfType() const
+	{
+		TArray<T*> Output;
+		TArray<UTGOR_ItemTask*> Items = GetItemListOfType(T::StaticClass());
+		for (UTGOR_ItemTask* Item : Items)
+		{
+			Output.Emplace(Cast<T>(Item));
+		}
+		return Output;
+	}
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
+
+	/** Currently assigned items. */
+	UPROPERTY(Replicated)
+		TArray<UTGOR_ItemTask*> ItemSlots;
 
 };

@@ -6,13 +6,14 @@
 
 #include "../TGOR_ProcessInstance.h"
 
-#include "TGOR_ContainerComponent.h"
+#include "DimensionSystem/Components/TGOR_DimensionComponent.h"
+#include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "TGOR_ProcessComponent.generated.h"
 
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
 
-class UTGOR_ItemStorage;
+class UTGOR_ProcessTask;
 class UTGOR_Matter;
 class UTGOR_Item;
 
@@ -27,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProcessMassDelegate, float, Mass);
  * TGOR_ProcessComponent manages processing
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class INVENTORYSYSTEM_API UTGOR_ProcessComponent : public UTGOR_ContainerComponent
+class INVENTORYSYSTEM_API UTGOR_ProcessComponent : public UTGOR_DimensionComponent, public ITGOR_SpawnerInterface
 {
 	GENERATED_BODY()
 
@@ -42,6 +43,9 @@ public:
 	void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
+
+	virtual void UpdateContent_Implementation(FTGOR_SpawnerDependencies& Dependencies) override;
+	virtual TMap<int32, UTGOR_SpawnModule*> GetModuleType_Implementation() const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -85,10 +89,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Currently active process */
-	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, Category = "!TGOR Inventory")
-		FTGOR_ProcessInstance ProcessState;
-
 	/** Whether the current process is valid */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		bool HasRunningProcess() const;
@@ -97,6 +97,37 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		bool IsRunningProcess(TSubclassOf<UTGOR_Process> Type) const;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Process types this processor spawns with. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Inventory")
+		TArray<TSubclassOf<UTGOR_Process>> SpawnProcesses;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Get all process tasks of given type */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		TArray<UTGOR_ProcessTask*> GetProcessListOfType(TSubclassOf<UTGOR_ProcessTask> Type) const;
+
+	template<typename T> TArray<T*> GetPListOfType() const
+	{
+		TArray<T*> Output;
+		TArray<UTGOR_ProcessTask*> Processes = GetProcessListOfType(T::StaticClass());
+		for (UTGOR_ProcessTask* Process : Processes)
+		{
+			Output.Emplace(Cast<T>(Process));
+		}
+		return Output;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	/** Currently assigned items. */
+	UPROPERTY(Replicated)
+		TArray<UTGOR_ProcessTask*> ProcessSlots;
 
 	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
 

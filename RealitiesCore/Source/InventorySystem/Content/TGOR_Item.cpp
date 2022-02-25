@@ -5,9 +5,8 @@
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 
 #include "InventorySystem/Components/TGOR_ItemComponent.h"
-#include "InventorySystem/Storage/TGOR_ItemStorage.h"
-#include "InventorySystem/Storage/Modules/TGOR_Module.h"
 #include "InventorySystem/Actors/TGOR_ItemDropActor.h"
+#include "InventorySystem/Tasks/TGOR_ItemTask.h"
 
 #include "CoreSystem/TGOR_Singleton.h"
 #include "InventorySystem/Content/TGOR_Matter.h"
@@ -17,9 +16,7 @@
 const float UTGOR_Item::DEFAULT_ITEM_LIFETIME = 300.0f;
 
 UTGOR_Item::UTGOR_Item()
-	: Super(),
-	Radius(64.0f),
-	HalfHeight(0.0f)
+	: Super()
 {
 }
 
@@ -28,45 +25,20 @@ TSubclassOf<AActor> UTGOR_Item::GetSpawnClass_Implementation() const
 	return DefaultItemActor;
 }
 
-UTGOR_ItemStorage* UTGOR_Item::CreateStorage()
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+UTGOR_ItemTask* UTGOR_Item::CreateItemTask(UTGOR_ItemComponent* Component, int32 SlotIdentifier)
 {
-	UTGOR_ItemStorage* Storage = NewObject<UTGOR_ItemStorage>(this);
-	Storage->ItemRef = this;
-	BuildStorage(Storage);
-	return Storage;
+	return UTGOR_Task::CreateTask(this, TaskType, Component, SlotIdentifier);
 }
 
-void UTGOR_Item::BuildStorage(UTGOR_ItemStorage* Storage)
+void UTGOR_Item::TaskInitialise(UTGOR_ItemTask* ItemTask)
 {
-	Storage->BuildModules(Modules);
-	InitialiseStorage(Storage);
+	OnTaskInitialise(ItemTask);
 }
 
-void UTGOR_Item::SetCapsuleSize(UCapsuleComponent* Capsule)
-{
-	if (IsValid(Capsule))
-	{
-		Capsule->SetCapsuleSize(Radius, HalfHeight + Radius);
-	}
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-float UTGOR_Item::GetRadius() const
-{
-	return Radius;
-}
-
-float UTGOR_Item::GetHeight() const
-{
-	return (HalfHeight + Radius) * 2;
-}
-
-FTGOR_MovementShape UTGOR_Item::GetShape() const
-{
-	FTGOR_MovementShape Shape;
-	Shape.Height = GetHeight();
-	Shape.Radius = GetRadius();
-	return Shape;
-}
 
 bool UTGOR_Item::CanAssembleWith(const TMap<UTGOR_Matter*, int32>& Matter) const
 {
@@ -129,27 +101,6 @@ int32 UTGOR_Item::GetCapacityBits(UTGOR_Matter* Matter) const
 float UTGOR_Item::GetDefaultItemLifeTime()
 {
 	return UTGOR_Item::DEFAULT_ITEM_LIFETIME;
-}
-
-
-bool UTGOR_Item::IsSupportedBy(const FTGOR_ItemRestriction& Restriction) const
-{
-	if (*Restriction.ItemType && IsA(Restriction.ItemType))
-	{
-		if (!*Restriction.ModuleType)
-		{
-			return true;
-		}
-
-		for (const auto& Pair : Modules.Modules)
-		{
-			if (Pair.Value->IsChildOf(Restriction.ModuleType))
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 const TMap<TObjectPtr<UTGOR_Matter>, int32>& UTGOR_Item::GetComponentCapacity() const

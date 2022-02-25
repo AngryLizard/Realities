@@ -55,7 +55,7 @@ protected:
 public:
 
 	/** Socket types this component spawns with. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		TArray<TSubclassOf<UTGOR_Socket>> SpawnSockets;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

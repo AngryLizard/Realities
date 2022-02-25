@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 
+#include "RealitiesUtility/Utility/TGOR_Error.h"
 #include "CoreSystem/TGOR_Object.h"
 #include "TGOR_Task.generated.h"
 

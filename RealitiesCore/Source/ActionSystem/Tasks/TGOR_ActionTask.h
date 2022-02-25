@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "../TGOR_ActionInstance.h"
-#include "InventorySystem/Storage/TGOR_StorageInstance.h"
 
 #include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
 #include "TGOR_ActionTask.generated.h"
@@ -177,28 +176,6 @@ public:
 	/** Returns whether this storage is currently running in its ActionComponent */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunning() const;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Gets this action's slot item */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* GetCurrentItem() const;
-
-	/** Swaps an item with this action's slot item */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* SwapWithCurrentItem(UTGOR_ItemStorage* ItemStorage);
-
-	/** Takes this action's slot item */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* TakeCurrentItem();
-
-	/** Checks whether given quantity of matter is available to be depleted */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool HasMatter(UTGOR_Matter* Matter, int32 Quantity) const;
-
-	/** Remove given quantity of matter from current item, removed item if empty, returns removed quantity */
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		int32 DepleteMatter(UTGOR_Matter* Matter, int32 Quantity);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

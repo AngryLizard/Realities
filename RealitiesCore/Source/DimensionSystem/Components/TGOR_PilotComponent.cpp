@@ -32,9 +32,15 @@ UTGOR_PilotComponent::UTGOR_PilotComponent()
 void UTGOR_PilotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	UTGOR_PilotTask* PilotTask = GetPilotTask();
+	if (IsValid(PilotTask))
+	{
+		PilotTask->Update(DeltaTime);
+	}
 }
 
-void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
+void UTGOR_PilotComponent::OnUnregister()
 {
 	for (UTGOR_PilotTask* PilotTask : PilotSlots)
 	{
@@ -42,7 +48,7 @@ void UTGOR_PilotComponent::DestroyComponent(bool bPromoteChildren)
 	}
 	PilotSlots.Empty();
 
-	Super::DestroyComponent(bPromoteChildren);
+	Super::OnUnregister();
 }
 
 void UTGOR_PilotComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const

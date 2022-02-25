@@ -32,7 +32,7 @@ void UTGOR_WalkingTask::Initialise()
 {
 	Super::Initialise();
 
-	IPC.Generate(Pendulum, Riccati);
+	//IPC.Generate(Pendulum, Riccati);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

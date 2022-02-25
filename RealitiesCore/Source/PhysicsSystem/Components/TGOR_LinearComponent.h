@@ -11,7 +11,7 @@
  * UTGOR_LinearComponent physically moves an object without rotation (making collisions more stable).
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class PHYSICSSYSTEM_API UTGOR_LinearComponent : public UTGOR_RigidPawnComponent
+class PHYSICSSYSTEM_API UTGOR_LinearComponent : public UMovementComponent
 {
 	GENERATED_BODY()
 
@@ -32,7 +32,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	virtual void ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
+	//virtual void ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

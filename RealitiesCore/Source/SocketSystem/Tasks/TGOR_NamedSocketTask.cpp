@@ -6,6 +6,7 @@
 
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
+#include "DrawDebugHelpers.h"
 
 FTGOR_NamedSocketParenting::FTGOR_NamedSocketParenting()
 	: Socket(nullptr)
@@ -47,7 +48,7 @@ FTGOR_MovementPosition UTGOR_NamedSocketTask::ComputePosition() const
 		const FTGOR_MovementPosition Position = Parenting.Component->ComputePosition();
 		const FTGOR_MovementPosition Part = Parenting.Component->GetTransformOfSocket(Parenting.Socket->SocketName);
 ;
-		const FTransform ParentTransform = Identifier.Component->GetComponentTransform();
+		const FTransform ParentTransform = Parenting.Component->GetComponentTransform();
 
 		FTGOR_MovementPosition Local;
 		Local.Linear = ParentTransform.InverseTransformPositionNoScale(Part.Linear);
@@ -64,7 +65,7 @@ FTGOR_MovementSpace UTGOR_NamedSocketTask::ComputeSpace() const
 		FTGOR_MovementSpace Space = Parenting.Component->ComputeSpace();
 		const FTGOR_MovementPosition Part = Parenting.Component->GetTransformOfSocket(Parenting.Socket->SocketName);
 
-		const FTransform ParentTransform = Identifier.Component->GetComponentTransform();
+		const FTransform ParentTransform = Parenting.Component->GetComponentTransform();
 
 		FTGOR_MovementDynamic Local;
 		Local.Linear = ParentTransform.InverseTransformPositionNoScale(Part.Linear);
@@ -77,6 +78,11 @@ FTGOR_MovementSpace UTGOR_NamedSocketTask::ComputeSpace() const
 void UTGOR_NamedSocketTask::Update(float DeltaTime)
 {
 	Super::Update(DeltaTime);
+
+	if (IsValid(Identifier.Component))
+	{
+		Identifier.Component->OnPositionChange(ComputePosition());
+	}
 }
 
 void UTGOR_NamedSocketTask::Unparent()

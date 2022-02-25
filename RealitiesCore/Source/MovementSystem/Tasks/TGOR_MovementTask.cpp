@@ -107,6 +107,11 @@ void UTGOR_MovementTask::QueryInput(FVector& OutInput, FVector& OutView) const
 	OutView = FVector::ZeroVector;
 }
 
+void UTGOR_MovementTask::Process(float DeltaTime)
+{
+	ConsumeRootMotion(DeltaTime);
+}
+
 void UTGOR_MovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 }

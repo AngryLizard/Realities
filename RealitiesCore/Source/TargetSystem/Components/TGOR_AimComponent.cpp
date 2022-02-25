@@ -60,11 +60,12 @@ void UTGOR_AimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (IsValid(Pawn) && Pawn->IsLocallyControlled())
 	{
+		UpdateCandidatesNearby();
+
 		APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController());
 		if (IsValid(PlayerController) && PlayerController->IsLocalController())
 		{
 			// Update aim
-			UpdateCandidatesNearby();
 			const FVector Location = PlayerController->PlayerCameraManager->GetCameraLocation();
 			const FRotator Rotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 			UpdateAimFromCamera(Location, Rotation.Vector());
@@ -328,6 +329,32 @@ TSubclassOf<UTGOR_Target> UTGOR_AimComponent::GetAimFilter() const
 		if (!Filter->IsChildOf(Pair.Value.Filter)) return nullptr; // No intersection
 	}
 	return Filter;
+}
+
+TArray<UTGOR_InteractableComponent*> UTGOR_AimComponent::GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const
+{
+	// TODO: Use heap structure for better performance
+	// Find matching candidates
+	TArray<TPair<UTGOR_InteractableComponent*, float>> CandidateDistances;
+	for (UTGOR_InteractableComponent* Candidate : Candidates)
+	{
+		const float DistanceSqr = (Candidate->GetComponentLocation() - GetComponentLocation()).SizeSquared();
+		if (DistanceSqr < MaxDistance * MaxDistance && Candidate->Targets.ContainsByPredicate([Type](UTGOR_Target* Target) { return Target->IsA(Type); }))
+		{
+			CandidateDistances.Emplace(Candidate, DistanceSqr);
+		}
+	}
+
+	// Sort by distance
+	CandidateDistances.Sort([](const auto& A, const auto& B) { return A.Value < B.Value; });
+
+	// Compile output interactions
+	TArray<UTGOR_InteractableComponent*> Output;
+	for (const auto& Pair : CandidateDistances)
+	{
+		Output.Emplace(Pair.Key);
+	}
+	return Output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

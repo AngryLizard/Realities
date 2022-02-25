@@ -8,7 +8,7 @@
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
-#include "TGOR_ItemRegisterComponent.h"
+#include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "TGOR_MatterComponent.generated.h"
 
 
@@ -48,7 +48,7 @@ public:
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
 	UPROPERTY(BlueprintAssignable, Category = "!TGOR Inventory")
-		FSlotUpdateDelegate OnMatterChanged;
+		FMatterStorageDelegate OnMatterChanged;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

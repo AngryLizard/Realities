@@ -55,23 +55,22 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Pendulum properties for wind-up */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		FTGOR_PendulumProperties Pendulum;
+	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
 
-	/** Properties for riccati equation solver */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		FTGOR_RiccatiProperties Riccati;
-
+/*
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		FTGOR_PendulumProperties Pendulum;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		FTGOR_RiccatiProperties Riccati;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 
 	UPROPERTY()
 		FTGOR_IPCProperties IPC;
-
+*/
 };

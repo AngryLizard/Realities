@@ -1,0 +1,11 @@
+// The Gateway of Realities: Planes of Existence.
+
+
+#include "TGOR_TraversalAction.h"
+
+UTGOR_TraversalAction::UTGOR_TraversalAction()
+	: Super()
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////

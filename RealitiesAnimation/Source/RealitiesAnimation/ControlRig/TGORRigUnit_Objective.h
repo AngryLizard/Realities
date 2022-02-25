@@ -88,3 +88,60 @@ struct REALITIESANIMATION_API FTGORRigUnit_ObjectivePlanarProject : public FTGOR
 		FCachedRigElement ObjPlaneCache;
 };
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Bellcurve for Bulge
+ */
+USTRUCT(meta = (DisplayName = "Bulge Bell Curve", Category = "TGOR Utility", Keywords = "TGOR,Utility", PrototypeName = "BulgeBellCurve", NodeColor = "1.0 0.44 0.0"))
+struct REALITIESANIMATION_API FTGORRigUnit_BulgeBellCurve : public FTGORRigUnit_Mutable
+{
+	GENERATED_BODY()
+
+		FTGORRigUnit_BulgeBellCurve() {}
+
+	RIGVM_METHOD()
+		virtual void Execute(const FRigUnitContext& Context) override;
+
+	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+
+public:
+
+	/**
+	 * Control used for bulge distance
+	 */
+	UPROPERTY(meta = (Input, ExpandByDefault))
+		FRigElementKey ObjectKey = FRigElementKey(FName(), ERigElementType::Control);
+
+	/**
+	 * Bone to apply bulge to
+	 */
+	UPROPERTY(meta = (Input, ExpandByDefault))
+		FRigElementKey BulgeKey = FRigElementKey(FName(), ERigElementType::Bone);
+
+	/**
+	 * Bellcurve variance
+	 */
+	UPROPERTY(meta = (Input))
+		float Variance = 1.0f;
+
+	/**
+	 * Input radius ratio
+	 */
+	UPROPERTY(meta = (Input))
+		float Radius = 1.0f;
+
+	/**
+	 * Bulge offset
+	 */
+	UPROPERTY(meta = (Input))
+		FVector Offset = FVector::ZeroVector;
+
+	// Cache
+	UPROPERTY(Transient)
+		FCachedRigElement ObjectCache;
+	UPROPERTY(Transient)
+		FCachedRigElement BulgeCache;
+};

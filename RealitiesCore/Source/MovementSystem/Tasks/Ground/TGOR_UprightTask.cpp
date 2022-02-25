@@ -54,3 +54,20 @@ float UTGOR_UprightTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_
 	const float C = StandingStretch;
 	return (A * X + B) * X + C;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool UTGOR_UprightTask::IsCrouching() const
+{
+	return MovementContact.GroundRatio < (CrouchStretch + StandingStretch) / 2;
+}
+
+bool UTGOR_UprightTask::IsStanding() const
+{
+	return !IsCrouching() && !IsFalling();
+}
+
+bool UTGOR_UprightTask::IsFalling() const
+{
+	return MovementContact.GroundRatio > (StandingStretch + TraceLengthMultiplier) / 2;
+}

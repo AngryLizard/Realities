@@ -346,7 +346,7 @@ void UTGOR_AttachComponent::UpdateBodySetup()
 		bUseArchetypeBodySetup = InvalidateOrUpdateConeBodySetup<EShapeBodySetupHelper::InvalidateSharingIfStale>(ShapeBodySetup, bUseArchetypeBodySetup, LimitRadius, AngleX, AngleY);
 	}
 
-	if (ShapeBodySetup == nullptr || ShapeBodySetup->IsPendingKill())
+	if (ShapeBodySetup == nullptr || !IsValid(ShapeBodySetup))
 	{
 		ShapeBodySetup = NewObject<UBodySetup>(this, NAME_None, RF_Transient);
 		if (GUObjectArray.IsDisregardForGC(this))

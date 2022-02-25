@@ -45,6 +45,7 @@ UTGOR_Action::UTGOR_Action()
 	SupportedItem(),
 	AimTarget(ETGOR_AimIgnoreEnumeration::None),
 	AimRange(ETGOR_AimDistanceEnumeration::NoRange),
+	AutoTrigger(false),
 	MaxPrepareTime(0.0f),
 	MaxFinishTime(0.0f)
 {
@@ -62,15 +63,6 @@ UTGOR_ActionTask* UTGOR_Action::CreateActionTask(UTGOR_ActionComponent* Componen
 bool UTGOR_Action::HasClientAuthority() const
 {
 	return ClientAuthority > ETGOR_ClientAuthority::NoAuthority;
-}
-
-bool UTGOR_Action::SupportsItem(UTGOR_Item* Item) const
-{
-	if (IsValid(Item))
-	{
-		return Item->IsSupportedBy(SupportedItem);
-	}
-	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

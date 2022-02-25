@@ -65,6 +65,9 @@ protected:
 	/** Reset animation on this task. */
 		void ResetAnimation();
 
+	/** Extract root motion from current animation over a given timeframe */
+		void ConsumeRootMotion(float DeltaTime);
+
 	/** Tick animation and extract root motion */
 		FTGOR_MovementPosition TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime);
 
@@ -73,6 +76,9 @@ protected:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
+
+	/** Rootmotion left to consume */
+	FTGOR_MovementDynamic RootMotionDelta;
 
 	/** Get animation owner to run with */
 	virtual TScriptInterface<ITGOR_AnimationInterface> GetAnimationOwner() const PURE_VIRTUAL(UTGOR_AnimatedTask::GetAnimationOwner, return nullptr; );

@@ -8,6 +8,7 @@
 
 #include "MotionWarpingComponent.h"
 #include "AnimationSystem/Notifies/TGOR_MotionWarpingNotifyState.h"
+#include "DrawDebugHelpers.h"
 
 UTGOR_MontageMovementTask::UTGOR_MontageMovementTask()
 	: Super(),
@@ -73,8 +74,9 @@ void FTGOR_RootMotionModifier::Update(UTGOR_MontageMovementTask* Task)
 
 FTransform FTGOR_RootMotionModifier::ProcessRootMotion(UTGOR_MontageMovementTask* Task, UTGOR_AnimationComponent* Component, const FTransform& InRootMotion, float DeltaSeconds) const
 {
-	FTGOR_MovementPosition Position = Task->RootComponent->ComputePosition();
+	FTGOR_MovementPosition Position;
 	Position.Linear = Component->GetComponentLocation();
+	Position.Angular = Component->GetComponentQuat();
 
 	FTransform FinalRootMotion = InRootMotion;
 	const FTransform RootMotionTotal = UMotionWarpingUtilities::ExtractRootMotionFromAnimation(Animation.Get(), PreviousPosition, EndTime);
@@ -89,18 +91,34 @@ FTransform FTGOR_RootMotionModifier::ProcessRootMotion(UTGOR_MontageMovementTask
 
 	DeltaTranslation = (CachedSyncPoint.Linear - Position.Linear).GetSafeNormal() * TranslationWarped;
 
+	/*
+	const FQuat DeltaRotation = Position.Angular * Task->RootComponent->ComputePosition().Angular.Inverse();
+	DeltaRotation = DeltaRotation * DeltaTranslation;
+	*/
+
 	FinalRootMotion.SetTranslation(DeltaTranslation);
 
 	const FQuat WarpedRotation = WarpRotation(Position, InRootMotion, RootMotionTotal, DeltaSeconds);
 	FinalRootMotion.SetRotation(WarpedRotation);
+
 	return FinalRootMotion;
 }
 
 FQuat FTGOR_RootMotionModifier::WarpRotation(const FTGOR_MovementPosition& Position, const FTransform& RootMotionDelta, const FTransform& RootMotionTotal, float DeltaSeconds) const
 {
+	/*
+	const FQuat CurrentRotation = Position.Angular;
+	const FQuat RemainingRootRotationInWorld = RootMotionTotal.GetRotation();
+	const FQuat CurrentPlusRemainingRootMotion = RemainingRootRotationInWorld * CurrentRotation;
+	const FQuat TargetRotation = CachedSyncPoint.Angular;
+
+	return CurrentRotation.Inverse() * TargetRotation;
+	*/
+
+
 	const FQuat CurrentRotation = Position.Angular;
 	const FQuat TargetRotation = CachedSyncPoint.Angular;
-	const float TimeRemaining = (EndTime - PreviousPosition) * 0.01f; //WarpRotationTimeMultiplier
+	const float TimeRemaining = (EndTime - PreviousPosition); //WarpRotationTimeMultiplier
 	const FQuat RemainingRootRotationInWorld = RootMotionTotal.GetRotation();
 	const FQuat CurrentPlusRemainingRootMotion = RemainingRootRotationInWorld * CurrentRotation;
 	const float PercentThisStep = FMath::Clamp(DeltaSeconds / TimeRemaining, 0.f, 1.f);
@@ -146,6 +164,40 @@ void UTGOR_MontageMovementTask::Update(const FTGOR_MovementSpace& Space, const F
 	FTGOR_MovementSpace Out = Space;
 
 	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Out, Tick.DeltaTime);
+
+	/*
+	// TODO: Motionwarping is very iffy right now, just hard-set it to the syncpoints
+	for (const TSharedPtr<FTGOR_RootMotionModifier>& Modifier : RootMotionModifiers)
+	{
+		const FTGOR_MovementPosition* SyncPointPtr = FindSyncPoint(Modifier->SyncPointName);
+
+		// Disable if there is no sync point for us
+		TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
+		if (Owner && SyncPointPtr)
+		{
+			UTGOR_AnimationComponent* Component = Owner->GetAnimationComponent();
+			if (Component)
+			{
+				const float StepTime = FMath::Clamp((Modifier->CurrentPosition - Modifier->PreviousPosition) / (Modifier->EndTime - Modifier->PreviousPosition), 0.0f, 1.0f) * Modifier->Weight;
+
+				const FVector DeltaLocation = RootComponent->GetComponentLocation() - Component->GetComponentLocation();
+				const FQuat DeltaRotation = RootComponent->GetComponentQuat().Inverse() * Component->GetComponentQuat();
+
+				if (Modifier->State == ETGOR_RootMotionModifierState::Active)
+				{
+					VPORT(StepTime);
+					//Out.Linear = DeltaLocation * StepTime + SyncPointPtr->Linear;
+					//Out.Angular = FQuat::Slerp(FQuat::Identity, DeltaRotation, StepTime) * SyncPointPtr->Angular;
+				}
+				else if (Modifier->State == ETGOR_RootMotionModifierState::MarkedForRemoval)
+				{
+					Out.Linear = SyncPointPtr->Linear + DeltaLocation;
+					Out.Angular = DeltaRotation * SyncPointPtr->Angular;
+				}
+			}
+		}
+	}
+	*/
 
 	// Simulate move
 	RootComponent->SimulateMove(Out, Offset, Tick.DeltaTime, false);
@@ -277,18 +329,18 @@ void UTGOR_MontageMovementTask::Update()
 		{
 			Modifier->Update(this);
 		}
-
-		// Remove the modifiers that have been marked for removal
-		RootMotionModifiers.RemoveAll([this](const TSharedPtr<FTGOR_RootMotionModifier>& Modifier)
-		{
-			if (Modifier->State == ETGOR_RootMotionModifierState::MarkedForRemoval)
-			{
-				return true;
-			}
-
-			return false;
-		});
 	}
+
+	// Remove the modifiers that have been marked for removal
+	RootMotionModifiers.RemoveAll([this](const TSharedPtr<FTGOR_RootMotionModifier>& Modifier)
+	{
+		if (Modifier->State == ETGOR_RootMotionModifierState::MarkedForRemoval)
+		{
+			return true;
+		}
+
+		return false;
+	});
 }
 
 FTransform UTGOR_MontageMovementTask::ProcessRootMotionPreConvertToWorld(const FTransform& InRootMotion, UTGOR_AnimationComponent* Component, float DeltaSeconds)

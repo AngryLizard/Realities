@@ -63,6 +63,12 @@ void UTGOR_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick Tic
 		MovementInput.Input = ConsumedInput;
 	}
 
+	UTGOR_MovementTask* CurrentTask = GetMovementTask();
+	if (IsValid(CurrentTask))
+	{
+		CurrentTask->Process(DeltaTime);
+	}
+
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (GetOwnerRole() == ENetRole::ROLE_AutonomousProxy)

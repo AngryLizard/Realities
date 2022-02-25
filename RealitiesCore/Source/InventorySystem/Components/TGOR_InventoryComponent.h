@@ -3,8 +3,7 @@
 
 #include "CoreMinimal.h"
 
-#include "CoreSystem/Storage/TGOR_SaveInterface.h"
-#include "TGOR_ItemRegisterComponent.h"
+#include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "TGOR_InventoryComponent.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -14,10 +13,10 @@
 
 
 /**
- * TGOR_InventoryComponent allows storing inventory items
+ * TGOR_InventoryComponent allows storing items
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class INVENTORYSYSTEM_API UTGOR_InventoryComponent : public UTGOR_ItemRegisterComponent, public ITGOR_SaveInterface
+class INVENTORYSYSTEM_API UTGOR_InventoryComponent : public UTGOR_DimensionComponent
 {
 	GENERATED_BODY()
 
@@ -29,35 +28,26 @@ public:
 
 	UTGOR_InventoryComponent();
 
-	void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const override;
-
-	virtual bool CanStoreItemAt(int32 Identifier, UTGOR_ItemStorage* Storage) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
-
-
-	UPROPERTY(BlueprintAssignable, Category = "!TGOR Storage")
-		FItemMoveDelegate OnItemPut;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Puts item in first available slot, returns residuals. */
+	/** Endpoint for freeing unused items */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* PutItem(UTGOR_ItemStorage* Storage);
+		void FreeItem(UTGOR_ItemTask* Task);
 
-	/** Generates item and puts it into this inventory, returns residual */
+	/** Inserts an item, if another was displaced by this insertion the displaced item is returned */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		UTGOR_ItemStorage* CreateItem(TSubclassOf<UTGOR_Item> Type);
+		virtual UTGOR_ItemTask* PushItem(UTGOR_ItemTask* Task);
+
+	/** Pulls an item from this inventory, returns nothing if empty or refused */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
+		virtual UTGOR_ItemTask* PullItem();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
-	
-	/** Max number of supported items. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Inventory")
-		int32 MaxItemCount;
 	
 	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
 

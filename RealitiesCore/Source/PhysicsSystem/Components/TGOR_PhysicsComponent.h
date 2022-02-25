@@ -6,7 +6,8 @@
 
 #include "PhysicsSystem/TGOR_PhysicsInstance.h"
 
-#include "CoreSystem/Components/TGOR_Component.h"
+#include "CoreSystem/Interfaces/TGOR_SingletonInterface.h"
+#include "GameFramework/MovementComponent.h"
 #include "TGOR_PhysicsComponent.generated.h"
 
 class UTGOR_PilotComponent;
@@ -15,7 +16,7 @@ class UTGOR_PilotComponent;
  * UTGOR_PhysicsComponent Keeps track of physics surroundings.
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class PHYSICSSYSTEM_API UTGOR_PhysicsComponent : public UTGOR_Component
+class PHYSICSSYSTEM_API UTGOR_PhysicsComponent : public UMovementComponent, public ITGOR_SingletonInterface
 {
 	GENERATED_BODY()
 	

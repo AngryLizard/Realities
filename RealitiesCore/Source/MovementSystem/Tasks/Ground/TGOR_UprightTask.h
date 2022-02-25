@@ -53,6 +53,21 @@ protected:
 
 	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const override;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Whether we're currently low enough to be crouching */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		bool IsCrouching() const;
+
+	/** Whether we're currently high enough to be standing */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		bool IsStanding() const;
+
+	/** Whether we're currently high enough to be falling */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		bool IsFalling() const;
+
 private:
 
 };

@@ -6,14 +6,13 @@
 #include "Components/CapsuleComponent.h"
 
 #include "DimensionSystem/TGOR_MobilityInstance.h"
-#include "InventorySystem/Storage/TGOR_StorageInstance.h"
 #include "InventorySystem/TGOR_ItemInstance.h"
 
 #include "TGOR_Matter.h"
 #include "DimensionSystem/Content/TGOR_Spawner.h"
 #include "TGOR_Item.generated.h"
 
-class UTGOR_ItemStorage;
+class UTGOR_ItemTask;
 class UTGOR_ContainerComponent;
 class ATGOR_ItemDropActor;
 //class UTGOR_Matter; // for some reason this lets me not use content templates and I have to include the header in here. Why why why why why why why why. (see * in cpp)
@@ -27,45 +26,14 @@ class INVENTORYSYSTEM_API UTGOR_Item : public UTGOR_Spawner
 {
 	GENERATED_BODY()
 
-	friend class UTGOR_ItemStorage;
+		friend class UTGOR_ItemTask;
 
 public:
 	UTGOR_Item();
 
 	virtual TSubclassOf<AActor> GetSpawnClass_Implementation() const override;
 
-	/**
-	* Create an empty storage instance for this item.
-	* @see TGOR_Storage
-	*/
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		virtual UTGOR_ItemStorage* CreateStorage();
-
-	/** Build Storage modules and set their default values */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		virtual void BuildStorage(UTGOR_ItemStorage* Storage);
-
-	/** Change values and module values of a created storage object */
-	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		void InitialiseStorage(UTGOR_ItemStorage* Storage);
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Set the capsule size to the values of this item. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		void SetCapsuleSize(UCapsuleComponent* Capsule);
-
-	/** Return the radius of the with of this item. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		float GetRadius() const;
-
-	/** Return the absoule height of this item. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		float GetHeight() const;
-
-	/** Return the absoule shape item. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		FTGOR_MovementShape GetShape() const;
 
 	/** Return whether this item can be fully constructed using given matter quantities. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
@@ -82,10 +50,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Tick this item with given storage and owner, return action to be performed by container after tick. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		void Tick(UTGOR_DimensionComponent* Owner, UTGOR_ItemStorage* Storage, float DeltaSeconds);
-
 	/** Check whether composition includes given matter. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		bool HasComposition(UTGOR_Matter* Matter) const;
@@ -93,25 +57,6 @@ public:
 	/** Get number of bits required to serialise matter quantity. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
 		int32 GetCapacityBits(UTGOR_Matter* Matter) const;
-
-	/** Whether this item fits a given restriction. */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		bool IsSupportedBy(const FTGOR_ItemRestriction& Restriction) const;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** The width of this item as a radius. */
-	UPROPERTY(EditAnywhere, Category = "!TGOR Inventory")
-		float Radius;
-
-	/** The half height of this item (without radius). */
-	UPROPERTY(EditAnywhere, Category = "!TGOR Inventory")
-		float HalfHeight;
-
-	/** Modules that are part of this item storage */
-	UPROPERTY(EditAnywhere, Category = "!TGOR Inventory")
-		FTGOR_StorageDeclaration Modules;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -122,6 +67,28 @@ protected:
 	*/
 	UPROPERTY(EditAnywhere, Category = "!TGOR Inventory")
 		TSubclassOf<ATGOR_ItemDropActor> DefaultItemActor;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Task type to be spawned by this item */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<UTGOR_ItemTask> TaskType;
+
+	/** Creates an item task to be used in the component */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory|Instance", Meta = (Keywords = "C++"))
+		UTGOR_ItemTask* CreateItemTask(UTGOR_ItemComponent* Component, int32 SlotIdentifier);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+protected:
+
+	virtual void TaskInitialise(UTGOR_ItemTask* ItemTask);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Called once when this task is assigned to a component. Should usually only happen once. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
+		void OnTaskInitialise(UTGOR_ItemTask* ItemTask);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

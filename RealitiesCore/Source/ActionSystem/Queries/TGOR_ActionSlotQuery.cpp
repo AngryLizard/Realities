@@ -4,7 +4,6 @@
 #include "CoreSystem/Content/TGOR_CoreContent.h"
 #include "InventorySystem/Content/TGOR_Item.h"
 #include "ActionSystem/Content/TGOR_Action.h"
-#include "InventorySystem/Storage/TGOR_Storage.h"
 
 #include "ActionSystem/Components/TGOR_ActionComponent.h"
 
