@@ -41,9 +41,9 @@ void UTGOR_ProjectedPilotTask::InitDynamic(const FTGOR_MovementDynamic& Dynamic)
 {
 	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
 	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
+	Local.Linear.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponentForAxis(ProjectionAxis, 0.0f);
 	Super::InitDynamic(Dynamic);
 }
 
@@ -51,9 +51,9 @@ void UTGOR_ProjectedPilotTask::SimulateDynamic(const FTGOR_MovementDynamic& Dyna
 {
 	const FTGOR_MovementDynamic ParentDynamic = ComputeParentSpace();
 	Local.DynamicToBase(ParentDynamic, Dynamic);
-	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
+	Local.Linear.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponentForAxis(ProjectionAxis, 0.0f);
 	Super::SimulatePosition(Dynamic);
 }
 
@@ -61,9 +61,9 @@ void UTGOR_ProjectedPilotTask::SimulatePosition(const FTGOR_MovementPosition& Po
 {
 	const FTGOR_MovementPosition ParentPosition = ComputeParentPosition();
 	Local.PositionToBase(ParentPosition, Position);
-	Local.Linear.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearVelocity.SetComponent(ProjectionAxis, 0.0f);
-	Local.LinearAcceleration.SetComponent(ProjectionAxis, 0.0f);
+	Local.Linear.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearVelocity.SetComponentForAxis(ProjectionAxis, 0.0f);
+	Local.LinearAcceleration.SetComponentForAxis(ProjectionAxis, 0.0f);
 	Super::SimulatePosition(Position);
 }
 

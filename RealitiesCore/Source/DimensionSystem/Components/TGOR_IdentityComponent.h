@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "../TGOR_ActorInstance.h"
+#include "DimensionSystem/TGOR_ActorInstance.h"
+#include "DimensionSystem/TGOR_DimensionInstance.h"
 
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"

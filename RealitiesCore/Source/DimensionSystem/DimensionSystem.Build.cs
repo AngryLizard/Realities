@@ -30,6 +30,7 @@ public class DimensionSystem : ModuleRules
 				"Slate",
 				"SlateCore",
 				"ReplicationGraph",
+				"DeveloperSettings",
 				"UMG",
 			}
 			);
