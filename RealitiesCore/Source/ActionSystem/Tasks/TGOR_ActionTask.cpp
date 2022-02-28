@@ -257,13 +257,11 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 
 	if (HasTrigger && AllowTrigger)
 	{
-		Identifier.Component->ScheduleSlotAction(Identifier.Slot);
-		Handled = true;
+		Handled = Identifier.Component->ScheduleSlotAction(Identifier.Slot);
 	}
 
 	return Handled;
 }
-
 
 bool UTGOR_ActionTask::IsActiveInput(TSubclassOf<UTGOR_Input> InputType) const
 {
