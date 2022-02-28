@@ -188,10 +188,6 @@ void FTGOR_MovementState::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleto
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGOR_MovementGround::FTGOR_MovementGround()
-:	SurfaceNormal(FVector::UpVector),
-	SurfaceOffset(FVector::ZeroVector),
-	Slope(0.0f),
-	GroundRatio(0.0f)
 {
 }
 

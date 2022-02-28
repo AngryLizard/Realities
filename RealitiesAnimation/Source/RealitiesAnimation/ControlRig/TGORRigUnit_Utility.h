@@ -975,13 +975,13 @@ public:
 	 * Input Location
 	 */
 	UPROPERTY(meta = (Input))
-		FVector Location;
+		FVector Location = FVector::ZeroVector;
 
 	/**
 	 * Reference Location
 	 */
 	UPROPERTY(meta = (Input))
-		FVector Reference;
+		FVector Reference = FVector::ZeroVector;
 
 	/**
 	 * Bellcurve strength
@@ -999,7 +999,7 @@ public:
 	 * Output Delta
 	 */
 	UPROPERTY(meta = (Output))
-		FVector Delta;
+		FVector Delta = FVector::ZeroVector;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

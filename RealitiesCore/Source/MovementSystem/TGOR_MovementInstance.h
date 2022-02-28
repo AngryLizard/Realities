@@ -128,27 +128,27 @@ struct MOVEMENTSYSTEM_API FTGOR_MovementGround
 
 	/** Up direction along surface in euclidean space */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector SurfaceNormal;
+		FVector SurfaceNormal = FVector::UpVector;
 
 	/** Offset from ground to center of mass */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector SurfaceOffset;
+		FVector SurfaceOffset = FVector::ZeroVector;
 
 	/** Surface slope multiplier in [0, 1]*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Slope;
+		float Slope = 0.0f;
 
 	/** Distance ratio from ground in [0, 1] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float GroundRatio;
+		float GroundRatio = 0.0f;
 
 	/** Closest distance ratio from ground in [0, 1] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float MinGroundRatio;
+		float MinGroundRatio = 0.0f;
 
 	/** Furthest distance ratio from ground in [0, 1] */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float MaxGroundRatio;
+		float MaxGroundRatio = 1.0f;
 };
 
 /**

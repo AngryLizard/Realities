@@ -118,7 +118,7 @@ FTGORRigUnit_BulgeBellCurve_Execute()
 			const float Scale = 1.0f + FMath::Exp((Reference - Object.GetLocation()).SizeSquared() / -(Variance * Radius)) * Radius;
 
 			FTransform Transform = Bulge;
-			Transform.SetScale3D(Transform.GetScale3D() * Scale);
+			Transform.SetScale3D(Transform.GetScale3D() * FVector(FMath::Lerp(1.0f, Scale, ScaleMask.X), FMath::Lerp(1.0f, Scale, ScaleMask.Y), FMath::Lerp(1.0f, Scale, ScaleMask.Z)));
 			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false);
 		}
 	}

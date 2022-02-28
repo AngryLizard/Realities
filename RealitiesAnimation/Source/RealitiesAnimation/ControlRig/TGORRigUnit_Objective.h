@@ -122,6 +122,12 @@ public:
 		FRigElementKey BulgeKey = FRigElementKey(FName(), ERigElementType::Bone);
 
 	/**
+	 * Mask applied to scale
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		FVector ScaleMask = FVector(1,1,1);
+
+	/**
 	 * Bellcurve variance
 	 */
 	UPROPERTY(meta = (Input))

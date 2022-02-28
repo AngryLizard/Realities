@@ -107,7 +107,7 @@ UTGOR_HandleComponent* UTGOR_AnimationLibrary::GetHandleComponent(AActor* Owner,
 		{
 			if (!EnforceCone || IsValid(Component->MovementCone))
 			{
-				if (Component->SpawnPrimitive->IsChildOf(Type))
+				if (IsValid(Component->SpawnPrimitive) && Component->SpawnPrimitive->IsChildOf(Type))
 				{
 					return Component;
 				}
@@ -131,7 +131,7 @@ void UTGOR_AnimationLibrary::GetHandleComponents(TArray<UTGOR_HandleComponent*>&
 			{
 				for (TSubclassOf<UTGOR_Primitive> Type : Types)
 				{
-					if (Component->SpawnPrimitive->IsChildOf(Type))
+					if (IsValid(Component->SpawnPrimitive) && Component->SpawnPrimitive->IsChildOf(Type))
 					{
 						Handles.Emplace(Component);
 						break;
