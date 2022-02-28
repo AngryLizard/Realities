@@ -152,7 +152,7 @@ void UTGOR_PilotComponent::OnPositionChange(const FTGOR_MovementPosition& Positi
 			if (SurroundingVolume.IsValid())
 			{
 				// Attach to new volume if we were parented to the previous one (or to nothing at all)
-				if (!IsValid(PilotTask) || (IsValid(PreviousVolume) && HasParent(PreviousVolume->GetMovement())))
+				if (!IsValid(PilotTask) || (IsValid(PreviousVolume) && GetParent() == PreviousVolume->GetMovement()))
 				{
 					UTGOR_MobilityComponent* Movement = SurroundingVolume->GetMovement();
 					if (IsValid(Movement))
