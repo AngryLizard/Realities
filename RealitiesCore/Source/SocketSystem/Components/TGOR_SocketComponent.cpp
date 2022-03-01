@@ -265,9 +265,6 @@ void UTGOR_SocketComponent::UpdatePrimitiveCache()
 
 void UTGOR_SocketComponent::UpdateCurrentAttachments()
 {
-
-	//for (const auto& Pair : Attachments)
-
 	if (GetOwnerRole() != ENetRole::ROLE_Authority) return;
 	for (auto& Pair : Attachments)
 	{
