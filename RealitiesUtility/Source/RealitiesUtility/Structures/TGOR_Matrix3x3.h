@@ -21,15 +21,15 @@ struct REALITIESUTILITY_API FTGOR_Matrix3x3
 	FTGOR_Matrix3x3(const FVector& X, const FVector& Y, const FVector& Z); // Build
 	FVector operator* (const FVector& Other) const;
 
-	float SizeSquared() const;
+	double SizeSquared() const;
 	FTGOR_Matrix3x3 operator+=(const FTGOR_Matrix3x3& Other);
 	FTGOR_Matrix3x3 operator+ (const FTGOR_Matrix3x3& Other) const;
 	FTGOR_Matrix3x3 operator-=(const FTGOR_Matrix3x3& Other);
 	FTGOR_Matrix3x3 operator- (const FTGOR_Matrix3x3& Other) const;
-	FTGOR_Matrix3x3 operator* (float Scale) const;
+	FTGOR_Matrix3x3 operator* (double Scale) const;
 
-	float& operator()(int32 I, int32 J);
-	float operator()(int32 I, int32 J)const;
+	double& operator()(int32 I, int32 J);
+	double operator()(int32 I, int32 J)const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector X;
@@ -44,7 +44,7 @@ struct REALITIESUTILITY_API FTGOR_Matrix3x3
 	FVector Diag() const;
 	FVector PowerMethod(const FVector& Input, int32 Iterations) const;
 	FVector CholeskyInvert(const FVector& Input) const;
-	float Det() const;
+	double Det() const;
 
 	static const FTGOR_Matrix3x3 Identity;
 };

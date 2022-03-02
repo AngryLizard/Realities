@@ -84,7 +84,8 @@ void FTGOR_ControlRigCache::InitialiseControlTransforms(USkinnedMeshComponent* S
 	{
 		if (TScriptInterface<ITGOR_ControlInterface> ControlComponent = TScriptInterface<ITGOR_ControlInterface>(ChildComponent))
 		{
-			const int32 ControlIndex = ControlRig->GetControlHierarchy().GetIndex(ControlComponent->GetControlName());
+			URigHierarchy* Hierarchy = ControlRig->GetHierarchy();
+			const int32 ControlIndex = Hierarchy->GetIndex(FRigElementKey(ControlComponent->GetControlName(), ERigElementType::Control));
 			if (ControlIndex != INDEX_NONE)
 			{
 				ControlMapping.Emplace(ControlIndex, ControlComponent);
@@ -100,7 +101,8 @@ void FTGOR_ControlRigCache::UpdateTransforms(TArray<FTransform>& Transforms, USk
 		// reset transforms here to prevent additive transforms from accumulating to INF
 		// we only update transforms from the mesh pose for bones in the current LOD, 
 		// so the reset here ensures excluded bones are also reset
-		ControlRig->GetBoneHierarchy().ResetTransforms();
+		URigHierarchy* Hierarchy = ControlRig->GetHierarchy();
+		//Hierarchy->ResetTransforms();
 
 		/*
 		// we just do name mapping
@@ -130,7 +132,8 @@ void FTGOR_ControlRigCache::UpdateTransforms(TArray<FTransform>& Transforms, USk
 			{
 				if (Transforms.IsValidIndex(Iter.Value()))
 				{
-					Transforms[Iter.Value()] = ControlRig->GetBoneHierarchy().GetLocalTransform(Iter.Key());
+					URigHierarchy* OtherHierarchy = ControlRig->GetHierarchy();
+					Transforms[Iter.Value()] = OtherHierarchy->GetLocalTransform(FRigElementKey(Iter.Key(), ERigElementType::Bone));
 				}
 			}
 		}
@@ -160,8 +163,9 @@ void FTGOR_ControlRigCache::UpdateControlTransforms(USkinnedMeshComponent* Skinn
 	{
 		if (!Pair.Value->IsInitialOnly() || bIsInitial)
 		{
+			URigHierarchy* Hierarchy = ControlRig->GetHierarchy();
 			const FTransform Transform = Pair.Value->GetControlTransform(SkinnedMesh);
-			ControlRig->GetControlHierarchy().SetGlobalTransform(Pair.Key, Transform);
+			Hierarchy->SetGlobalTransform(Pair.Key, Transform);
 		}
 	}
 }

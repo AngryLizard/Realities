@@ -16,6 +16,7 @@
 #include "Rendering/SkeletalMeshLODRenderData.h"
 #include "CustomisationSystem/Components/TGOR_CustomisationComponent.h"
 #include "Animation/MorphTarget.h"
+#include "RHIDefinitions.h"
 
 #include "RealitiesUtility/Utility/TGOR_Error.h"
 /*-----------------------------------------------------------------------------
@@ -225,16 +226,20 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 		{
 			UMorphTarget* MorphTarget = NewObject<UMorphTarget>(MergeMesh, MorphPairs.Key);
 			MorphTarget->BaseSkelMesh = MergeMesh;
-			MorphTarget->MorphLODModels.SetNum(MaxNumLODs);
+
+			TArray<FMorphTargetLODModel>& MorphLODModels = MorphTarget->GetMorphLODModels();
+			MorphLODModels.SetNum(MaxNumLODs);
+
 			for (int32 LODIdx = 0; LODIdx < MaxNumLODs; LODIdx++)
 			{
-				FMorphTargetLODModel& MorphLODModel = MorphTarget->MorphLODModels[LODIdx];
+				FMorphTargetLODModel& MorphLODModel = MorphLODModels[LODIdx];
 				MorphLODModel.bGeneratedByEngine = true;
 				MorphLODModel.Vertices.Empty();
 				MorphLODModel.NumBaseMeshVerts = 0;
 				for (UMorphTarget* OtherTarget : MorphPairs.Value)
 				{
-					MorphLODModel.NumBaseMeshVerts += OtherTarget->MorphLODModels[LODIdx].NumBaseMeshVerts;
+					const TArray<FMorphTargetLODModel>& OtherMorphLODModels = OtherTarget->GetMorphLODModels();
+					MorphLODModel.NumBaseMeshVerts += OtherMorphLODModels[LODIdx].NumBaseMeshVerts;
 				}
 			}
 			MorphTargets.Add(MorphTarget);
@@ -255,10 +260,10 @@ bool FTGOR_SkeletalMeshMerge::FinalizeMesh()
 				GENERATE_LOD_MODEL(TGPUSkinVertexFloat32Uvs, PerLODNumUVSets[LODIdx]);
 			}
 
-
 			for (UMorphTarget* MorphTarget : MorphTargets)
 			{
-				FMorphTargetLODModel& MorphLODModel = MorphTarget->MorphLODModels[LODIdx];
+				TArray<FMorphTargetLODModel>& MorphLODModels = MorphTarget->GetMorphLODModels();
+				FMorphTargetLODModel& MorphLODModel = MorphLODModels[LODIdx];
 				MorphLODModel.Vertices.Sort(FTGOR_CompareMorphTargetDeltas());
 				MorphLODModel.Vertices.Shrink();
 
@@ -463,30 +468,30 @@ void GetTypedSkinnedVertex(
 	const FSkinWeightVertexBuffer& SkinWeightVertexBuffer,
 	const int32 VertIndex,
 	const TArray<FTransform>& ComponentSpaceTransforms,
-	FVector& OutPosition,
-	FVector& OutTangentX,
-	FVector& OutTangentZ
+	FVector3f& OutPosition,
+	FVector3f& OutTangentX,
+	FVector3f& OutTangentZ
 )
 {
-	OutPosition = FVector::ZeroVector;
-	OutTangentX = FVector::ZeroVector;
-	OutTangentZ = FVector::ZeroVector;
+	OutPosition = FVector3f::ZeroVector;
+	OutTangentX = FVector3f::ZeroVector;
+	OutTangentZ = FVector3f::ZeroVector;
 
 	// Do soft skinning for this vertex.
 	const int32 MaxBoneInfluences = SkinWeightVertexBuffer.GetMaxBoneInfluences();
 
-	const FVector VertexTangentX = StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentX(VertIndex);
-	const FVector VertexTangentZ = StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(VertIndex);
-	const FVector VertexLocation = StaticVertexBuffers.PositionVertexBuffer.VertexPosition(VertIndex);
+	const FVector4f VertexTangentX = StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentX(VertIndex);
+	const FVector4f VertexTangentZ = StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(VertIndex);
+	const FVector3f VertexLocation = StaticVertexBuffers.PositionVertexBuffer.VertexPosition(VertIndex);
 
 	// Initialise to zero
-	FMatrix InvBinding = FMatrix::Identity * 0.0f;
+	FMatrix44f InvBinding = FMatrix44f::Identity * 0.0f;
 
 	const FReferenceSkeleton& MergeRefSkeleton = MergeMesh->GetRefSkeleton();
 	const FReferenceSkeleton& SkelRefSkeleton = SkelMesh->GetRefSkeleton();
 
-	const TArray<FMatrix>& MergeRefBasesInvMatrix = MergeMesh->GetRefBasesInvMatrix();
-	const TArray<FMatrix>& SkelRefBasesInvMatrix = SkelMesh->GetRefBasesInvMatrix();
+	const TArray<FMatrix44f>& MergeRefBasesInvMatrix = MergeMesh->GetRefBasesInvMatrix();
+	const TArray<FMatrix44f>& SkelRefBasesInvMatrix = SkelMesh->GetRefBasesInvMatrix();
 
 #if !PLATFORM_LITTLE_ENDIAN
 	// uint8[] elements in LOD.VertexBufferGPUSkin have been swapped for VET_UBYTE4 vertex stream use
@@ -501,9 +506,9 @@ void GetTypedSkinnedVertex(
 		const int32 MeshBoneIndex = MergeRefSkeleton.FindBoneIndex(SkelRefSkeleton.GetBoneName(SrcBoneIndex));
 		if (MeshBoneIndex != INDEX_NONE)
 		{
-			const FMatrix BoneTransformMatrix = ComponentSpaceTransforms[MeshBoneIndex].ToMatrixWithScale();
-			const FMatrix SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * BoneTransformMatrix;
-			const FMatrix RefToLocal = MergeRefBasesInvMatrix[MeshBoneIndex] * BoneTransformMatrix;
+			const FMatrix44f BoneTransformMatrix = FMatrix44f(ComponentSpaceTransforms[MeshBoneIndex].ToMatrixWithScale());
+			const FMatrix44f SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * BoneTransformMatrix;
+			const FMatrix44f RefToLocal = MergeRefBasesInvMatrix[MeshBoneIndex] * BoneTransformMatrix;
 
 			OutPosition += SrcToLocal.TransformPosition(VertexLocation) * Weight;
 			OutTangentX += SrcToLocal.TransformVector(VertexTangentX) * Weight;
@@ -513,7 +518,7 @@ void GetTypedSkinnedVertex(
 		}
 		else
 		{
-			const FMatrix SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * FMatrix::Identity;
+			const FMatrix44f SrcToLocal = SkelRefBasesInvMatrix[SrcBoneIndex] * FMatrix44f::Identity;
 
 			OutPosition += SrcToLocal.TransformPosition(VertexLocation) * Weight;
 			OutTangentX += SrcToLocal.TransformVector(VertexTangentX) * Weight;

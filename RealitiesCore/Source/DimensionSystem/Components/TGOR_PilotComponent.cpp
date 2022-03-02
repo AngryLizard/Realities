@@ -243,7 +243,7 @@ void UTGOR_PilotComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencie
 		for (UTGOR_PilotTask* PilotSlot : Pair.Value)
 		{
 			PilotSlot->Unparent();
-			PilotSlot->MarkPendingKill();
+			PilotSlot->MarkAsGarbage();
 		}
 	}
 

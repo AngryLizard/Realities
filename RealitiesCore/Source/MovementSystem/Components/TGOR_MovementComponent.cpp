@@ -166,7 +166,7 @@ void UTGOR_MovementComponent::UpdateContent_Implementation(FTGOR_SpawnerDependen
 	{
 		for (UTGOR_MovementTask* MovementSlot : Pair.Value)
 		{
-			MovementSlot->MarkPendingKill();
+			MovementSlot->MarkAsGarbage();
 		}
 	}
 

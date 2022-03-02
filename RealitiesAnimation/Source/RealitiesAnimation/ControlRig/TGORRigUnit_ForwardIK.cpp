@@ -6,7 +6,7 @@
 #include "RealitiesUtility/Utility/TGOR_Math.h"
 #include "Units/RigUnitContext.h"
 
-FTransform ComputeObjectiveTransform(FRigHierarchyContainer* Hierarchy, const FRigUnit_ObjectiveSettings& Settings, const FRigElementKey& Element, const FTransform& Objective)
+FTransform ComputeObjectiveTransform(URigHierarchy* Hierarchy, const FRigUnit_ObjectiveSettings& Settings, const FRigElementKey& Element, const FTransform& Objective)
 {
 	const FVector EEForwardTarget = Objective.TransformVectorNoScale(Settings.ForwardAxis);
 	const FVector EEUpTarget = Objective.TransformVectorNoScale(Settings.UpAxis);
@@ -50,7 +50,7 @@ FTransform Fabrik(TArray<FTransform>& Transforms, const TArray<FTransform>& Rest
 FTGORRigUnit_AnchorIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -75,7 +75,7 @@ FTGORRigUnit_AnchorIK_Execute()
 			for (int32 Index = 0; Index < ChainNum; Index++)
 			{
 				Transforms.Emplace(Hierarchy->GetGlobalTransform(Chain[Index]));
-				Rest.Emplace(Hierarchy->GetInitialTransform(Chain[Index]));
+				Rest.Emplace(Hierarchy->GetInitialGlobalTransform(Chain[Index]));
 			}
 
 			// Objective properties
@@ -152,7 +152,7 @@ void InitialiseBendTransforms(
 	Transforms.Reserve(ChainNum);
 	for (int32 Index = 0; Index < ChainNum; Index++)
 	{
-		Rest.Emplace(Context.Hierarchy->GetInitialTransform(Chain[Index]));
+		Rest.Emplace(Context.Hierarchy->GetInitialGlobalTransform(Chain[Index]));
 		Transforms.Emplace(Context.Hierarchy->GetGlobalTransform(Chain[Index]));
 		StartChain.Emplace(StartEE);
 		EndChain.Emplace(EndEE);
@@ -218,7 +218,7 @@ void ChainBackwardSolve(const FRigUnitContext& Context, const FRigUnit_DebugSett
 FTGORRigUnit_BendIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -283,7 +283,7 @@ FString FTGORRigUnit_BendIK::ProcessPinLabelForInjection(const FString& InLabel)
 FTGORRigUnit_SingleBendIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{

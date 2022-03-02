@@ -129,21 +129,21 @@ public:
 	static void DataWrite(UTGOR_Context* Context, CTGOR_Database* Database, uint32 Position, uint32& Size, const FQuat& In)
 	{
 		const FQuat Quat = In.GetNormalized();
-		const bool Negative = Quat.W < 0.0f;
-		CTGOR_Pack<float>::DataWrite(Context, Database, Position+0, Size, Quat.X);
-		CTGOR_Pack<float>::DataWrite(Context, Database, Position+4, Size, Quat.Y);
-		CTGOR_Pack<float>::DataWrite(Context, Database, Position+8, Size, Quat.Z);
+		const bool Negative = Quat.W < 0.0;
+		CTGOR_Pack<double>::DataWrite(Context, Database, Position+0, Size, Quat.X);
+		CTGOR_Pack<double>::DataWrite(Context, Database, Position+4, Size, Quat.Y);
+		CTGOR_Pack<double>::DataWrite(Context, Database, Position+8, Size, Quat.Z);
 		CTGOR_Pack<bool>::DataWrite(Context, Database, Position+12, Size, Negative);
 		Size = 13;
 	}
 	static bool DataRead(UTGOR_Context* Context, const CTGOR_Database* Database, uint32 Position, uint32 Size, FQuat& Out)
 	{
 		bool Negative;
-		CTGOR_Pack<float>::DataRead(Context, Database, Position + 0, 4, Out.X);
-		CTGOR_Pack<float>::DataRead(Context, Database, Position + 4, 4, Out.Y);
-		CTGOR_Pack<float>::DataRead(Context, Database, Position + 8, 4, Out.Z);
+		CTGOR_Pack<double>::DataRead(Context, Database, Position + 0, 4, Out.X);
+		CTGOR_Pack<double>::DataRead(Context, Database, Position + 4, 4, Out.Y);
+		CTGOR_Pack<double>::DataRead(Context, Database, Position + 8, 4, Out.Z);
 		CTGOR_Pack<bool>::DataRead(Context, Database, Position + 12, 1, Negative);
-		Out.W = FMath::Sqrt(1.0f - Out.X * Out.X - Out.Y * Out.Y - Out.Z * Out.Z);
+		Out.W = FMath::Sqrt(1.0 - Out.X * Out.X - Out.Y * Out.Y - Out.Z * Out.Z);
 		if (Negative) Out.W *= -1;
 		return true;
 	}
@@ -157,10 +157,10 @@ public:
 	{
 		// When normalised, quaternion can be expressed with 3 numbers
 		const FQuat Quat = In.GetNormalized();
-		const bool Sgn = Quat.W < 0.0f;
-		uint16 X = FMath::RoundToInt((Quat.X + 1.0f) * INT16_MAX) & 0xFFFF;
-		uint16 Y = FMath::RoundToInt((Quat.Y + 1.0f) * INT16_MAX) & 0xFFFF;
-		uint16 Z = FMath::RoundToInt((Quat.Z + 1.0f) * INT16_MAX) & 0xFFFF;
+		const bool Sgn = Quat.W < 0.0;
+		uint16 X = FMath::RoundToInt((Quat.X + 1.0) * INT16_MAX) & 0xFFFF;
+		uint16 Y = FMath::RoundToInt((Quat.Y + 1.0) * INT16_MAX) & 0xFFFF;
+		uint16 Z = FMath::RoundToInt((Quat.Z + 1.0) * INT16_MAX) & 0xFFFF;
 		CTGOR_Arch<uint16>::DataWrite(Context, Archive, X);
 		CTGOR_Arch<uint16>::DataWrite(Context, Archive, Y);
 		CTGOR_Arch<uint16>::DataWrite(Context, Archive, Z);
@@ -174,10 +174,10 @@ public:
 		CTGOR_Arch<uint16>::DataRead(Context, Archive, Y);
 		CTGOR_Arch<uint16>::DataRead(Context, Archive, Z);
 		CTGOR_Arch<bool>::DataRead(Context, Archive, Sgn);
-		Out.X = ((float)X) / INT16_MAX - 1.0f;
-		Out.Y = ((float)Y) / INT16_MAX - 1.0f;
-		Out.Z = ((float)Z) / INT16_MAX - 1.0f;
-		Out.W = FMath::Sqrt(FMath::Max(1.0f - Out.X * Out.X - Out.Y * Out.Y - Out.Z * Out.Z, 0.0f));
+		Out.X = ((double)X) / INT16_MAX - 1.0;
+		Out.Y = ((double)Y) / INT16_MAX - 1.0;
+		Out.Z = ((double)Z) / INT16_MAX - 1.0;
+		Out.W = FMath::Sqrt(FMath::Max(1.0 - Out.X * Out.X - Out.Y * Out.Y - Out.Z * Out.Z, 0.0));
 		if (Sgn) Out.W *= -1;
 		return true;
 	}

@@ -15,7 +15,7 @@ FTGOR_SkewParams::FTGOR_SkewParams()
 }
 
 
-int32 GetNewIndexForOldVertIndex(const FMatrix& Transform, int32 MeshVertIndex, TMap<int32, int32>& MeshToSectionVertMap, const FStaticMeshVertexBuffers& VertexBuffers, TArray<FVector>& Vertices, TArray<FVector>& Normals, TArray<FVector2D>& UVs, TArray<FProcMeshTangent>& Tangents, TArray<FColor>& Colors)
+int32 GetNewIndexForOldVertIndex(const FMatrix& Transform, int32 MeshVertIndex, TMap<int32, int32>& MeshToSectionVertMap, const FStaticMeshVertexBuffers& VertexBuffers, TArray<FVector>& Vertices, TArray<FVector>& Normals, TArray<FVector2f>& UVs, TArray<FProcMeshTangent>& Tangents, TArray<FColor>& Colors)
 {
 	int32* NewIndexPtr = MeshToSectionVertMap.Find(MeshVertIndex);
 	if (NewIndexPtr != nullptr)
@@ -28,7 +28,7 @@ int32 GetNewIndexForOldVertIndex(const FMatrix& Transform, int32 MeshVertIndex, 
 		int32 SectionVertIndex = Vertices.Add(Transform.TransformPosition(VertexBuffers.PositionVertexBuffer.VertexPosition(MeshVertIndex)));
 
 		// Copy normal
-		Normals.Add(Transform.TransformVector(VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(MeshVertIndex)));
+		Normals.Add(Transform.TransformVector(FVector4d(VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(MeshVertIndex))));
 		check(Normals.Num() == Vertices.Num());
 
 		// Copy UVs
@@ -57,7 +57,7 @@ int32 GetNewIndexForOldVertIndex(const FMatrix& Transform, int32 MeshVertIndex, 
 	}
 }
 
-void GetSectionFromStaticMesh(const FMatrix& Transform, UStaticMesh* InMesh, int32 LODIndex, int32 SectionIndex, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector>& Normals, TArray<FVector2D>& UVs, TArray<FProcMeshTangent>& Tangents, TArray<FColor>& Colors)
+void GetSectionFromStaticMesh(const FMatrix& Transform, UStaticMesh* InMesh, int32 LODIndex, int32 SectionIndex, TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector>& Normals, TArray<FVector2f>& UVs, TArray<FProcMeshTangent>& Tangents, TArray<FColor>& Colors)
 {
 	if (InMesh != nullptr)
 	{
@@ -124,10 +124,10 @@ void UTGOR_SkewLibrary::GenerateSkew(
 				TArray<FVector> Vertices;
 				TArray<int32> Triangles;
 				TArray<FVector> Normals;
-				TArray<FVector2D> UVs;
-				TArray<FVector2D> UVs1;
-				TArray<FVector2D> UVs2;
-				TArray<FVector2D> UVs3;
+				TArray<FVector2f> UVs;
+				TArray<FVector2f> UVs1;
+				TArray<FVector2f> UVs2;
+				TArray<FVector2f> UVs3;
 				TArray<FProcMeshTangent> Tangents;
 				TArray<FColor> Colors;
 
@@ -144,7 +144,7 @@ void UTGOR_SkewLibrary::GenerateSkew(
 					Mesh.Vertices[Index].Color = Colors[Index];
 					Mesh.Vertices[Index].Normal = Normals[Index];
 					Mesh.Vertices[Index].Tangent = Tangents[Index].TangentX;
-					Mesh.Vertices[Index].UV = UVs[Index];
+					Mesh.Vertices[Index].UV = FVector2D(UVs[Index]);
 				}
 
 				const int32 TriangleNum = Triangles.Num() / 3;

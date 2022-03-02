@@ -11,7 +11,7 @@
 FTGORRigUnit_LookAtIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -85,7 +85,7 @@ FString FTGORRigUnit_LookAtIK::ProcessPinLabelForInjection(const FString& InLabe
 FTGORRigUnit_EyelidIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{

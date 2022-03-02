@@ -3,6 +3,7 @@
 #include "TGOR_Package.h"
 
 template<> FString CTGOR_Pack<bool>::DataType() { return "Boolean"; }
+template<> FString CTGOR_Pack<double>::DataType() { return "Double"; }
 template<> FString CTGOR_Pack<float>::DataType() { return "Float"; }
 template<> FString CTGOR_Pack<uint8>::DataType() { return "Byte"; }
 template<> FString CTGOR_Pack<int8>::DataType() { return "Char"; }

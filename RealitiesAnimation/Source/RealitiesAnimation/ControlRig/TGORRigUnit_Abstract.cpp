@@ -17,7 +17,7 @@
 FTGORRigUnit_AbstractOrient_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -67,7 +67,7 @@ FString FTGORRigUnit_AbstractOrient::ProcessPinLabelForInjection(const FString& 
 FTGORRigUnit_AbstractChain_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -135,7 +135,7 @@ FString FTGORRigUnit_AbstractChain::ProcessPinLabelForInjection(const FString& I
 FTGORRigUnit_AbstractTranslate_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -241,7 +241,7 @@ FString FTGORRigUnit_AbstractTranslate::ProcessPinLabelForInjection(const FStrin
 FTGORRigUnit_AbstractInitial_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -298,7 +298,7 @@ FString FTGORRigUnit_AbstractInitial::ProcessPinLabelForInjection(const FString&
 FTGORRigUnit_AbstractRoot_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{

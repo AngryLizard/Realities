@@ -17,10 +17,10 @@ void UTGOR_ExteriorGradientThumbnailRenderer::Draw(UObject* Object, int32 X, int
 {
 	UTGOR_ExteriorGradient* ExteriorGradient = Cast<UTGOR_ExteriorGradient>(Object);
 
-	if (IsValid(ExteriorGradient) && ExteriorGradient->Resource != nullptr)
+	if (IsValid(ExteriorGradient) && ExteriorGradient->GetResource() != nullptr)
 	{
 		// Use A canvas tile item to draw
-		FCanvasTileItem CanvasTile(FVector2D(X, Y), ExteriorGradient->Resource, FVector2D(Width, Height), FLinearColor::White);
+		FCanvasTileItem CanvasTile(FVector2D(X, Y), ExteriorGradient->GetResource(), FVector2D(Width, Height), FLinearColor::White);
 		CanvasTile.BlendMode = SE_BLEND_Opaque;
 		CanvasTile.Draw(Canvas);
 	}

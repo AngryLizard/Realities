@@ -50,7 +50,7 @@ void FTGORRigUnit_EllipsoidProjection::ComputeEllispoidProjection(const FTransfo
 FTGORRigUnit_EllipsoidProjection_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -119,7 +119,7 @@ float FTGORRigUnit_EllipsoidRaycast::ComputeEllispoidRaycast(const FTransform& T
 FTGORRigUnit_EllipsoidRaycast_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -209,7 +209,7 @@ FVector FTGORRigUnit_EllipsoidRayCollide::ComputeEllispoidRayCollide(const FTran
 FTGORRigUnit_EllipsoidRayCollide_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -245,7 +245,7 @@ FString FTGORRigUnit_EllipsoidRayCollide::ProcessPinLabelForInjection(const FStr
 FTGORRigUnit_EllipsoidChainCollide_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -360,7 +360,7 @@ FString FTGORRigUnit_EllipsoidChainCollide::ProcessPinLabelForInjection(const FS
 FTGORRigUnit_EllipsoidTransformProject_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{

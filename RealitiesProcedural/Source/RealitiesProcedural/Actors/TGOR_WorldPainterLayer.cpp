@@ -391,7 +391,7 @@ void ATGOR_WorldPainterLayer::BeginDrawCanvasToRenderTargetVolume(UCanvas*& Canv
 	}
 
 	UWorld* World = GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull);
-	if (World && CacheRenderTarget && CacheRenderTarget->Resource)
+	if (World && CacheRenderTarget && CacheRenderTarget->GetResource())
 	{
 		World->FlushDeferredParameterCollectionInstanceUpdates();
 

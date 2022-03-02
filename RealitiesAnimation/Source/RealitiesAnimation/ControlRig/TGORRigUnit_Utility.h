@@ -151,9 +151,9 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 
 	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
 
-	static FTransform PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
-	static FTransform PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
-	static FTransform PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
+	static FTransform PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
 
 	/**
 	 */
@@ -458,7 +458,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ChainLength : public FRigUnit
 	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
 
 public:
-	static float ComputeInitialChainLength(const FRigElementKeyCollection& Chain, const FRigHierarchyContainer* Hierarchy);
+	static float ComputeInitialChainLength(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy);
 
 	/**
 	 * The chain to apply the power method to
@@ -496,7 +496,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ChainAnalysis : public FRigUnit
 	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
 
 public:
-	static void ChainAnalysis(const FRigElementKeyCollection& Chain, const FRigHierarchyContainer* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength);
+	static void ChainAnalysis(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength);
 
 
 	/**
@@ -1042,7 +1042,7 @@ struct FRigUnit_PreviewAnimation_WorkData
 	struct FBoneContainer BoneContainer;
 	struct FCompactPose Pose;
 	struct FBlendedCurve Curve;
-	struct FStackCustomAttributes Attributes;
+	struct UE::Anim::FStackAttributeContainer Attributes;
 };
 
 /**

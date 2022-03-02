@@ -139,12 +139,12 @@ FMeshDescription BuildMeshDescription(UProceduralMeshComponent* ProcMeshComp)
 	AttributeGetter.Register();
 
 	TPolygonGroupAttributesRef<FName> PolygonGroupNames = AttributeGetter.GetPolygonGroupMaterialSlotNames();
-	TVertexAttributesRef<FVector> VertexPositions = AttributeGetter.GetVertexPositions();
-	TVertexInstanceAttributesRef<FVector> Tangents = AttributeGetter.GetVertexInstanceTangents();
+	TVertexAttributesRef<FVector3f> VertexPositions = AttributeGetter.GetVertexPositions();
+	TVertexInstanceAttributesRef<FVector3f> Tangents = AttributeGetter.GetVertexInstanceTangents();
 	TVertexInstanceAttributesRef<float> BinormalSigns = AttributeGetter.GetVertexInstanceBinormalSigns();
-	TVertexInstanceAttributesRef<FVector> Normals = AttributeGetter.GetVertexInstanceNormals();
-	TVertexInstanceAttributesRef<FVector4> Colors = AttributeGetter.GetVertexInstanceColors();
-	TVertexInstanceAttributesRef<FVector2D> UVs = AttributeGetter.GetVertexInstanceUVs();
+	TVertexInstanceAttributesRef<FVector3f> Normals = AttributeGetter.GetVertexInstanceNormals();
+	TVertexInstanceAttributesRef<FVector4f> Colors = AttributeGetter.GetVertexInstanceColors();
+	TVertexInstanceAttributesRef<FVector2f> UVs = AttributeGetter.GetVertexInstanceUVs();
 
 	// Materials to apply to new mesh
 	const int32 NumSections = ProcMeshComp->GetNumSections();
@@ -225,10 +225,10 @@ FMeshDescription BuildMeshDescription(UProceduralMeshComponent* ProcMeshComp)
 
 			Colors[VertexInstanceID] = FLinearColor(ProcVertex.Color);
 
-			UVs.Set(VertexInstanceID, 0, ProcVertex.UV0);
-			UVs.Set(VertexInstanceID, 1, ProcVertex.UV1);
-			UVs.Set(VertexInstanceID, 2, ProcVertex.UV2);
-			UVs.Set(VertexInstanceID, 3, ProcVertex.UV3);
+			UVs.Set(VertexInstanceID, 0, FVector2f(ProcVertex.UV0));
+			UVs.Set(VertexInstanceID, 1, FVector2f(ProcVertex.UV1));
+			UVs.Set(VertexInstanceID, 2, FVector2f(ProcVertex.UV2));
+			UVs.Set(VertexInstanceID, 3, FVector2f(ProcVertex.UV3));
 		}
 
 		// Create the polygons for this section

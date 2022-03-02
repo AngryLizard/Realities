@@ -133,9 +133,9 @@ ULevelStreamingDynamic* UTGOR_Dimension::LoadLevelInstance_Internal(UWorld* Worl
 	StreamingLevel->bInitiallyLoaded = true;
 	StreamingLevel->bInitiallyVisible = false;
 
-	if (StreamingLevel->GetOutermost()->HasAnyPackageFlags(PKG_PlayInEditor) && StreamingLevel->GetOutermost()->PIEInstanceID != INDEX_NONE)
+	if (StreamingLevel->GetOutermost()->HasAnyPackageFlags(PKG_PlayInEditor) && StreamingLevel->GetOutermost()->GetPIEInstanceID() != INDEX_NONE)
 	{
-		StreamingLevel->RenameForPIE(StreamingLevel->GetOutermost()->PIEInstanceID);
+		StreamingLevel->RenameForPIE(StreamingLevel->GetOutermost()->GetPIEInstanceID());
 	}
 
 	// Transform

@@ -28,18 +28,18 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_ExportBone
 {
 	FString Name = "Bone";
 	TArray<int32> Children;
-	FVector Location = FVector::ZeroVector;
-	FQuat Rotation = FQuat::Identity;
-	FVector Scale = FVector::OneVector;
+	FVector3f Location = FVector3f::ZeroVector;
+	FQuat4f Rotation = FQuat4f::Identity;
+	FVector3f Scale = FVector3f::OneVector;
 };
 
 struct CUSTOMISATIONSYSTEM_API FTGOR_ExportVertex
 {
-	FVector Position = FVector::ZeroVector;
-	FVector Normal = FVector::ZeroVector;
-	FVector4 Tangent = FVector4(ForceInit);
-	FVector4 Color = FVector4(ForceInit);
-	FVector2D UV = FVector2D::ZeroVector;
+	FVector3f Position = FVector3f::ZeroVector;
+	FVector3f Normal = FVector3f::ZeroVector;
+	FVector4f Tangent = FVector4f(ForceInit);
+	FVector4f Color = FVector4f(ForceInit);
+	FVector2f UV = FVector2f::ZeroVector;
 	FShortVector4 Joints0 = FShortVector4();
 	FShortVector4 Joints1 = FShortVector4();
 	FByteVector4 Weights0 = FByteVector4();
@@ -48,8 +48,8 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_ExportVertex
 
 struct CUSTOMISATIONSYSTEM_API FTGOR_ExportMorph
 {
-	FVector Position = FVector::ZeroVector;
-	FVector Normal = FVector::ZeroVector;
+	FVector3f Position = FVector::ZeroVector;
+	FVector3f Normal = FVector::ZeroVector;
 };
 
 struct CUSTOMISATIONSYSTEM_API FTGOR_ExportSection
@@ -137,10 +137,10 @@ public:
 	TArray<FTGOR_ExportVertex> ExportVertices;
 
 	int32 BoneCount;
-	FMatrix MinBind;
-	FMatrix MaxBind;
-	TArray<FMatrix> BindMatrices;
-	TArray<FTransform> GlobalTransform;
+	FMatrix44f MinBind;
+	FMatrix44f MaxBind;
+	TArray<FMatrix44f> BindMatrices;
+	TArray<FTransform3f> GlobalTransform;
 	TArray<FTGOR_ExportBone> ExportBones;
 
 	int32 MorphCount;

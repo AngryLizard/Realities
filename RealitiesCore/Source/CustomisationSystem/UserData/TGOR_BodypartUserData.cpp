@@ -107,8 +107,8 @@ void UTGOR_BodypartUserData::BakeData(USkeletalMesh* SourceMesh)
 							const FSoftSkinVertex& TargetVertex = TargetMatchSection.SoftVertices[TargetVertexIndex];
 							if ((SourceVertex.Position - TargetVertex.Position).SizeSquared() < MatchThreshold * MatchThreshold)
 							{
-								const FVector TargetTangentX = FVector::VectorPlaneProject(SourceVertex.TangentX, TargetVertex.TangentZ);
-								FVector TargetTangentY = (TargetVertex.TangentZ ^ TargetTangentX).GetSafeNormal();
+								const FVector3f TargetTangentX = FVector3f::VectorPlaneProject(SourceVertex.TangentX, TargetVertex.TangentZ);
+								FVector3f TargetTangentY = (TargetVertex.TangentZ ^ TargetTangentX).GetSafeNormal();
 								if ((TargetTangentY | SourceVertex.TangentY) < 0.0f)
 								{
 									TargetTangentY = -TargetTangentY;
@@ -146,9 +146,9 @@ void UTGOR_BodypartUserData::BakeData(USkeletalMesh* SourceMesh)
 			{
 				const uint32 UVNum = MergeData.GetNumTexCoords();
 				W.Pos = MergeData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(VertexIndex); // FVector(UV, 0.0f); //
-				if (UVNum > 0) W.UV[0] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 0); else W.UV[0] = FVector2D::ZeroVector;
-				if (UVNum > 1) W.UV[1] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 1); else W.UV[1] = FVector2D::ZeroVector;
-				if (UVNum > 2) W.UV[2] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 2); else W.UV[2] = FVector2D::ZeroVector;
+				if (UVNum > 0) W.UV[0] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 0); else W.UV[0] = FVector2f::ZeroVector;
+				if (UVNum > 1) W.UV[1] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 1); else W.UV[1] = FVector2f::ZeroVector;
+				if (UVNum > 2) W.UV[2] = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 2); else W.UV[2] = FVector2f::ZeroVector;
 				W.Color = FLinearColor(0.0f, 0.0f, 0.0f, 0.0f);
 				W.Tangent = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentX(VertexIndex);
 				W.Bitangent = MergeData.StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentY(VertexIndex);
@@ -198,8 +198,8 @@ void UTGOR_BodypartUserData::BakeData(USkeletalMesh* SourceMesh)
 
 			//////////////////////////////////////////////////////////////////////////////////////////////
 
-			FVector MinPos = FVector(FLT_MAX);
-			FVector MaxPos = FVector(-FLT_MAX);
+			FVector3f MinPos = FVector3f(FLT_MAX);
+			FVector3f MaxPos = FVector3f(-FLT_MAX);
 
 			const FSkelMeshRenderSection& SourceRenderSection = SourceMergeLODData.RenderSections[SourceSectionIndex];
 			for (uint32 TriangleIndex = SourceRenderSection.BaseIndex; TriangleIndex < SourceRenderSection.BaseIndex + SourceRenderSection.NumTriangles; TriangleIndex++)

@@ -141,16 +141,16 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 	// Create bone data
 
 	const FReferenceSkeleton& OutputSkeleton = MergeOutput.Mesh->GetRefSkeleton();
-	const TArray<FMatrix>& OutputInvMatrices = MergeOutput.Mesh->GetRefBasesInvMatrix();
+	const TArray<FMatrix44f>& OutputInvMatrices = MergeOutput.Mesh->GetRefBasesInvMatrix();
 
 	BoneCount = OutputSkeleton.GetNum();
 	BindMatrices.SetNum(BoneCount);
 	ExportBones.SetNum(BoneCount);
 
-	FPlane PMax(FVector4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX));
-	FPlane PMin(FVector4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX));
-	MinBind = FMatrix(PMax, PMax, PMax, PMax);
-	MaxBind = FMatrix(PMin, PMin, PMin, PMin);
+	FPlane4f PMax(FVector4f(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX));
+	FPlane4f PMin(FVector4f(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX));
+	MinBind = FMatrix44f(PMax, PMax, PMax, PMax);
+	MaxBind = FMatrix44f(PMin, PMin, PMin, PMin);
 	for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 	{
 		FTGOR_ExportBone& Bone = ExportBones[BoneIndex];
@@ -161,13 +161,13 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 
 		// Local transform
 		FTransform BoneTransform = OutputSkeleton.GetRefBonePose()[BoneIndex];
-		Bone.Location = BoneTransform.GetLocation();
-		Bone.Rotation = BoneTransform.GetRotation();
+		Bone.Location = FVector3f(BoneTransform.GetLocation());
+		Bone.Rotation = FQuat4f(BoneTransform.GetRotation());
 		Bone.Scale = BoneTransform.GetScale3D();
 
 
 		// Set bind matrix
-		FMatrix& Matrix = BindMatrices[BoneIndex];
+		FMatrix44f& Matrix = BindMatrices[BoneIndex];
 		Matrix = OutputInvMatrices[BoneIndex];
 
 		for (int32 I = 0; I < 4; I++)
@@ -201,7 +201,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 		MorphTarget.MaxMorph.Normal = FVector(-FLT_MAX);
 
 		UMorphTarget* MorphAsset = OutputMorphTargets[MorphIndex];
-		const FMorphTargetLODModel& Model = MorphAsset->MorphLODModels[0];
+		const FMorphTargetLODModel& Model = MorphAsset->GetMorphLODModels()[0];
 		for (const FMorphTargetDelta& Delta : Model.Vertices)
 		{
 			FTGOR_ExportMorph& Morph = MorphBuffer[Delta.SourceIdx];
@@ -236,21 +236,21 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 
 		Section.MinVertex = FTGOR_ExportVertex();
 		Section.MaxVertex = FTGOR_ExportVertex();
-		Section.MinVertex.Position = FVector(FLT_MAX);
-		Section.MinVertex.Normal = FVector(FLT_MAX);
-		Section.MinVertex.Tangent = FVector4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
-		Section.MinVertex.UV = FVector2D(FLT_MAX);
-		Section.MinVertex.Color = FVector4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+		Section.MinVertex.Position = FVector3f(FLT_MAX);
+		Section.MinVertex.Normal = FVector3f(FLT_MAX);
+		Section.MinVertex.Tangent = FVector4f(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+		Section.MinVertex.UV = FVector2f(FLT_MAX);
+		Section.MinVertex.Color = FVector4f(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 		Section.MinVertex.Joints0 = FShortVector4(UINT16_MAX);
 		Section.MinVertex.Joints1 = FShortVector4(UINT16_MAX);
 		Section.MinVertex.Weights0 = FByteVector4(BYTE_MAX);
 		Section.MinVertex.Weights1 = FByteVector4(BYTE_MAX);
 
-		Section.MaxVertex.Position = FVector(-FLT_MAX);
-		Section.MaxVertex.Normal = FVector(-FLT_MAX);
-		Section.MaxVertex.Tangent = FVector4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
-		Section.MaxVertex.UV = FVector2D(-FLT_MAX);
-		Section.MaxVertex.Color = FVector4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+		Section.MaxVertex.Position = FVector3f(-FLT_MAX);
+		Section.MaxVertex.Normal = FVector3f(-FLT_MAX);
+		Section.MaxVertex.Tangent = FVector4f(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+		Section.MaxVertex.UV = FVector2f(-FLT_MAX);
+		Section.MaxVertex.Color = FVector4f(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
 		Section.MaxVertex.Joints0 = FShortVector4(0);
 		Section.MaxVertex.Joints1 = FShortVector4(0);
 		Section.MaxVertex.Weights0 = FByteVector4(0);
@@ -264,7 +264,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 			Section.MinVertex.Position = Section.MinVertex.Position.ComponentMin(Vertex.Position);
 			Section.MinVertex.Normal = Section.MinVertex.Normal.ComponentMin(Vertex.Normal);
 			Section.MinVertex.Tangent = Min4(Section.MinVertex.Tangent, Vertex.Tangent);
-			Section.MinVertex.UV = FVector2D::Min(Section.MinVertex.UV, Vertex.UV);
+			Section.MinVertex.UV = FVector2f::Min(Section.MinVertex.UV, Vertex.UV);
 			Section.MinVertex.Color = Min4(Section.MinVertex.Color, Vertex.Color);
 			Section.MinVertex.Joints0 = Min4(Section.MinVertex.Joints0, Vertex.Joints0);
 			Section.MinVertex.Joints1 = Min4(Section.MinVertex.Joints1, Vertex.Joints1);
@@ -274,7 +274,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 			Section.MaxVertex.Position = Section.MaxVertex.Position.ComponentMax(Vertex.Position);
 			Section.MaxVertex.Normal = Section.MaxVertex.Normal.ComponentMax(Vertex.Normal);
 			Section.MaxVertex.Tangent = Max4(Section.MaxVertex.Tangent, Vertex.Tangent);
-			Section.MaxVertex.UV = FVector2D::Max(Section.MaxVertex.UV, Vertex.UV);
+			Section.MaxVertex.UV = FVector2f::Max(Section.MaxVertex.UV, Vertex.UV);
 			Section.MaxVertex.Color = Max4(Section.MaxVertex.Color, Vertex.Color);
 			Section.MaxVertex.Joints0 = Max4(Section.MaxVertex.Joints0, Vertex.Joints0);
 			Section.MaxVertex.Joints1 = Max4(Section.MaxVertex.Joints1, Vertex.Joints1);
@@ -608,7 +608,7 @@ TArray<TSharedPtr<FJsonValue>> FTGOR_SkeletalMeshExport::RegisterAccessors()
 	TArray<TSharedPtr<FJsonValue>> Accessors;
 
 	// ...
-	InverseBindAccessorIndex = Accessors.Emplace(RegisterAccessor<FMatrix>(InverseBindViewIndex, 0, BoneCount, MinBind, MaxBind));
+	InverseBindAccessorIndex = Accessors.Emplace(RegisterAccessor<FMatrix44f>(InverseBindViewIndex, 0, BoneCount, MinBind, MaxBind));
 
 	for (int32 SectionIndex = 0; SectionIndex < SectionCount; SectionIndex++)
 	{

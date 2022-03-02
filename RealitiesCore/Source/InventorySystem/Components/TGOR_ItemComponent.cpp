@@ -85,7 +85,7 @@ void UTGOR_ItemComponent::UpdateContent_Implementation(FTGOR_SpawnerDependencies
 	{
 		for (UTGOR_ItemTask* ItemSlot : Pair.Value)
 		{
-			ItemSlot->MarkPendingKill();
+			ItemSlot->MarkAsGarbage();
 		}
 	}
 }

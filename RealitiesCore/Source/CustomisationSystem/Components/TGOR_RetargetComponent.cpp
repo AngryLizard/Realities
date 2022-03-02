@@ -28,17 +28,21 @@ void UTGOR_RetargetComponent::InitialiseControls(bool bForce)
 		RetargetRigControlMapping.Reset();
 		if (SourceCache.ControlRig && TargetCache.ControlRig)
 		{
-			const FRigControlHierarchy& SourceControls = SourceCache.ControlRig->GetControlHierarchy();
-			const FRigControlHierarchy& TargetControls = TargetCache.ControlRig->GetControlHierarchy();
+			URigHierarchy* SourceHierarchy = SourceCache.ControlRig->GetHierarchy();
+			TArray<FRigControlElement*> SourceControls = SourceHierarchy->GetControls();
+
+			URigHierarchy* TargetHierarchy = TargetCache.ControlRig->GetHierarchy();
+			TArray<FRigControlElement*> TargetControls = TargetHierarchy->GetControls();
 
 			// even if not mapped, we map only nodes that exist in the TargetRig
 			const int32 NumTargetControls = TargetControls.Num();
-			for (int32 TargetIndex = 0; TargetIndex < NumTargetControls; ++TargetIndex)
+			for (int32 Target = 0; Target < NumTargetControls; ++Target)
 			{
-				const FName& BoneName = TargetControls.GetName(TargetIndex);
-				const int32 SourceIndex = SourceControls.GetIndex(BoneName);
+				FRigControlElement* TargetControl = TargetControls[Target];
+				const int32 SourceIndex = SourceHierarchy->GetIndex(FRigElementKey(TargetControl->GetName(), ERigElementType::Control));
 				if (SourceIndex != INDEX_NONE)
 				{
+					const int32 TargetIndex = TargetControls[Target]->GetIndex();
 					RetargetRigControlMapping.Add(TargetIndex, SourceIndex);
 				}
 			}
@@ -52,14 +56,16 @@ void UTGOR_RetargetComponent::UpdateTransforms(float DeltaTime)
 
 	if (IsValid(SourceCache.ControlRig))
 	{
-		const FRigControlHierarchy& SourceControls = SourceCache.ControlRig->GetControlHierarchy();
+		URigHierarchy* SourceHierarchy = SourceCache.ControlRig->GetHierarchy();
+		TArray<FRigControlElement*> SourceControls = SourceHierarchy->GetControls();
 		if (IsValid(TargetCache.ControlRig))
 		{
-			FRigControlHierarchy& TargetControls = TargetCache.ControlRig->GetControlHierarchy();
+			URigHierarchy* TargetHierarchy = TargetCache.ControlRig->GetHierarchy();
+			TArray<FRigControlElement*> TargetControls = TargetHierarchy->GetControls();
 			for (auto Iter = RetargetRigControlMapping.CreateConstIterator(); Iter; ++Iter)
 			{
-				const FTransform& Transform = SourceControls.GetGlobalTransform(Iter.Value());
-				TargetControls.SetGlobalTransform(Iter.Key(), Transform);
+				const FTransform& Transform = SourceHierarchy->GetGlobalTransform(Iter.Value());
+				TargetHierarchy->SetGlobalTransform(Iter.Key(), Transform);
 			}
 		}
 	}

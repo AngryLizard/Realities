@@ -286,11 +286,11 @@ void UTGOR_AnimInstance::UpdateHandles()
 				UControlRig* ControlRig = LinkedControlRig->GetControlRig();
 				if (IsValid(ControlRig))
 				{
-					FRigControlHierarchy& Hierarchy = ControlRig->GetControlHierarchy();
-					int32 ControlIndex = Hierarchy.GetIndex(Handle->ControlName);
+					URigHierarchy* Hierarchy = ControlRig->GetHierarchy();
+					int32 ControlIndex = Hierarchy->GetIndex(FRigElementKey(Handle->ControlName, ERigElementType::Control));
 					if (ControlIndex != INDEX_NONE)
 					{
-						Hierarchy.SetGlobalTransform(ControlIndex, Transform);
+						Hierarchy->SetGlobalTransform(ControlIndex, Transform);
 					}
 				}
 			}

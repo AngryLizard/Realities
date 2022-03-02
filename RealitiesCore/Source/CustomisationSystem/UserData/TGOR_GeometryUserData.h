@@ -12,11 +12,11 @@ struct FTGOR_MergeUVVert
 
 	// Position of vertex
 	UPROPERTY()
-		FVector Pos;
+		FVector3f Pos;
 
 	// UVs of vertex
 	UPROPERTY()
-		FVector2D UV[3];
+		FVector2f UV[3];
 
 	// Color of vertex
 	UPROPERTY()
@@ -24,15 +24,15 @@ struct FTGOR_MergeUVVert
 
 	// Tangent of vertex
 	UPROPERTY()
-		FVector4 Tangent;
+		FVector4f Tangent;
 
 	// Bitangent of vertex
 	UPROPERTY()
-		FVector Bitangent;
+		FVector3f Bitangent;
 
-	FVector Normal() const
+	FVector3f Normal() const
 	{
-		return (Bitangent ^ FVector(Tangent)) * Tangent.W;
+		return (Bitangent ^ FVector3f(Tangent)) * Tangent.W;
 	}
 
 	FTGOR_MergeUVVert()
@@ -42,9 +42,9 @@ struct FTGOR_MergeUVVert
 		, Tangent(ForceInit)
 		, Bitangent(ForceInit)
 	{ 
-		UV[0] = FVector2D::ZeroVector;
-		UV[1] = FVector2D::ZeroVector;
-		UV[2] = FVector2D::ZeroVector;
+		UV[0] = FVector2f::ZeroVector;
+		UV[1] = FVector2f::ZeroVector;
+		UV[2] = FVector2f::ZeroVector;
 	}
 };
 

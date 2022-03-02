@@ -40,7 +40,7 @@ bool ComputeTriangle(float a, float b, float s, float& h, float& x)
 FTGORRigUnit_HingeIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -132,7 +132,7 @@ FString FTGORRigUnit_HingeIK::ProcessPinLabelForInjection(const FString& InLabel
 FTGORRigUnit_DigitigradeIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -278,7 +278,7 @@ FString FTGORRigUnit_DigitigradeIK::ProcessPinLabelForInjection(const FString& I
 FTGORRigUnit_ClavicleIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{

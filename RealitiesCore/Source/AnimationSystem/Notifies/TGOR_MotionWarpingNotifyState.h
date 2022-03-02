@@ -13,10 +13,6 @@ class ANIMATIONSYSTEM_API UTGOR_MotionWarpingNotifyState : public UAnimNotifySta
 {
 	GENERATED_UCLASS_BODY()
 
-	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration) override;
-	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime) override;
-	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
-
 	/** Name used to find the sync point for this modifier */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName SyncPointName = NAME_None;

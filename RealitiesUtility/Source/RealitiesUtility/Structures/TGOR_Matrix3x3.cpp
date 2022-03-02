@@ -33,7 +33,7 @@ FTGOR_Matrix3x3::FTGOR_Matrix3x3(const TArray<FVector>& Samples)
 {
 	const int32 N = Samples.Num();
 
-	const float InvN = 1.0f / (N - 1);
+	const double InvN = 1.0 / (N - 1);
 	for (int32 I = 0; I < 3; I++)
 	{
 		for (int32 J = 0; J < 3; J++)
@@ -57,7 +57,7 @@ FVector FTGOR_Matrix3x3::operator* (const FVector& Other) const
 	return(FVector(Other | X, Other | Y, Other | Z));
 }
 
-float FTGOR_Matrix3x3::SizeSquared() const
+double FTGOR_Matrix3x3::SizeSquared() const
 {
 	return X.SizeSquared() + Y.SizeSquared() + Z.SizeSquared();
 }
@@ -96,7 +96,7 @@ FTGOR_Matrix3x3 FTGOR_Matrix3x3::operator- (const FTGOR_Matrix3x3& Other) const
 	return Out;
 }
 
-FTGOR_Matrix3x3 FTGOR_Matrix3x3::operator* (float Scale) const
+FTGOR_Matrix3x3 FTGOR_Matrix3x3::operator* (double Scale) const
 {
 	FTGOR_Matrix3x3 Out;
 	Out.X = X * Scale;
@@ -105,13 +105,13 @@ FTGOR_Matrix3x3 FTGOR_Matrix3x3::operator* (float Scale) const
 	return Out;
 }
 
-float& FTGOR_Matrix3x3::operator()(int32 I, int32 J)
+double& FTGOR_Matrix3x3::operator()(int32 I, int32 J)
 {
 	check(I >= 0 && I < 3 && J >= 0 && J < 3);
 	return (&X.X)[I * 3 + J];
 }
 
-float FTGOR_Matrix3x3::operator()(int32 I, int32 J) const
+double FTGOR_Matrix3x3::operator()(int32 I, int32 J) const
 {
 	check(I >= 0 && I < 3 && J >= 0 && J < 3);
 	return (&X.X)[I * 3 + J];
@@ -131,7 +131,7 @@ FVector FTGOR_Matrix3x3::PowerMethod(const FVector& Input, int32 Iterations) con
 		const FVector B = (*this) * Out;
 		if (B.SizeSquared() < SMALL_NUMBER)
 		{
-			Out = UTGOR_Math::Normalize(Out + FMath::VRand() * 0.05f);
+			Out = UTGOR_Math::Normalize(Out + FMath::VRand() * 0.05);
 		}
 		else
 		{
@@ -144,22 +144,22 @@ FVector FTGOR_Matrix3x3::PowerMethod(const FVector& Input, int32 Iterations) con
 FVector FTGOR_Matrix3x3::CholeskyInvert(const FVector& Input) const
 {
 	// Cholesky decomposition, first column
-	const float lXX = FMath::Sqrt(X.X);
+	const double lXX = FMath::Sqrt(X.X);
 	if (lXX < SMALL_NUMBER) return(Input);
-	const float lXY = X.Y / lXX;
-	const float lXZ = X.Z / lXX;
+	const double lXY = X.Y / lXX;
+	const double lXZ = X.Z / lXX;
 
 	// Cholesky decomposition, second column. Assume Identity on failure.
-	const float lYY_ = Y.Y - lXY * lXY;
-	if (lYY_ < 0.0f) return(Input);
-	const float lYY = FMath::Sqrt(lYY_);
+	const double lYY_ = Y.Y - lXY * lXY;
+	if (lYY_ < 0.0) return(Input);
+	const double lYY = FMath::Sqrt(lYY_);
 	if (lYY < SMALL_NUMBER) return(Input);
-	const float lYZ = (Y.Z - lXY * lXZ / lYY);
+	const double lYZ = (Y.Z - lXY * lXZ / lYY);
 
 	// Cholesky decomposition, third column. Assume Identity on failure.
-	const float lZZ_ = Z.Z - lXZ * lXZ - lYZ * lYZ;
-	if (lZZ_ < 0.0f) return(Input);
-	const float lZZ = FMath::Sqrt(lZZ_);
+	const double lZZ_ = Z.Z - lXZ * lXZ - lYZ * lYZ;
+	if (lZZ_ < 0.0) return(Input);
+	const double lZZ = FMath::Sqrt(lZZ_);
 	if (lZZ < SMALL_NUMBER) return(Input);
 
 	// Forward substitution
@@ -177,7 +177,7 @@ FVector FTGOR_Matrix3x3::CholeskyInvert(const FVector& Input) const
 	return(R);
 }
 
-float FTGOR_Matrix3x3::Det() const
+double FTGOR_Matrix3x3::Det() const
 {
 	return 
 		X.X * Y.Y * Z.Z +

@@ -66,8 +66,8 @@ void UTGOR_GeometryUserData::EnsureVertexBake(UObject* WorldContextObject, USkel
 					UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(WorldContextObject, RenderTarget, Canvas, Size, Context);
 
 					UMaterialInstanceDynamic* Instance = UMaterialInstanceDynamic::Create(BakeMaterial.BakeMaterial, this);
-					Instance->SetVectorParameterValue("Extend", Section.Extend);
-					Instance->SetVectorParameterValue("Center", Section.Center);
+					Instance->SetDoubleVectorParameterValue("Extend", Section.Extend);
+					Instance->SetDoubleVectorParameterValue("Center", Section.Center);
 
 					FTGOR_TriangleItem TriangleItem(this, SectionIndex, FTransform::Identity, Instance->GetRenderProxy());
 					Canvas->DrawItem(TriangleItem);

@@ -30,7 +30,7 @@ FVector ComputeScaleBetween(const FVector& S, const FVector& A, const FVector& B
 	return Scale;
 }
 
-FTransform FTGORRigUnit_Propagate::PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+FTransform FTGORRigUnit_Propagate::PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity)
 {
 	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
 	const FTransform Local = Hierarchy->GetLocalTransform(Next);
@@ -51,7 +51,7 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowards(const FRigElementKey& C
 	return Transform;
 }
 
-FTransform FTGORRigUnit_Propagate::PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+FTransform FTGORRigUnit_Propagate::PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity)
 {
 	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
 	const FTransform Local = Hierarchy->GetLocalTransform(Next);
@@ -75,7 +75,7 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowardsFixed(const FRigElementK
 	return Transform;
 }
 
-FTransform FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, FRigHierarchyContainer* Hierarchy, bool bPropagateToChildren, float Intensity)
+FTransform FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity)
 {
 	FTransform Transform = Hierarchy->GetGlobalTransform(Current);
 	const FTransform Local = Hierarchy->GetLocalTransform(Next);
@@ -114,7 +114,7 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(const FRigElem
 FTGORRigUnit_Propagate_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -136,7 +136,7 @@ FString FTGORRigUnit_Propagate::ProcessPinLabelForInjection(const FString& InLab
 FTGORRigUnit_CustomiseInitial_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -154,7 +154,7 @@ FTGORRigUnit_CustomiseInitial_Execute()
 			{
 				FCachedRigElement Element = FCachedRigElement(Item.Key, Hierarchy);
 				CachedItems.Add(Element);
-				Transforms.Add(Hierarchy->GetInitialTransform(Element));
+				Transforms.Add(Hierarchy->GetInitialGlobalTransform(Element));
 			}
 		}
 
@@ -166,7 +166,7 @@ FTGORRigUnit_CustomiseInitial_Execute()
 			FVector Scale = Transform.GetScale3D();
 			Scale.SetComponentForAxis(ScaleAxis, Scale.GetComponentForAxis(ScaleAxis) * Item.Scale);
 			Transform.SetScale3D(Scale);
-			Hierarchy->SetInitialTransform(Element, Transform);
+			Hierarchy->SetInitialGlobalTransform(Element, Transform);
 		}
 
 	}
@@ -183,7 +183,7 @@ FString FTGORRigUnit_CustomiseInitial::ProcessPinLabelForInjection(const FString
 FTGORRigUnit_CloneTransforms_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -214,7 +214,7 @@ FString FTGORRigUnit_CloneTransforms::ProcessPinLabelForInjection(const FString&
 FTGORRigUnit_TriangleEstimateDirection_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -281,7 +281,7 @@ FString FTGORRigUnit_TriangleEstimateDirection::ProcessPinLabelForInjection(cons
 FTGORRigUnit_TransformToPlane_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -359,7 +359,7 @@ FQuat FTGORRigUnit_LimitRotation::LimitRotation(const FQuat& Quat, float Limit)
 FTGORRigUnit_LimitRotation_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -381,7 +381,7 @@ FString FTGORRigUnit_LimitRotation::ProcessPinLabelForInjection(const FString& I
 FTGORRigUnit_MeanDirection_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -434,7 +434,7 @@ FString FTGORRigUnit_MeanDirection::ProcessPinLabelForInjection(const FString& I
 FTGORRigUnit_PowerDirection_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -477,7 +477,7 @@ FString FTGORRigUnit_PowerDirection::ProcessPinLabelForInjection(const FString& 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-float FTGORRigUnit_ChainLength::ComputeInitialChainLength(const FRigElementKeyCollection& Chain, const FRigHierarchyContainer* Hierarchy)
+float FTGORRigUnit_ChainLength::ComputeInitialChainLength(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy)
 {
 	float Length = 0.0f;
 
@@ -499,7 +499,7 @@ FTGORRigUnit_ChainLength_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
 
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -520,7 +520,7 @@ FString FTGORRigUnit_ChainLength::ProcessPinLabelForInjection(const FString& InL
 
 
 
-void FTGORRigUnit_ChainAnalysis::ChainAnalysis(const FRigElementKeyCollection& Chain, const FRigHierarchyContainer* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength)
+void FTGORRigUnit_ChainAnalysis::ChainAnalysis(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength)
 {
 	ChainMaxLength = FTGORRigUnit_ChainLength::ComputeInitialChainLength(Chain, Hierarchy) * Multiplier;
 
@@ -537,7 +537,7 @@ FTGORRigUnit_ChainAnalysis_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
 
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -704,7 +704,7 @@ FString FTGORRigUnit_RotateToward::ProcessPinLabelForInjection(const FString& In
 FTGORRigUnit_GetScaleLength_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -742,7 +742,7 @@ FString FTGORRigUnit_GetScaleLength::ProcessPinLabelForInjection(const FString& 
 FTGORRigUnit_RotationBetween_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -764,7 +764,7 @@ FString FTGORRigUnit_RotationBetween::ProcessPinLabelForInjection(const FString&
 FTGORRigUnit_ReprojectOntoPlane_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -792,7 +792,7 @@ FString FTGORRigUnit_ReprojectOntoPlane::ProcessPinLabelForInjection(const FStri
 FTGORRigUnit_WarpAlongDirection_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -823,7 +823,7 @@ float FTGORRigUnit_SoftBoundaries::SoftBoundaries(float Value, float Max)
 FTGORRigUnit_SoftBoundaries_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -845,7 +845,7 @@ FString FTGORRigUnit_SoftBoundaries::ProcessPinLabelForInjection(const FString& 
 FTGORRigUnit_BellCurve_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -867,7 +867,7 @@ FString FTGORRigUnit_BellCurve::ProcessPinLabelForInjection(const FString& InLab
 FTGORRigUnit_DistanceBellCurve_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	const FRigHierarchyContainer* Hierarchy = Context.Hierarchy;
+	const URigHierarchy* Hierarchy = Context.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -890,7 +890,7 @@ FString FTGORRigUnit_DistanceBellCurve::ProcessPinLabelForInjection(const FStrin
 FTGORRigUnit_PreviewAnimation_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
-	FRigHierarchyContainer* Hierarchy = ExecuteContext.Hierarchy;
+	URigHierarchy* Hierarchy = ExecuteContext.Hierarchy;
 
 	if (Context.State == EControlRigState::Init)
 	{
@@ -956,34 +956,39 @@ FTGORRigUnit_PreviewAnimation_Execute()
 
 				if (WorkData.ConversionRig.IsValid())
 				{
-					FRigBoneHierarchy& ConversionBoneHierarchy = WorkData.ConversionRig->GetBoneHierarchy();
+					URigHierarchy* ConversionBoneHierarchy = WorkData.ConversionRig->GetHierarchy();
 
 					for (FBoneIndexType BoneIndex = 0; BoneIndex < BoneNum; BoneIndex++)
 					{
 						const FName KeyName = Reference.GetBoneName(BoneIndex);
+						const FRigElementKey Key = FRigElementKey(KeyName, ERigElementType::Bone);
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
-						if (ConversionBoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						if (ConversionBoneHierarchy->GetIndex(Key) != INDEX_NONE)
 						{
-							ConversionBoneHierarchy.SetLocalTransform(KeyName, Transform, false);
+							ConversionBoneHierarchy->SetLocalTransform(Key, Transform, false);
 						}
 					}
 
 					WorkData.ConversionRig->SetDeltaTime(Context.DeltaTime);
 					WorkData.ConversionRig->Evaluate_AnyThread();
 
-					const FRigControlHierarchy& ControlHierarchy = WorkData.ConversionRig->GetControlHierarchy();
-					const int32 ControlNum = ControlHierarchy.Num();
+					const URigHierarchy* ControlHierarchy = WorkData.ConversionRig->GetHierarchy();
+					TArray<FRigControlElement*> Controls = ControlHierarchy->GetControls();
+
+					const int32 ControlNum = Controls.Num();
 					for (FBoneIndexType ControlIndex = 0; ControlIndex < ControlNum; ControlIndex++)
 					{
-						const FName KeyName = ControlHierarchy.GetName(ControlIndex);
-						const FTransform& Transform = ControlHierarchy.GetGlobalTransform(ControlIndex);
-						if (Hierarchy->ControlHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						FRigControlElement* Control = Controls[ControlIndex];
+						const FName KeyName = Control->GetName();
+						const FTransform& Transform = ControlHierarchy->GetGlobalTransform(Control->GetKey());
+
+						if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Control)) != INDEX_NONE)
 						{
-							Hierarchy->ControlHierarchy.SetGlobalTransform(KeyName, Transform);
+							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform);
 						}
-						else if (Hierarchy->BoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						else if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Bone)) != INDEX_NONE)
 						{
-							Hierarchy->BoneHierarchy.SetGlobalTransform(KeyName, Transform, false);
+							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false);
 						}
 					}
 				}
@@ -993,13 +998,13 @@ FTGORRigUnit_PreviewAnimation_Execute()
 					{
 						const FName KeyName = Reference.GetBoneName(BoneIndex);
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
-						if (Hierarchy->ControlHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Control)) != INDEX_NONE)
 						{
-							Hierarchy->ControlHierarchy.SetLocalTransform(KeyName, Transform);
+							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform);
 						}
-						else if (Hierarchy->BoneHierarchy.GetIndex(KeyName) != INDEX_NONE)
+						else if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Bone)) != INDEX_NONE)
 						{
-							Hierarchy->BoneHierarchy.SetLocalTransform(KeyName, Transform, false);
+							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false);
 						}
 					}
 				}

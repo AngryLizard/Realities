@@ -17,10 +17,10 @@ void UTGOR_PaintGradientThumbnailRenderer::Draw(UObject* Object, int32 X, int32 
 {
 	UTGOR_PaintGradient* PaintGradient = Cast<UTGOR_PaintGradient>(Object);
 
-	if (IsValid(PaintGradient) && PaintGradient->Resource != nullptr)
+	if (IsValid(PaintGradient) && PaintGradient->GetResource() != nullptr)
 	{
 		// Use A canvas tile item to draw
-		FCanvasTileItem CanvasTile(FVector2D(X, Y), PaintGradient->Resource, FVector2D(Width, Height), FLinearColor::White);
+		FCanvasTileItem CanvasTile(FVector2D(X, Y), PaintGradient->GetResource(), FVector2D(Width, Height), FLinearColor::White);
 		CanvasTile.BlendMode = SE_BLEND_Opaque;
 		CanvasTile.Draw(Canvas);
 	}
