@@ -19,6 +19,7 @@ public class KnowledgeSystem : ModuleRules
 				"UISystem",
 
 				"Core",
+				"NetCore"
 			}
 			);
 			

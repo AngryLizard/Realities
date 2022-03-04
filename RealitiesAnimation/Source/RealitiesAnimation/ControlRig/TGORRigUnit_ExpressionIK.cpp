@@ -16,8 +16,10 @@ FTGORRigUnit_LookAtIK_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -63,7 +65,7 @@ FTGORRigUnit_LookAtIK_Execute()
 
 			Transform.SetRotation(Offset * Transform.GetRotation());
 
-			Hierarchy->SetGlobalTransform(Cache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Cache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -72,12 +74,6 @@ FTGORRigUnit_LookAtIK_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_LookAtIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,8 +86,10 @@ FTGORRigUnit_EyelidIK_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -132,7 +130,7 @@ FTGORRigUnit_EyelidIK_Execute()
 
 			Transform.SetRotation(LidRotation * Transform.GetRotation());
 
-			Hierarchy->SetGlobalTransform(Cache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Cache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -140,10 +138,4 @@ FTGORRigUnit_EyelidIK_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_EyelidIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

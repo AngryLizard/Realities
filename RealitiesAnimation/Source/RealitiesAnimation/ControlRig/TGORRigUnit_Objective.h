@@ -50,7 +50,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ObjectivePlanarProject : public FTGOR
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * Pivot to project towards
@@ -105,7 +105,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_BulgeBellCurve : public FTGORRigUnit_
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 

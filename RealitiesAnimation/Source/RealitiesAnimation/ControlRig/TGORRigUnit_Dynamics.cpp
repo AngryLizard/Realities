@@ -121,12 +121,6 @@ FTGORRigUnit_SplineChainDynamics_Execute()
 	}
 }
 
-FString FTGORRigUnit_SplineChainDynamics::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_RetractGripDynamics_Execute()
@@ -210,10 +204,4 @@ FTGORRigUnit_RetractGripDynamics_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_RetractGripDynamics::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

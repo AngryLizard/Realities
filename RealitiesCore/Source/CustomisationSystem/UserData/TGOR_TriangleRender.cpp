@@ -90,32 +90,32 @@ void FTGOR_TriangleRenderData::InitTriangleMesh(const FSceneView& View, bool bNe
 		// create verts. Notice the order is (1, 0, 2)
 		if (bNeedsToSwitchVerticalAxis)
 		{
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 0) = FVector(Tri.V1.Pos.X, View.UnscaledViewRect.Height() - Tri.V1.Pos.Y, Tri.V1.Pos.Z);
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 1) = FVector(Tri.V0.Pos.X, View.UnscaledViewRect.Height() - Tri.V0.Pos.Y, Tri.V0.Pos.Z);
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 2) = FVector(Tri.V2.Pos.X, View.UnscaledViewRect.Height() - Tri.V2.Pos.Y, Tri.V2.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 0) = FVector3f(Tri.V1.Pos.X, View.UnscaledViewRect.Height() - Tri.V1.Pos.Y, Tri.V1.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 1) = FVector3f(Tri.V0.Pos.X, View.UnscaledViewRect.Height() - Tri.V0.Pos.Y, Tri.V0.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 2) = FVector3f(Tri.V2.Pos.X, View.UnscaledViewRect.Height() - Tri.V2.Pos.Y, Tri.V2.Pos.Z);
 		}
 		else
 		{
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 0) = FVector(Tri.V1.Pos.X, Tri.V1.Pos.Y, Tri.V1.Pos.Z);
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 1) = FVector(Tri.V0.Pos.X, Tri.V0.Pos.Y, Tri.V0.Pos.Z);
-			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 2) = FVector(Tri.V2.Pos.X, Tri.V2.Pos.Y, Tri.V2.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 0) = FVector3f(Tri.V1.Pos.X, Tri.V1.Pos.Y, Tri.V1.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 1) = FVector3f(Tri.V0.Pos.X, Tri.V0.Pos.Y, Tri.V0.Pos.Z);
+			StaticMeshVertexBuffers.PositionVertexBuffer.VertexPosition(StartIndex + 2) = FVector3f(Tri.V2.Pos.X, Tri.V2.Pos.Y, Tri.V2.Pos.Z);
 		}
 
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 0, FVector(Tri.V1.Tangent), Tri.V1.Bitangent, Tri.V1.Normal());
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 1, FVector(Tri.V0.Tangent), Tri.V0.Bitangent, Tri.V0.Normal());
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 2, FVector(Tri.V2.Tangent), Tri.V2.Bitangent, Tri.V2.Normal());
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 0, FVector3f(Tri.V1.Tangent), Tri.V1.Bitangent, Tri.V1.Normal());
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 1, FVector3f(Tri.V0.Tangent), Tri.V0.Bitangent, Tri.V0.Normal());
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexTangents(StartIndex + 2, FVector3f(Tri.V2.Tangent), Tri.V2.Bitangent, Tri.V2.Normal());
 
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 0, FVector2D(Tri.V1.UV[0].X, Tri.V1.UV[0].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 0, FVector2D(Tri.V0.UV[0].X, Tri.V0.UV[0].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 0, FVector2D(Tri.V2.UV[0].X, Tri.V2.UV[0].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 0, FVector2f(Tri.V1.UV[0].X, Tri.V1.UV[0].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 0, FVector2f(Tri.V0.UV[0].X, Tri.V0.UV[0].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 0, FVector2f(Tri.V2.UV[0].X, Tri.V2.UV[0].Y));
 
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 1, FVector2D(Tri.V1.UV[1].X, Tri.V1.UV[1].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 1, FVector2D(Tri.V0.UV[1].X, Tri.V0.UV[1].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 1, FVector2D(Tri.V2.UV[1].X, Tri.V2.UV[1].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 1, FVector2f(Tri.V1.UV[1].X, Tri.V1.UV[1].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 1, FVector2f(Tri.V0.UV[1].X, Tri.V0.UV[1].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 1, FVector2f(Tri.V2.UV[1].X, Tri.V2.UV[1].Y));
 
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 2, FVector2D(Tri.V1.UV[2].X, Tri.V1.UV[2].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 2, FVector2D(Tri.V0.UV[2].X, Tri.V0.UV[2].Y));
-		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 2, FVector2D(Tri.V2.UV[2].X, Tri.V2.UV[2].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 0, 2, FVector2f(Tri.V1.UV[2].X, Tri.V1.UV[2].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 1, 2, FVector2f(Tri.V0.UV[2].X, Tri.V0.UV[2].Y));
+		StaticMeshVertexBuffers.StaticMeshVertexBuffer.SetVertexUV(StartIndex + 2, 2, FVector2f(Tri.V2.UV[2].X, Tri.V2.UV[2].Y));
 
 		StaticMeshVertexBuffers.ColorVertexBuffer.VertexColor(StartIndex + 0) = Tri.V1.Color.ToFColor(false);
 		StaticMeshVertexBuffers.ColorVertexBuffer.VertexColor(StartIndex + 1) = Tri.V0.Color.ToFColor(false);
@@ -138,8 +138,14 @@ void FRawIndexBuffer::InitRHI()
 	{
 		// Create the index buffer.
 		FRHIResourceCreateInfo CreateInfo(TEXT("RawIndexBuffer"));
-		void* Buffer = nullptr;
-		IndexBufferRHI = RHICreateAndLockIndexBuffer(sizeof(uint16), Size, BUF_Static, CreateInfo, Buffer);
+
+		EBufferUsageFlags Usage = BUF_Static | BUF_IndexBuffer;
+		ERHIAccess ResourceState = RHIGetDefaultResourceState(Usage, true);
+
+		FRHICommandListExecutor::GetImmediateCommandList();
+		IndexBufferRHI = GDynamicRHI->CreateBuffer_RenderThread(FRHICommandListExecutor::GetImmediateCommandList(), Size, BUF_Static | BUF_IndexBuffer, sizeof(uint16), ResourceState, CreateInfo);
+		void* Buffer = GDynamicRHI->RHILockBuffer(FRHICommandListExecutor::GetImmediateCommandList(), IndexBufferRHI, 0, Size, RLM_WriteOnly);
+		//IndexBufferRHI = RHICreateAndLockIndexBuffer(sizeof(uint16), Size, BUF_Static, CreateInfo, Buffer);
 
 		// Initialize the buffer.		
 		FMemory::Memcpy(Buffer, Indices.GetData(), Size);

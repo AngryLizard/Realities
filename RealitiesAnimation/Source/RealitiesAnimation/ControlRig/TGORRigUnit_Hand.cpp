@@ -17,8 +17,10 @@ FTGORRigUnit_FingerTransform_Execute()
 	{
 		BaseCache.Reset();
 		FingerCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!BaseCache.UpdateCache(BaseKey, Hierarchy))
 		{
@@ -33,12 +35,12 @@ FTGORRigUnit_FingerTransform_Execute()
 			FTransform BaseTransform = Hierarchy->GetLocalTransform(BaseCache);
 			const float BaseSpreadRadians = FMath::DegreesToRadians(BaseSpreadRange.X + Spread * (BaseSpreadRange.Y - BaseSpreadRange.X));
 			BaseTransform.SetRotation(FQuat(BaseSpreadAxis, BaseSpreadRadians) * BaseTransform.GetRotation());
-			Hierarchy->SetLocalTransform(BaseCache, BaseTransform, true);
+			Hierarchy->SetLocalTransform(BaseCache, BaseTransform, false, true);
 
 			FTransform FingerTransform = Hierarchy->GetLocalTransform(FingerCache);
 			const float FingerSpreadRadians = FMath::DegreesToRadians(FingerSpreadRange.X + Spread * (FingerSpreadRange.Y - FingerSpreadRange.X));
 			FingerTransform.SetRotation(FQuat(FingerSpreadAxis, FingerSpreadRadians) * FingerTransform.GetRotation());
-			Hierarchy->SetLocalTransform(FingerCache, FingerTransform, true);
+			Hierarchy->SetLocalTransform(FingerCache, FingerTransform, false, true);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -55,10 +57,3 @@ FTGORRigUnit_FingerTransform_Execute()
 		}
 	}
 }
-
-FString FTGORRigUnit_FingerTransform::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-

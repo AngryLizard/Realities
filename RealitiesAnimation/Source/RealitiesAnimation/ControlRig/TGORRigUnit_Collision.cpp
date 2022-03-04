@@ -55,8 +55,10 @@ FTGORRigUnit_EllipsoidProjection_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -73,12 +75,6 @@ FTGORRigUnit_EllipsoidProjection_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_EllipsoidProjection::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,8 +120,10 @@ FTGORRigUnit_EllipsoidRaycast_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -142,12 +140,6 @@ FTGORRigUnit_EllipsoidRaycast_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_EllipsoidRaycast::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,8 +206,10 @@ FTGORRigUnit_EllipsoidRayCollide_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -234,12 +228,6 @@ FTGORRigUnit_EllipsoidRayCollide_Execute()
 	}
 }
 
-FString FTGORRigUnit_EllipsoidRayCollide::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_EllipsoidChainCollide_Execute()
@@ -250,8 +238,10 @@ FTGORRigUnit_EllipsoidChainCollide_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 ChainNum = Chain.Num();
 		if (ChainNum < 2)
@@ -317,7 +307,7 @@ FTGORRigUnit_EllipsoidChainCollide_Execute()
 					Transform.SetRotation(FinalRotation * Transform.GetRotation());
 
 					// Update chain element
-					Hierarchy->SetGlobalTransform(Chain[Index - 1], Transform, PropagateToChildren == ETGOR_Propagation::All);
+					Hierarchy->SetGlobalTransform(Chain[Index - 1], Transform, false, PropagateToChildren == ETGOR_Propagation::All);
 
 					// Propagate
 					Transform = Local * Transform;
@@ -343,17 +333,10 @@ FTGORRigUnit_EllipsoidChainCollide_Execute()
 			}
 
 
-			Hierarchy->SetGlobalTransform(Chain.Last(), Transform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
 }
-
-FString FTGORRigUnit_EllipsoidChainCollide::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -365,8 +348,10 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		Cache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!Cache.UpdateCache(Key, Hierarchy))
 		{
@@ -377,7 +362,9 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 			// Objective properties
 			const FVector EEForwardTarget = Objective.TransformVectorNoScale(ObjectiveSettings.ForwardAxis);
 			const FVector EEUpTarget = Objective.TransformVectorNoScale(ObjectiveSettings.UpAxis);
-			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.Offset);
+
+			const FQuat EERotation = Objective.TransformRotation(ObjectiveSettings.RotationOffset.Quaternion());
+			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.TranslationOffset);
 
 			const FTransform Ellipsoid = Hierarchy->GetGlobalTransform(Cache);
 			const FVector RayStart = EELocation + EEUpTarget * Discovery;
@@ -417,7 +404,7 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 			const FQuat LimitRotation = FTGORRigUnit_LimitRotation::SoftLimitRotation(AlignRotation, MaxRadians);
 
 			const FQuat Rotation = FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget);
-			Projection.SetRotation(LimitRotation * Rotation);
+			Projection.SetRotation(LimitRotation * EERotation);
 			Projection.SetLocation(LocationTarget);
 			Projection.SetScale3D(Objective.GetScale3D());
 
@@ -428,10 +415,3 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 		}
 	}
 }
-
-FString FTGORRigUnit_EllipsoidTransformProject::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-

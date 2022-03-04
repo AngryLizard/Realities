@@ -384,31 +384,31 @@ enum GL_ComponentType : int32
 template<typename T> struct ComponentTypeSelector { static GL_ComponentType Type(); static bool Normalized(); };
 template<typename T> struct VectorTypeSelector { static FString Type(); };
 
-template<> static GL_ComponentType ComponentTypeSelector<FMatrix>::Type() { return GL_ComponentType::FLOAT; }
+template<> static GL_ComponentType ComponentTypeSelector<FMatrix44f>::Type() { return GL_ComponentType::FLOAT; }
 template<> static GL_ComponentType ComponentTypeSelector<FShortVector4>::Type() { return GL_ComponentType::UNSIGNED_SHORT; }
 template<> static GL_ComponentType ComponentTypeSelector<FByteVector4>::Type() { return GL_ComponentType::UNSIGNED_BYTE; }
-template<> static GL_ComponentType ComponentTypeSelector<FVector4>::Type() { return GL_ComponentType::FLOAT; }
-template<> static GL_ComponentType ComponentTypeSelector<FVector>::Type() { return GL_ComponentType::FLOAT; }
-template<> static GL_ComponentType ComponentTypeSelector<FVector2D>::Type() { return GL_ComponentType::FLOAT; }
+template<> static GL_ComponentType ComponentTypeSelector<FVector4f>::Type() { return GL_ComponentType::FLOAT; }
+template<> static GL_ComponentType ComponentTypeSelector<FVector3f>::Type() { return GL_ComponentType::FLOAT; }
+template<> static GL_ComponentType ComponentTypeSelector<FVector2f>::Type() { return GL_ComponentType::FLOAT; }
 template<> static GL_ComponentType ComponentTypeSelector<uint32>::Type() { return GL_ComponentType::UNSIGNED_INT; }
 
-template<> static bool ComponentTypeSelector<FMatrix>::Normalized() { return false; }
+template<> static bool ComponentTypeSelector<FMatrix44f>::Normalized() { return false; }
 template<> static bool ComponentTypeSelector<FShortVector4>::Normalized() { return false; }
 template<> static bool ComponentTypeSelector<FByteVector4>::Normalized() { return true; }
-template<> static bool ComponentTypeSelector<FVector4>::Normalized() { return false; }
-template<> static bool ComponentTypeSelector<FVector>::Normalized() { return false; }
-template<> static bool ComponentTypeSelector<FVector2D>::Normalized() { return false; }
+template<> static bool ComponentTypeSelector<FVector4f>::Normalized() { return false; }
+template<> static bool ComponentTypeSelector<FVector3f>::Normalized() { return false; }
+template<> static bool ComponentTypeSelector<FVector2f>::Normalized() { return false; }
 template<> static bool ComponentTypeSelector<uint32>::Normalized() { return false; }
 
-template<> static FString VectorTypeSelector<FMatrix>::Type() { return "MAT4"; }
+template<> static FString VectorTypeSelector<FMatrix44f>::Type() { return "MAT4"; }
 template<> static FString VectorTypeSelector<FShortVector4>::Type() { return "VEC4"; }
 template<> static FString VectorTypeSelector<FByteVector4>::Type() { return "VEC4"; }
-template<> static FString VectorTypeSelector<FVector4>::Type() { return "VEC4"; }
-template<> static FString VectorTypeSelector<FVector>::Type() { return "VEC3"; }
-template<> static FString VectorTypeSelector<FVector2D>::Type() { return "VEC2"; }
+template<> static FString VectorTypeSelector<FVector4f>::Type() { return "VEC4"; }
+template<> static FString VectorTypeSelector<FVector3f>::Type() { return "VEC3"; }
+template<> static FString VectorTypeSelector<FVector2f>::Type() { return "VEC2"; }
 template<> static FString VectorTypeSelector<uint32>::Type() { return "SCALAR"; }
 
-TArray<TSharedPtr<FJsonValue>> RegisterVector(const FMatrix& Vector)
+TArray<TSharedPtr<FJsonValue>> RegisterVector(const FMatrix44f& Vector)
 {
 	TArray<TSharedPtr<FJsonValue>> List;
 	for (int32 I = 0; I < 4; I++)
@@ -441,7 +441,7 @@ TArray<TSharedPtr<FJsonValue>> RegisterVector(const FByteVector4& Vector)
 	return List;
 }
 
-TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector4& Vector)
+TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector4f& Vector)
 {
 	TArray<TSharedPtr<FJsonValue>> List;
 	List.Emplace(MakeShareable(new FJsonValueNumber(Vector.X)));
@@ -451,7 +451,7 @@ TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector4& Vector)
 	return List;
 }
 
-TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector& Vector)
+TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector3f& Vector)
 {
 	TArray<TSharedPtr<FJsonValue>> List;
 	List.Emplace(MakeShareable(new FJsonValueNumber(Vector.X)));
@@ -460,7 +460,7 @@ TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector& Vector)
 	return List;
 }
 
-TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector2D& Vector)
+TArray<TSharedPtr<FJsonValue>> RegisterVector(const FVector2f& Vector)
 {
 	TArray<TSharedPtr<FJsonValue>> List;
 	List.Emplace(MakeShareable(new FJsonValueNumber(Vector.X)));

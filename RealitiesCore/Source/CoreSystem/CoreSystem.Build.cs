@@ -15,6 +15,7 @@ public class CoreSystem : ModuleRules
 				"RealitiesUtility",
 
 				"Core",
+				"NetCore"
 			}
 			);
 			

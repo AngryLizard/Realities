@@ -165,7 +165,7 @@ void FTGOR_ControlRigCache::UpdateControlTransforms(USkinnedMeshComponent* Skinn
 		{
 			URigHierarchy* Hierarchy = ControlRig->GetHierarchy();
 			const FTransform Transform = Pair.Value->GetControlTransform(SkinnedMesh);
-			Hierarchy->SetGlobalTransform(Pair.Key, Transform);
+			Hierarchy->SetGlobalTransform(Pair.Key, Transform, false, true);
 		}
 	}
 }

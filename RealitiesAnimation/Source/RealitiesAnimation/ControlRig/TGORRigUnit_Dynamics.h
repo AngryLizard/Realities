@@ -42,7 +42,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_SplineChainDynamics : public FTGORRig
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -147,7 +147,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_RetractGripDynamics : public FTGORRig
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * Bone we restract towards

@@ -86,20 +86,14 @@ FTGORRigUnit_AnchorIK_Execute()
 			}
 
 			// Set bones to transforms
-			Hierarchy->SetGlobalTransform(Chain.First(), Transforms[0], PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.First(), Transforms[0], false, PropagateToChildren != ETGOR_Propagation::Off);
 			for (int32 Index = 1; Index < ChainNum - 1; Index++)
 			{
-				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], PropagateToChildren == ETGOR_Propagation::All);
+				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], false, PropagateToChildren == ETGOR_Propagation::All);
 			}
-			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
-}
-
-FString FTGORRigUnit_AnchorIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,7 +129,7 @@ void Straighten(TArray<FTransform>& Transforms, const TArray<FTransform>& Rest)
 void InitialiseBendTransforms(
 	const FRigUnitContext& Context, 
 	const FRigUnit_DebugSettings& DebugSettings, 
-	const FRigElementKeyCollection& Chain, 
+	const TArrayView<const FRigElementKey>& Chain,
 	const FTransform& StartEE, const FVector& StartOffset, float StartRadius,
 	const FTransform& EndEE, const FVector& EndOffset, float EndRadius,
 	TArray<FTransform>& Rest, 
@@ -152,7 +146,7 @@ void InitialiseBendTransforms(
 	Transforms.Reserve(ChainNum);
 	for (int32 Index = 0; Index < ChainNum; Index++)
 	{
-		Rest.Emplace(Context.Hierarchy->GetInitialGlobalTransform(Chain[Index]));
+		Rest.Emplace(Context.Hierarchy->GetInitialLocalTransform(Chain[Index]));
 		Transforms.Emplace(Context.Hierarchy->GetGlobalTransform(Chain[Index]));
 		StartChain.Emplace(StartEE);
 		EndChain.Emplace(EndEE);
@@ -222,8 +216,10 @@ FTGORRigUnit_BendIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 ChainNum = Chain.Num();
 		if (ChainNum < 2)
@@ -233,12 +229,12 @@ FTGORRigUnit_BendIK_Execute()
 		else
 		{
 			// Objective properties
-			const FTransform StartEE = ComputeObjectiveTransform(Hierarchy, AnchorSettings, Chain.First(), Anchor);
+			const FTransform StartEE = ComputeObjectiveTransform(Hierarchy, AnchorSettings, Chain[0], Anchor);
 			const FTransform EndEE = ComputeObjectiveTransform(Hierarchy, ObjectiveSettings, Chain.Last(), Objective);
 
 			TArray<FTransform> Rest, StartChain, EndChain, Transforms;
 			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, ObjectiveLimitOffset, ObjectiveLimitRadius, EndEE, AnchorLimitOffset, AnchorLimitRadius, Rest, StartChain, EndChain, Transforms);
-			
+
 			// Collapse start and end chain into one
 			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
 
@@ -261,22 +257,15 @@ FTGORRigUnit_BendIK_Execute()
 			Transforms.Last() = EndEE;
 
 			// Set bones to transforms
-			Hierarchy->SetGlobalTransform(Chain.First(), Transforms[0], PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain[0], Transforms[0], false, PropagateToChildren != ETGOR_Propagation::Off);
 			for (int32 Index = 1; Index < ChainNum - 1; Index++)
 			{
-				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], PropagateToChildren == ETGOR_Propagation::All);
+				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], false, PropagateToChildren == ETGOR_Propagation::All);
 			}
-			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
 }
-
-FString FTGORRigUnit_BendIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -287,8 +276,10 @@ FTGORRigUnit_SingleBendIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 ChainNum = Chain.Num();
 		if (ChainNum < 2)
@@ -298,7 +289,7 @@ FTGORRigUnit_SingleBendIK_Execute()
 		else
 		{
 			// Objective properties
-			const FTransform StartEE = Hierarchy->GetGlobalTransform(Chain.First());
+			const FTransform StartEE = Hierarchy->GetGlobalTransform(Chain[0]);
 			const FTransform EndEE = ComputeObjectiveTransform(Hierarchy, ObjectiveSettings, Chain.Last(), Objective);
 
 			// Populate transform lists
@@ -325,15 +316,9 @@ FTGORRigUnit_SingleBendIK_Execute()
 			// Set bones to transforms
 			for (int32 Index = 1; Index < ChainNum - 1; Index++)
 			{
-				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], PropagateToChildren == ETGOR_Propagation::All);
+				Hierarchy->SetGlobalTransform(Chain[Index], Transforms[Index], false, PropagateToChildren == ETGOR_Propagation::All);
 			}
-			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transforms.Last(), false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
-}
-
-FString FTGORRigUnit_SingleBendIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

@@ -13,7 +13,6 @@
 	{ UE_CONTROLRIG_RIGUNIT_REPORT_WARNING(TEXT("Base '%s' is not valid."), *AbsBaseKey.ToString()); } else \
 
 
-
 FTGORRigUnit_AbstractOrient_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
@@ -24,8 +23,10 @@ FTGORRigUnit_AbstractOrient_Execute()
 		SOURCE_RESET;
 		ConCache.Reset();
 		AbsOrientCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (SourceChain.Num() < 2)
 		{
@@ -49,18 +50,11 @@ FTGORRigUnit_AbstractOrient_Execute()
 				FTransform Transform = Hierarchy->GetGlobalTransform(AbsOrientCache);
 				const FQuat Heading = FTGORRigUnit_RotateToward::ComputeHeadingRotation(AbsBoneAimAxis, ForwardTarget, AbsBoneUpAxis, UpTarget);
 				Transform.SetRotation(Heading * OffsetRotation.Quaternion());
-				Hierarchy->SetGlobalTransform(AbsOrientCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(AbsOrientCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
 }
-
-FString FTGORRigUnit_AbstractOrient::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,8 +68,10 @@ FTGORRigUnit_AbstractChain_Execute()
 		SOURCE_RESET;
 		ConCache.Reset();
 		AbsTipCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (SourceChain.Num() < 2)
 		{
@@ -101,7 +97,7 @@ FTGORRigUnit_AbstractChain_Execute()
 
 				FTransform BaseTransform = Hierarchy->GetGlobalTransform(AbsBaseCache);
 				BaseTransform.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(AbsBoneAimAxis, TargetDirection, AbsBoneUpAxis, UpTarget));
-				Hierarchy->SetGlobalTransform(AbsBaseCache, BaseTransform, PropagateToChildren == ETGOR_Propagation::All);
+				Hierarchy->SetGlobalTransform(AbsBaseCache, BaseTransform, false, PropagateToChildren == ETGOR_Propagation::All);
 
 				if (!AbsTipCache.UpdateCache(AbsTipKey, Hierarchy))
 				{
@@ -117,17 +113,11 @@ FTGORRigUnit_AbstractChain_Execute()
 					FTransform TipTransform = Hierarchy->GetGlobalTransform(AbsTipCache);
 					TipTransform.SetLocation(BaseTransform.GetLocation() + TargetDirection * CurrentLength / ChainMaxLength * InitialLength);
 					TipTransform.SetRotation(Last.GetRotation() * OffsetRotation.Quaternion());
-					Hierarchy->SetGlobalTransform(AbsTipCache, TipTransform, PropagateToChildren != ETGOR_Propagation::Off);
+					Hierarchy->SetGlobalTransform(AbsTipCache, TipTransform, false, PropagateToChildren != ETGOR_Propagation::Off);
 				}
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_AbstractChain::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,8 +132,10 @@ FTGORRigUnit_AbstractTranslate_Execute()
 		SOURCE_RESET;
 		AbsPivotCache.Reset();
 		AbsTargetCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (SourceChain.Num() < 2)
 		{
@@ -213,28 +205,21 @@ FTGORRigUnit_AbstractTranslate_Execute()
 
 					// Rotate the base
 					BaseTransform.SetRotation(AbsRotation);
-					Hierarchy->SetGlobalTransform(AbsBaseCache, BaseTransform, false);
+					Hierarchy->SetGlobalTransform(AbsBaseCache, BaseTransform, false, false);
 
 					// Translate and rotate the pivot
 					AbsPivot = FTransform(AbsRotation * OffsetRotation.Quaternion(), AbsLocation, FVector::OneVector);
-					Hierarchy->SetGlobalTransform(AbsPivotCache, AbsPivot, false);
+					Hierarchy->SetGlobalTransform(AbsPivotCache, AbsPivot, false, false);
 
 					// Rotate and translate the pivot
 					FTransform TargetTransform = Hierarchy->GetGlobalTransform(AbsTargetCache);
 					FTGORRigUnit_ConvertSpace::ConvertSpace(TargetTransform, Last, SourcePivot, AbsPivot, SourceAbsTranslate);
-					Hierarchy->SetGlobalTransform(AbsTargetCache, TargetTransform, PropagateToChildren != ETGOR_Propagation::Off);
+					Hierarchy->SetGlobalTransform(AbsTargetCache, TargetTransform, false, PropagateToChildren != ETGOR_Propagation::Off);
 				}
 			}
 		}
 	}
 }
-
-FString FTGORRigUnit_AbstractTranslate::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -249,8 +234,10 @@ FTGORRigUnit_AbstractInitial_Execute()
 		SourceBaseCache.Reset();
 		AbsRefCache.Reset();
 		SourceRefCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		// If no reference is present we assume origin
 		FVector InitAbsRefLocation = FVector::ZeroVector;
@@ -282,15 +269,9 @@ FTGORRigUnit_AbstractInitial_Execute()
 			const FTransform SourceTransform = Hierarchy->GetGlobalTransform(SourceBaseCache);
 			FTransform AbsTransform = Hierarchy->GetGlobalTransform(AbsBaseCache);
 			FTGORRigUnit_ConvertSpace::ConvertSpace(AbsTransform, SourceTransform, SourcePivot, AbsPivot, SourceAbsTranslate);
-			Hierarchy->SetGlobalTransform(AbsBaseCache, AbsTransform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(AbsBaseCache, AbsTransform, false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
-}
-
-FString FTGORRigUnit_AbstractInitial::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,8 +287,10 @@ FTGORRigUnit_AbstractRoot_Execute()
 		SourceBaseCache.Reset();
 		AbsRootCache.Reset();
 		SourceRootCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!SourceBaseCache.UpdateCache(SourceBaseKey, Hierarchy))
 		{
@@ -344,14 +327,8 @@ FTGORRigUnit_AbstractRoot_Execute()
 				AbsPivot.SetScale3D(FVector::OneVector);
 
 				// TODO: Possibly include offset computation
-				Hierarchy->SetGlobalTransform(AbsBaseCache, AbsPivot, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(AbsBaseCache, AbsPivot, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_AbstractRoot::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

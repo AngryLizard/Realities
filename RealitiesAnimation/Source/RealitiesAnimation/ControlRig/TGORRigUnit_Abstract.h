@@ -91,7 +91,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractOrient : public FTGORRigUnit_
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * The abstractor element to orient
@@ -123,7 +123,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractChain : public FTGORRigUnit_A
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * The tip of the chain on the abstractor skeleton  (E.g ABS_Foot_L)
@@ -201,7 +201,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractTranslate : public FTGORRigUn
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -282,7 +282,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractInitial : public FTGORRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * Bone on abstractor to reference for size
@@ -330,7 +330,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_AbstractRoot : public FTGORRigUnit_Ab
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * Reference abs root bone used to compute relative movement with abstractor

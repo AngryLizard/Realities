@@ -24,7 +24,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_HingeIK : public FTGORRigUnit_IK
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -75,7 +75,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DigitigradeIK : public FTGORRigUnit_I
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -138,7 +138,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ClavicleIK : public FTGORRigUnit_IK
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 

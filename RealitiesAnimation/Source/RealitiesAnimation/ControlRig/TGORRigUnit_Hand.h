@@ -50,7 +50,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_FingerTransform : public FTGORRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 

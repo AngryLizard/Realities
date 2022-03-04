@@ -52,7 +52,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidProjection : public FTGORRig
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -92,7 +92,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidRaycast : public FTGORRigUni
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -144,7 +144,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidRayCollide : public FTGORRig
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	
@@ -196,7 +196,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidChainCollide : public FTGORR
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 public:
 
 	/**
@@ -267,7 +267,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_EllipsoidTransformProject : public FT
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 public:
 
 	/**

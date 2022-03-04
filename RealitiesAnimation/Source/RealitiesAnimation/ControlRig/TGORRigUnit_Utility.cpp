@@ -43,10 +43,10 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowards(const FRigElementKey& C
 	Transform.SetRotation(Rotation * Transform.GetRotation());
 
 	// Update chain element
-	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
+	Hierarchy->SetGlobalTransform(Current, Transform, false, bPropagateToChildren);
 
 	FTransform NextTransform(Transform.GetRotation() * Local.GetRotation(), CurrentLocation + TargetDelta, Transform.GetScale3D() * Local.GetScale3D());
-	Hierarchy->SetGlobalTransform(Next, NextTransform, false);
+	Hierarchy->SetGlobalTransform(Next, NextTransform, false, false);
 
 	return Transform;
 }
@@ -64,12 +64,12 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowardsFixed(const FRigElementK
 	Transform.SetRotation(Rotation * Transform.GetRotation());
 
 	// Update chain element
-	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
+	Hierarchy->SetGlobalTransform(Current, Transform, false, bPropagateToChildren);
 
 	// Propagate to only next in line if propagation is turned off
 	if (!bPropagateToChildren)
 	{
-		Hierarchy->SetGlobalTransform(Next, Local * Transform, false);
+		Hierarchy->SetGlobalTransform(Next, Local * Transform, false, false);
 	}
 
 	return Transform;
@@ -100,12 +100,12 @@ FTransform FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(const FRigElem
 	}
 
 	// Update chain element
-	Hierarchy->SetGlobalTransform(Current, Transform, bPropagateToChildren);
+	Hierarchy->SetGlobalTransform(Current, Transform, false, bPropagateToChildren);
 
 	// Propagate to only next in line if propagation is turned off
 	if (!bPropagateToChildren)
 	{
-		Hierarchy->SetGlobalTransform(Next, Local * Transform, false);
+		Hierarchy->SetGlobalTransform(Next, Local * Transform, false, false);
 	}
 
 	return Transform;
@@ -118,17 +118,13 @@ FTGORRigUnit_Propagate_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		PropagateChainTowards(Key, NextKey, TargetLocation, Hierarchy, PropagateToChildren != ETGOR_Propagation::Off, Alpha);
 	}
-}
-
-FString FTGORRigUnit_Propagate::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,12 +168,6 @@ FTGORRigUnit_CustomiseInitial_Execute()
 	}
 }
 
-FString FTGORRigUnit_CustomiseInitial::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_CloneTransforms_Execute()
@@ -187,8 +177,10 @@ FTGORRigUnit_CloneTransforms_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 Num = Items.Num();
 		for (int32 Index = 0; Index < Num; Index++)
@@ -197,16 +189,10 @@ FTGORRigUnit_CloneTransforms_Execute()
 			const FRigElementKey NewKey = FRigElementKey(Items[Index].Name, TargetType);
 			if (Hierarchy->GetIndex(NewKey) != INDEX_NONE)
 			{
-				Hierarchy->SetGlobalTransform(NewKey, Transform, false);
+				Hierarchy->SetGlobalTransform(NewKey, Transform, false, false);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_CloneTransforms::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,8 +208,10 @@ FTGORRigUnit_TriangleEstimateDirection_Execute()
 		PivotCache.Reset();
 		LeftCache.Reset();
 		RightCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Origin = FVector::ZeroVector;
 		Direction = FVector::ForwardVector;
@@ -270,12 +258,6 @@ FTGORRigUnit_TriangleEstimateDirection_Execute()
 	}
 }
 
-FString FTGORRigUnit_TriangleEstimateDirection::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_TransformToPlane_Execute()
@@ -285,18 +267,14 @@ FTGORRigUnit_TransformToPlane_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = FPlane(Transform.GetLocation(), Transform.TransformVectorNoScale(Axis));
 
 	}
-}
-
-FString FTGORRigUnit_TransformToPlane::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -363,17 +341,13 @@ FTGORRigUnit_LimitRotation_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = LimitRotation(Quat, Axis, Min, Max);
 	}
-}
-
-FString FTGORRigUnit_LimitRotation::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -386,8 +360,10 @@ FTGORRigUnit_MeanDirection_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		MeanCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = FVector::ForwardVector;
 
@@ -422,13 +398,6 @@ FTGORRigUnit_MeanDirection_Execute()
 	}
 }
 
-FString FTGORRigUnit_MeanDirection::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_PowerDirection_Execute()
@@ -438,8 +407,10 @@ FTGORRigUnit_PowerDirection_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = FVector::ForwardVector;
 
@@ -467,13 +438,6 @@ FTGORRigUnit_PowerDirection_Execute()
 		}
 	}
 }
-
-FString FTGORRigUnit_PowerDirection::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -503,22 +467,16 @@ FTGORRigUnit_ChainLength_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		ChainMaxLength = ComputeInitialChainLength(SourceChain, Hierarchy) * ChainLengthMultiplier;
 	}
 }
 
-FString FTGORRigUnit_ChainLength::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
-
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void FTGORRigUnit_ChainAnalysis::ChainAnalysis(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength)
 {
@@ -541,8 +499,10 @@ FTGORRigUnit_ChainAnalysis_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (SourceChain.Num() < 2)
 		{
@@ -564,12 +524,6 @@ FTGORRigUnit_ChainAnalysis_Execute()
 	}
 }
 
-FString FTGORRigUnit_ChainAnalysis::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -586,18 +540,13 @@ FTGORRigUnit_Rebase_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Rebase(Output, Transform, FromSpace, ToSpace, UnitScale);
 	}
-}
-
-
-FString FTGORRigUnit_Rebase::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -623,18 +572,13 @@ FTGORRigUnit_ConvertSpace_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		ConvertSpace(Output, Transform, FromSpace, ToSpace, UnitScale);
 	}
-}
-
-
-FString FTGORRigUnit_ConvertSpace::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -667,8 +611,10 @@ FTGORRigUnit_RotateToward_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (SourceForward.IsNearlyZero())
 		{
@@ -693,12 +639,6 @@ FTGORRigUnit_RotateToward_Execute()
 	}
 }
 
-FString FTGORRigUnit_RotateToward::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_GetScaleLength_Execute()
@@ -709,8 +649,10 @@ FTGORRigUnit_GetScaleLength_Execute()
 	if (Context.State == EControlRigState::Init)
 	{
 		ConeCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!ConeCache.UpdateCache(ConeKey, Hierarchy))
 		{
@@ -731,12 +673,6 @@ FTGORRigUnit_GetScaleLength_Execute()
 	}
 }
 
-FString FTGORRigUnit_GetScaleLength::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_RotationBetween_Execute()
@@ -746,17 +682,13 @@ FTGORRigUnit_RotationBetween_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = FQuat::FindBetweenVectors(Source, Target);
 	}
-}
-
-FString FTGORRigUnit_RotationBetween::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -768,8 +700,10 @@ FTGORRigUnit_ReprojectOntoPlane_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const FVector Delta = Point - Reference;
 		const FVector Projected = Delta.ProjectOnToNormal(Direction);
@@ -781,12 +715,6 @@ FTGORRigUnit_ReprojectOntoPlane_Execute()
 	}
 }
 
-FString FTGORRigUnit_ReprojectOntoPlane::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_WarpAlongDirection_Execute()
@@ -796,8 +724,10 @@ FTGORRigUnit_WarpAlongDirection_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const FVector Delta = Point - Reference;
 		const FVector Projected = Delta.ProjectOnToNormal(Direction);
@@ -805,12 +735,6 @@ FTGORRigUnit_WarpAlongDirection_Execute()
 
 		Warped = Reference + Offset + Projected * Scale;
 	}
-}
-
-FString FTGORRigUnit_WarpAlongDirection::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -827,17 +751,13 @@ FTGORRigUnit_SoftBoundaries_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = SoftBoundaries(Value, Limit);
 	}
-}
-
-FString FTGORRigUnit_SoftBoundaries::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -849,17 +769,13 @@ FTGORRigUnit_BellCurve_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Output = FMath::Exp(Value * Value / -Variance);
 	}
-}
-
-FString FTGORRigUnit_BellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -871,18 +787,14 @@ FTGORRigUnit_DistanceBellCurve_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		Delta = Reference - Location;
 		Output = FMath::Exp(Delta.SizeSquared() / -Variance);
 	}
-}
-
-FString FTGORRigUnit_DistanceBellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -896,8 +808,10 @@ FTGORRigUnit_PreviewAnimation_Execute()
 	{
 		WorkData.bInitialized = false;
 		WorkData.ConversionRig.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!IsValid(PreviewSettings.PreviewAnimation))
 		{
@@ -926,7 +840,7 @@ FTGORRigUnit_PreviewAnimation_Execute()
 				WorkData.bInitialized = true;
 
 				WorkData.Curve.InitFrom(WorkData.BoneContainer);
-				WorkData.Attributes = FStackCustomAttributes();
+				WorkData.Attributes = UE::Anim::FStackAttributeContainer();
 
 				/// //////////////////////
 
@@ -965,7 +879,7 @@ FTGORRigUnit_PreviewAnimation_Execute()
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
 						if (ConversionBoneHierarchy->GetIndex(Key) != INDEX_NONE)
 						{
-							ConversionBoneHierarchy->SetLocalTransform(Key, Transform, false);
+							ConversionBoneHierarchy->SetLocalTransform(Key, Transform, false, false);
 						}
 					}
 
@@ -984,11 +898,11 @@ FTGORRigUnit_PreviewAnimation_Execute()
 
 						if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Control)) != INDEX_NONE)
 						{
-							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform);
+							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform, false, false);
 						}
 						else if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Bone)) != INDEX_NONE)
 						{
-							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false);
+							Hierarchy->SetGlobalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false, false);
 						}
 					}
 				}
@@ -1000,11 +914,11 @@ FTGORRigUnit_PreviewAnimation_Execute()
 						const FTransform& Transform = WorkData.Pose.GetBones()[BoneIndex];
 						if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Control)) != INDEX_NONE)
 						{
-							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform);
+							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Control), Transform, false, false);
 						}
 						else if (Hierarchy->GetIndex(FRigElementKey(KeyName, ERigElementType::Bone)) != INDEX_NONE)
 						{
-							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false);
+							Hierarchy->SetLocalTransform(FRigElementKey(KeyName, ERigElementType::Bone), Transform, false, false);
 						}
 					}
 				}
@@ -1021,10 +935,3 @@ FTGORRigUnit_PreviewAnimation_Execute()
 		}
 	}
 }
-
-FString FTGORRigUnit_PreviewAnimation::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-

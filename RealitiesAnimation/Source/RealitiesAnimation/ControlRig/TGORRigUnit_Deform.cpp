@@ -34,14 +34,6 @@ FTGORRigUnit_DeformOrient_Execute()
 	}
 }
 
-FString FTGORRigUnit_DeformOrient::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FTGORRigUnit_DeformChain_Execute()
@@ -55,8 +47,10 @@ FTGORRigUnit_DeformChain_Execute()
 		DeformCache.Reset();
 		AbsTipCache.Reset();
 		ObjBaseCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!DeformCache.UpdateCache(DeformBaseKey, Hierarchy))
 		{
@@ -104,16 +98,10 @@ FTGORRigUnit_DeformChain_Execute()
 				FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 				Transform.SetLocation(Deform.GetLocation() + TargetDirection * CurrentLength);
 				Transform.SetRotation(TipTransform.GetRotation() * OffsetRotation.Quaternion());
-				Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_DeformChain::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,8 +124,10 @@ FTGORRigUnit_DeformTranslate_Execute()
 		DeformCache.Reset();
 		AbsPivotCache.Reset();
 		AbsTargetCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!DeformCache.UpdateCache(DeformKey, Hierarchy))
 		{
@@ -186,21 +176,13 @@ FTGORRigUnit_DeformTranslate_Execute()
 
 						FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 						FTGORRigUnit_ConvertSpace::ConvertSpace(Transform, TargetTransform, AbsPivot, DeformPivot, AbsDeformTranslate);
-						Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+						Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 					}
 				}
 			}
 		}
 	}
 }
-
-FString FTGORRigUnit_DeformTranslate::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -215,8 +197,10 @@ FTGORRigUnit_DeformInitial_Execute()
 		DeformBaseCache.Reset();
 		AbsRefCache.Reset();
 		DeformRefCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!DeformBaseCache.UpdateCache(DeformBaseKey, Hierarchy))
 		{
@@ -245,15 +229,9 @@ FTGORRigUnit_DeformInitial_Execute()
 
 			FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 			FTGORRigUnit_ConvertSpace::ConvertSpace(Transform, AbsTransform, AbsPivot, DeformPivot, AbsDeformTranslate);
-			Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
-}
-
-FString FTGORRigUnit_DeformInitial::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,8 +246,10 @@ FTGORRigUnit_DeformRoot_Execute()
 		PIVOT_RESET;
 		AbsRootCache.Reset();
 		DeformRootCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!DeformBaseCache.UpdateCache(DeformBaseKey, Hierarchy))
 		{
@@ -306,14 +286,8 @@ FTGORRigUnit_DeformRoot_Execute()
 				DeformPivot.SetScale3D(FVector::OneVector);
 
 				// TODO: Possibly include offset computation
-				Hierarchy->SetGlobalTransform(ObjBaseCache, DeformPivot, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, DeformPivot, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_DeformRoot::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

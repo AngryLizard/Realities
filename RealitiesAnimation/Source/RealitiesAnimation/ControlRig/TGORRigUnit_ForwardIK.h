@@ -22,8 +22,6 @@ struct REALITIESANIMATION_API FTGORRigUnit_AnchorIK : public FTGORRigUnit_IK
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
-
 public:
 
 	/**
@@ -72,15 +70,13 @@ struct REALITIESANIMATION_API FTGORRigUnit_BendIK : public FTGORRigUnit_IK
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
-
 public:
 
 	/**
 	 * The chain to adapt (Has to be continuous chain)
 	 */
 	UPROPERTY(meta = (Input, ExpandByDefault))
-		FRigElementKeyCollection Chain;
+		TArray<FRigElementKey> Chain;
 
 	/*
 	 * Max angle change per segment towards the objective
@@ -152,15 +148,13 @@ struct REALITIESANIMATION_API FTGORRigUnit_SingleBendIK : public FTGORRigUnit_IK
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
-
 public:
 
 	/**
 	 * The chain to adapt (Has to be continuous chain)
 	 */
 	UPROPERTY(meta = (Input, ExpandByDefault))
-		FRigElementKeyCollection Chain;
+		TArray<FRigElementKey> Chain;
 
 	/*
 	 * Max angle change per segment towards the objective

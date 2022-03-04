@@ -15,8 +15,10 @@ FTGORRigUnit_SplineChainIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 ChainCount = Chain.Num();
 		if (ChainCount < 2)
@@ -85,16 +87,10 @@ FTGORRigUnit_SplineChainIK_Execute()
 				EE.SetRotation(FQuat::Slerp(HeadingRotation, EE.GetRotation(), RotateWithTangent));
 				EE.SetScale3D(Objective.GetScale3D());
 				EE.SetLocation(EE.GetLocation());
-				Hierarchy->SetGlobalTransform(Chain.Last(), EE, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(Chain.Last(), EE, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_SplineChainIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,8 +102,10 @@ FTGORRigUnit_BendTargetIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		const int32 ChainNum = Chain.Num();
 		if (ChainNum < 2)
@@ -155,14 +153,14 @@ FTGORRigUnit_BendTargetIK_Execute()
 				Transform.SetRotation(TwistSegment * BendSegment * Transform.GetRotation());
 
 				// Update chain element (no update needed since we propagate everything later)
-				Hierarchy->SetGlobalTransform(Chain[Index-1], Transform, false);
+				Hierarchy->SetGlobalTransform(Chain[Index-1], Transform, false, false);
 
 				// Propagate to next in line and store delta for fabrik
 				Transform = Local * Transform;
 			}
 
 			// Set EE transform
-			Hierarchy->SetGlobalTransform(Chain.Last(), Transform, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain.Last(), Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -173,10 +171,3 @@ FTGORRigUnit_BendTargetIK_Execute()
 		}
 	}
 }
-
-FString FTGORRigUnit_BendTargetIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-

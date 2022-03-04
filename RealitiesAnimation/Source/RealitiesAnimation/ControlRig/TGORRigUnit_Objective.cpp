@@ -25,8 +25,10 @@ FTGORRigUnit_ObjectivePlanarProject_Execute()
 	{
 		OBJECTIVE_RESET;
 		ObjPlaneCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!ObjPlaneCache.UpdateCache(PlaneKey, Hierarchy))
 		{
@@ -70,16 +72,10 @@ FTGORRigUnit_ObjectivePlanarProject_Execute()
 					Objective.SetLocation(Pivot + Delta * Closeness);
 				}
 
-				Hierarchy->SetGlobalTransform(ObjBaseCache, Objective, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, Objective, false, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_ObjectivePlanarProject::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,8 +89,10 @@ FTGORRigUnit_BulgeBellCurve_Execute()
 	{
 		ObjectCache.Reset();
 		BulgeCache.Reset();
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (!ObjectCache.UpdateCache(ObjectKey, Hierarchy))
 		{
@@ -119,13 +117,7 @@ FTGORRigUnit_BulgeBellCurve_Execute()
 
 			FTransform Transform = Bulge;
 			Transform.SetScale3D(Transform.GetScale3D() * FVector(FMath::Lerp(1.0f, Scale, ScaleMask.X), FMath::Lerp(1.0f, Scale, ScaleMask.Y), FMath::Lerp(1.0f, Scale, ScaleMask.Z)));
-			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false);
+			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false, false);
 		}
 	}
-}
-
-FString FTGORRigUnit_BulgeBellCurve::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

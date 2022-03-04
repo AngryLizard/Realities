@@ -78,7 +78,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformOrient : public FTGORRigUnit_De
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -110,7 +110,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformChain : public FTGORRigUnit_Def
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	* Bone on deform to retarget around of
@@ -224,7 +224,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformTranslate : public FTGORRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * The key the objective is relative to
@@ -282,7 +282,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformInitial : public FTGORRigUnit_D
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -328,7 +328,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DeformRoot : public FTGORRigUnit_Defo
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 * Reference abs root bone used to compute relative movement with abstractor

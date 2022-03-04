@@ -44,8 +44,10 @@ FTGORRigUnit_HingeIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (Chain.Num() < 3)
 		{
@@ -108,7 +110,7 @@ FTGORRigUnit_HingeIK_Execute()
 			EE.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
 			EE.SetScale3D(InitialEE.GetScale3D());
 			EE.SetLocation(Objective.GetLocation());
-			Hierarchy->SetGlobalTransform(Chain[2], EE, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain[2], EE, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -121,14 +123,8 @@ FTGORRigUnit_HingeIK_Execute()
 	}
 }
 
-FString FTGORRigUnit_HingeIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma optimize( "", off )
+
 FTGORRigUnit_DigitigradeIK_Execute()
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_RIGUNIT()
@@ -136,8 +132,10 @@ FTGORRigUnit_DigitigradeIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (Chain.Num() < 4)
 		{
@@ -254,7 +252,7 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			Foot.SetScale3D(Hierarchy->GetInitialGlobalTransform(Chain[3]).GetScale3D());
 			Foot.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
 			Foot.SetLocation(ObjectiveLocation);
-			Hierarchy->SetGlobalTransform(Chain[3], Foot, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain[3], Foot, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -266,12 +264,6 @@ FTGORRigUnit_DigitigradeIK_Execute()
 		}
 	}
 }
-#pragma optimize( "", on )
-FString FTGORRigUnit_DigitigradeIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -282,8 +274,10 @@ FTGORRigUnit_ClavicleIK_Execute()
 
 	if (Context.State == EControlRigState::Init)
 	{
+		return;
 	}
-	else
+
+	if (Context.State == EControlRigState::Update)
 	{
 		if (Chain.Num() < 4)
 		{
@@ -398,7 +392,7 @@ FTGORRigUnit_ClavicleIK_Execute()
 			EE.SetScale3D(Hierarchy->GetInitialGlobalTransform(Chain[3]).GetScale3D());
 			EE.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
 			EE.SetLocation(ObjectiveLocation);
-			Hierarchy->SetGlobalTransform(Chain[3], EE, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Chain[3], EE, false, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -409,10 +403,4 @@ FTGORRigUnit_ClavicleIK_Execute()
 			}
 		}
 	}
-}
-
-FString FTGORRigUnit_ClavicleIK::ProcessPinLabelForInjection(const FString& InLabel) const
-{
-	FString Formula;
-	return FString::Printf(TEXT("%s: TODO"), *InLabel);
 }

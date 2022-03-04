@@ -113,7 +113,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_CustomiseInitial : public FTGORRigUni
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 */
@@ -149,7 +149,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_Propagate : public FTGORRigUnit_Mutab
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	static FTransform PropagateChainTowards(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
 	static FTransform PropagateChainTowardsFixed(const FRigElementKey& Current, const FRigElementKey& Next, const FVector& Target, URigHierarchy* Hierarchy, bool bPropagateToChildren, float Intensity = 1.0f);
@@ -192,7 +192,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_CloneTransforms : public FRigUnitMuta
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	UPROPERTY(meta = (Input))
 		FRigElementKeyCollection Items;
@@ -217,7 +217,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_TriangleEstimateDirection : public FR
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -290,7 +290,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_TransformToPlane : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 	/**
 	 */
@@ -324,7 +324,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_LimitRotation : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static FQuat LimitRotation(const FQuat& Quat, const FVector& Axis, float Min, float Max);
@@ -374,7 +374,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_MeanDirection : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -417,7 +417,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_PowerDirection : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 
 	/**
@@ -455,7 +455,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ChainLength : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static float ComputeInitialChainLength(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy);
@@ -493,7 +493,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ChainAnalysis : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static void ChainAnalysis(const FRigElementKeyCollection& Chain, const URigHierarchy* Hierarchy, float Multiplier, float& ChainMaxLength, float& CurrentLength, float& InitialLength);
@@ -551,7 +551,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_Rebase : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static void Rebase(FTransform& Transform, const FTransform& Current, const FTransform& From, const FTransform& To, float Unit);
@@ -602,7 +602,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ConvertSpace : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static void ConvertSpace(FTransform& Transform, const FTransform& Current, const FTransform& From, const FTransform& To, float Unit);
@@ -654,7 +654,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_RotateToward : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static FQuat ComputeHeadingRotation(const FVector& SourceForward, const FVector& TargetForward, const FVector& SourceUp, const FVector& TargetUp);
@@ -705,7 +705,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_RotationBetween : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	/**
@@ -742,7 +742,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_ReprojectOntoPlane : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -798,7 +798,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_WarpAlongDirection : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -848,7 +848,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_GetScaleLength : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -890,7 +890,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_SoftBoundaries : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 	static float SoftBoundaries(float Value, float Max);
@@ -929,7 +929,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_BellCurve : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -967,7 +967,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_DistanceBellCurve : public FRigUnit
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 
@@ -1058,7 +1058,7 @@ struct REALITIESANIMATION_API FTGORRigUnit_PreviewAnimation : public FRigUnitMut
 	RIGVM_METHOD()
 		virtual void Execute(const FRigUnitContext& Context) override;
 
-	virtual FString ProcessPinLabelForInjection(const FString& InLabel) const override;
+	
 
 public:
 

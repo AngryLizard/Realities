@@ -327,7 +327,7 @@ static void BoneMapToNewRefSkel(const TArray<FBoneIndexType>& InBoneMap, const T
 */
 void FTGOR_SkeletalMeshMerge::GenerateNewSectionArray(TArray<FTGOR_NewSectionInfo>& NewSectionArray, int32 LODIdx)
 {
-	const int32 MaxGPUSkinBones = GetFeatureLevelMaxNumberOfBones(GMaxRHIFeatureLevel);
+	const int32 MaxGPUSkinBones = FGPUBaseSkinVertexFactory::GetMaxGPUSkinBones();
 
 	NewSectionArray.Empty();
 	for (int32 MeshIdx = 0; MeshIdx < SrcMeshList.Num(); MeshIdx++)
@@ -547,23 +547,22 @@ void FTGOR_SkeletalMeshMerge::CopyVertexFromSource(
 	DestVert.TangentZ = SrcLODData.StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(SourceVertIdx);
 	*/
 
-	FVector Position, TangentX, TangentZ;
+	FVector3f Position, TangentX, TangentZ;
 	GetTypedSkinnedVertex(MergeMesh, SkelMesh, *MergeSectionInfo.Section, SrcLODData.StaticVertexBuffers, SrcSkinWeightVertexBuffer, SourceVertIdx, ComponentSpaceTransforms, Position, TangentX, TangentZ);
 	DestVert.Position = Position;
 	DestVert.TangentX = TangentX;
 	DestVert.TangentZ = TangentZ;
-	
 
 	// Copy all UVs that are available
 	uint32 LODNumTexCoords = SrcLODData.StaticVertexBuffers.StaticMeshVertexBuffer.GetNumTexCoords();
 	const uint32 ValidLoopCount = FMath::Min(VertexDataType::NumTexCoords, LODNumTexCoords);
 	for (uint32 UVIndex = 0; UVIndex < ValidLoopCount; ++UVIndex)
 	{
-		FVector2D UVs = SrcLODData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV_Typed<VertexDataType::StaticMeshVertexUVType>(SourceVertIdx, UVIndex);
+		FVector2f UVs = SrcLODData.StaticVertexBuffers.StaticMeshVertexBuffer.GetVertexUV_Typed<VertexDataType::StaticMeshVertexUVType>(SourceVertIdx, UVIndex);
 		if (UVIndex < (uint32)MergeSectionInfo.UVTransforms.Num())
 		{
-			FVector Transformed = MergeSectionInfo.UVTransforms[UVIndex].TransformPosition(FVector(UVs, 1.f));
-			UVs = FVector2D(Transformed.X, Transformed.Y);
+			FVector Transformed = MergeSectionInfo.UVTransforms[UVIndex].TransformPosition(FVector(FVector2d(UVs), 1));
+			UVs = FVector2f(Transformed.X, Transformed.Y);
 		}
 		DestVert.UVs[UVIndex] = UVs;
 	}
@@ -571,7 +570,7 @@ void FTGOR_SkeletalMeshMerge::CopyVertexFromSource(
 	// now just fill up zero value if we didn't reach till end
 	for (uint32 UVIndex = ValidLoopCount; UVIndex < VertexDataType::NumTexCoords; ++UVIndex)
 	{
-		DestVert.UVs[UVIndex] = FVector2D::ZeroVector;
+		DestVert.UVs[UVIndex] = FVector2f::ZeroVector;
 	}
 }
 
@@ -888,13 +887,13 @@ void FTGOR_SkeletalMeshMerge::GenerateLODModel(int32 LODIdx)
 		UMorphTarget* MorphTarget = MergeMesh->FindMorphTarget(MorphPairs.Key);
 		if (IsValid(MorphTarget))
 		{
-			FMorphTargetLODModel& MorphModel = MorphTarget->MorphLODModels[LODIdx];
+			FMorphTargetLODModel& MorphModel = MorphTarget->GetMorphLODModels()[LODIdx];
 			const TArray<int32>* Ptr = VertexMapping.Find(MorphTarget->BaseSkelMesh);
 			if (Ptr)
 			{
 				for (UMorphTarget* OtherTarget : MorphPairs.Value)
 				{
-					for (const FMorphTargetDelta& OtherDelta : OtherTarget->MorphLODModels[LODIdx].Vertices)
+					for (const FMorphTargetDelta& OtherDelta : OtherTarget->GetMorphLODModels()[LODIdx].Vertices)
 					{
 						FMorphTargetDelta Delta = OtherDelta;
 						Delta.SourceIdx = (*Ptr)[OtherDelta.SourceIdx];
@@ -956,6 +955,7 @@ bool FTGOR_SkeletalMeshMerge::ProcessMergeMesh()
 	// copy settings and bone info from src meshes
 	bool bNeedsInit = true;
 
+	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	MergeMesh->GetSkelMirrorTable().Empty();
 
 	for (int32 MeshIdx = 0; MeshIdx < SrcMeshList.Num(); MeshIdx++)
@@ -981,6 +981,7 @@ bool FTGOR_SkeletalMeshMerge::ProcessMergeMesh()
 			}
 		}
 	}
+	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	/* Note: We already do this in MergeSkeleton, keeping this here in case it breaks things
 	// Rebuild inverse ref pose matrices.
