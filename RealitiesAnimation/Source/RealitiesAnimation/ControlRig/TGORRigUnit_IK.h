@@ -18,16 +18,34 @@ struct REALITIESANIMATION_API FRigUnit_ObjectiveSettings
 	}
 
 	/**
-	 * Objective local linear offset
-	 */
+	* Objective local forward axis
+	*/
 	UPROPERTY(EditAnywhere, meta = (Input), Category = "ObjectiveSettings")
-		FVector TranslationOffset = FVector::ZeroVector;
+		FVector ForwardAxis = FVector::RightVector;
 
 	/**
-	 * Objective local angular offset
+	 * Objective local up axis
 	 */
 	UPROPERTY(EditAnywhere, meta = (Input), Category = "ObjectiveSettings")
-		FRotator RotationOffset = FRotator::ZeroRotator;
+		FVector UpAxis = FVector::DownVector;
+
+	/**
+	 * Objective local offset
+	 */
+	UPROPERTY(EditAnywhere, meta = (Input), Category = "ObjectiveSettings")
+		FVector Offset = FVector::ZeroVector;
+
+	/**
+	* End-effector local forward axis
+	*/
+	UPROPERTY(EditAnywhere, meta = (Input), Category = "ObjectiveSettings")
+		FVector EffectorForwardAxis = FVector::LeftVector;
+
+	/**
+	 * End-effector local up axis
+	 */
+	UPROPERTY(EditAnywhere, meta = (Input), Category = "ObjectiveSettings")
+		FVector EffectorUpAxis = FVector::ForwardVector;
 };
 
 

@@ -362,9 +362,7 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 			// Objective properties
 			const FVector EEForwardTarget = Objective.TransformVectorNoScale(ObjectiveSettings.ForwardAxis);
 			const FVector EEUpTarget = Objective.TransformVectorNoScale(ObjectiveSettings.UpAxis);
-
-			const FQuat EERotation = Objective.TransformRotation(ObjectiveSettings.RotationOffset.Quaternion());
-			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.TranslationOffset);
+			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.Offset);
 
 			const FTransform Ellipsoid = Hierarchy->GetGlobalTransform(Cache);
 			const FVector RayStart = EELocation + EEUpTarget * Discovery;
@@ -404,7 +402,7 @@ FTGORRigUnit_EllipsoidTransformProject_Execute()
 			const FQuat LimitRotation = FTGORRigUnit_LimitRotation::SoftLimitRotation(AlignRotation, MaxRadians);
 
 			const FQuat Rotation = FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget);
-			Projection.SetRotation(LimitRotation * EERotation);
+			Projection.SetRotation(LimitRotation * Rotation);
 			Projection.SetLocation(LocationTarget);
 			Projection.SetScale3D(Objective.GetScale3D());
 
