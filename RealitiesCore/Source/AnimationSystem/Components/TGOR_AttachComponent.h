@@ -75,32 +75,36 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Traces for along the cone center, returns true if trace was successful and hit something. */
+	/** Traces along the cone center, returns true if trace was successful and hit something. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		bool TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float TraceRadius, float LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
+		bool TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
+
+	/** Traces along the cone center, averaging according to a second trace in movement direction, returns true if trace was successful and hit something. */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
+		bool TraceMoving(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double MaxSpeed, double LerpMultiplier, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Sphere radius for attachment limits */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Movement")
-		float LimitRadius;
+		double LimitRadius;
 
 	/** Radial offset along x axis */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Movement")
-		float OffsetAngleX;
+		double OffsetAngleX;
 
 	/** Radial offset along y axis */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Movement")
-		float OffsetAngleY;
+		double OffsetAngleY;
 
 	/** Sphere angle for attachment limits along X axis */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Movement")
-		float LimitAngleX;
+		double LimitAngleX;
 
 	/** Sphere angle for attachment limits along Y axis */
 	UPROPERTY(EditAnywhere, Category = "!TGOR Movement")
-		float LimitAngleY;
+		double LimitAngleY;
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -109,15 +113,19 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement")
 		bool IsInside(const FVector& Point) const;
 
+	// Returns angle limit away from alignment direction for a given direction in local space
+	UFUNCTION(BlueprintPure, Category = "!TGOR Movement")
+		double GetProjectedLimit(const FVector& Vector) const;
+
 	// Returns closest radial projection on the cone if not already inside
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement")
 		FVector ProjectInside(const FVector& Point) const;
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		void SetLimits(float Radius, float AngleX, float AngleY);
+		void SetLimits(double Radius, double AngleX, double AngleY);
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		void SetOffsets(float OffX, float OffY);
+		void SetOffsets(double OffX, double OffY);
 
 	/** Get local rotational offset of alignment */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
@@ -133,7 +141,7 @@ public:
 
 	/** Draw collision vertices */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
-		void DebugDrawCollision(float Size, float Duration);
+		void DebugDrawCollision(double Size, double Duration);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

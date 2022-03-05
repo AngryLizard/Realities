@@ -57,7 +57,7 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 		if (Input.Magnitude > 0.1f)
 		{
 			const FVector Direction = Repel.Project(Input.Direction, KINDA_SMALL_NUMBER);
-
+			
 			const float TorqueSpeedRatio = Identifier.Component->ComputeTorqueSpeedRatio(TotalSpeedRatio, TorqueSpeedSlowdown);
 			const FVector Alignment = Identifier.Component->ComputeTorqueAlong(External.UpVector, MovementContact.FrameForward, Direction);
 			Out.Torque += Alignment * (TorqueSpeedRatio * TurnTorque * Frame.Strength);

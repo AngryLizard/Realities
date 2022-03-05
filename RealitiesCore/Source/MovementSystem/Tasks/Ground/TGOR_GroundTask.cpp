@@ -183,7 +183,7 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 	{
 		FTGOR_ConeTraceOutput HandleTrace;
 		const float Radius = Foot->GetScaledCapsuleRadius();
-		if (Foot->MovementCone->TraceCenter(RootComponent.Get(), Space, Radius, TraceLengthMultiplier, HandleTrace))
+		if (Foot->MovementCone->TraceMoving(RootComponent.Get(), Space, GetMaxSpeed(), 4.0, Radius, TraceLengthMultiplier, HandleTrace))
 		{
 			const FTGOR_MovementDynamic Dynamic = HandleTrace.GetDynamicFromTrace(Space);
 

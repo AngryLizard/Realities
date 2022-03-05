@@ -72,7 +72,7 @@ TMap<int32, UTGOR_SpawnModule*> UTGOR_AttachComponent::GetModuleType_Implementat
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_AttachComponent::TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, float TraceRadius, float LengthMultiplier, FTGOR_ConeTraceOutput& Output) const
+bool UTGOR_AttachComponent::TraceCenter(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const
 {
 	check(GetAttachParent() && "Root cone not supported for TraceHandle");
 	const FTransform ConeRelative = GetAttachParent()->GetComponentTransform() * Component->GetComponentTransform().Inverse();
@@ -105,6 +105,39 @@ bool UTGOR_AttachComponent::TraceCenter(UTGOR_PilotComponent* Component, const F
 	}
 }
 
+bool UTGOR_AttachComponent::TraceMoving(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double MaxSpeed, double LerpMultiplier, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const
+{
+	MaxSpeed = FMath::Max(MaxSpeed, 1.0);
+	if (TraceCenter(Component, Space, TraceRadius, LengthMultiplier, Output))
+	{
+		const FVector Location = Output.Location - Output.Delta;
+		const FVector Direction = FVector::VectorPlaneProject(Space.RelativeLinearVelocity, Output.Direction);
+
+		const FTransform Transform = GetComponentTransform();
+		const double AngleLimit = GetProjectedLimit(Transform.InverseTransformVector(Direction));
+
+		const double TraceLength = LimitRadius * LengthMultiplier;
+		const FVector MoveOffset = Space.RelativeLinearVelocity * (FMath::Sin(AngleLimit) * TraceLength * LerpMultiplier / MaxSpeed);
+		const FVector Translation = Output.Location + Output.Direction * TraceLength + MoveOffset - Location;
+
+		FHitResult Hit;
+		if (Component->MovementSphereTraceSweep(TraceRadius, Location, Translation, Hit))
+		{
+			const FVector ProjectionVector = Hit.ImpactPoint - Output.Location;
+			const double ProjectionNorm = ProjectionVector.SizeSquared();
+			if (!FMath::IsNearlyZero(ProjectionNorm, 0.1))
+			{
+				const FVector Normal = FVector::VectorPlaneProject(Output.Normal, ProjectionVector / ProjectionNorm);
+				const double Alpha = Space.RelativeLinearVelocity.Size() * LerpMultiplier / MaxSpeed;
+				Output.Normal = (Output.Normal + Normal * Alpha).GetSafeNormal();
+
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool UTGOR_AttachComponent::IsInside(const FVector& Point) const
@@ -122,22 +155,35 @@ bool UTGOR_AttachComponent::IsInside(const FVector& Point) const
 
 	// Make sure we're inside the angle limit
 	const FVector2D Flat = FVector2D(Point.Y, Point.Z);
-	const float Spread = Flat.Size();
+	const double Spread = Flat.Size();
 	if (!FMath::IsNearlyZero(Spread))
 	{
 		const FVector2D Direction = Flat / Spread;
-		const float Angle = FMath::RadiansToDegrees(FMath::Acos(Point.X / Radius));
-		const float LimitAngle = FMath::Square(Direction.X) * LimitAngleX + FMath::Square(Direction.Y) * LimitAngleY;
+		const double Angle = FMath::RadiansToDegrees(FMath::Acos(Point.X / Radius));
+		const double LimitAngle = FMath::Square(Direction.X) * LimitAngleX + FMath::Square(Direction.Y) * LimitAngleY;
 		return Angle < LimitAngle;
 	}
 	return false;
+}
+
+double UTGOR_AttachComponent::GetProjectedLimit(const FVector& Vector) const
+{
+	// Make sure we're inside the angle limit
+	const FVector2D Flat = FVector2D(Vector.Y, Vector.Z);
+	const double Spread = Flat.Size();
+	if (!FMath::IsNearlyZero(Spread))
+	{
+		const FVector2D Direction = Flat / Spread;
+		return FMath::Square(Direction.X) * LimitAngleX + FMath::Square(Direction.Y) * LimitAngleY;
+	}
+	return 0.0;
 }
 
 FVector UTGOR_AttachComponent::ProjectInside(const FVector& Point) const
 {
 	FVector Project = Point;
 
-	float Radius = Point.Size();
+	double Radius = Point.Size();
 	if (!FMath::IsNearlyZero(Radius))
 	{
 		const FVector Normal = Point / Radius;
@@ -147,17 +193,17 @@ FVector UTGOR_AttachComponent::ProjectInside(const FVector& Point) const
 
 		// Make sure we're inside the angle limit
 		const FVector2D Flat = FVector2D(Normal.Y, Normal.Z);
-		const float Spread = Flat.Size();
+		const double Spread = Flat.Size();
 		if (!FMath::IsNearlyZero(Spread))
 		{
 			const FVector2D Direction = Flat / Spread;
-			const float Angle = FMath::RadiansToDegrees(FMath::Acos(Normal.X));
-			const float LimitAngle = FMath::Square(Direction.X) * LimitAngleX + FMath::Square(Direction.Y) * LimitAngleY;
+			const double Angle = FMath::RadiansToDegrees(FMath::Acos(Normal.X));
+			const double LimitAngle = FMath::Square(Direction.X) * LimitAngleX + FMath::Square(Direction.Y) * LimitAngleY;
 			if (Angle > LimitAngle)
 			{
 				// Reproject to correct angle
-				const float Cos = FMath::Cos(FMath::DegreesToRadians(LimitAngle));
-				const float Shrink = FMath::Sqrt(1.0f - FMath::Square(Cos));
+				const double Cos = FMath::Cos(FMath::DegreesToRadians(LimitAngle));
+				const double Shrink = FMath::Sqrt(1.0f - FMath::Square(Cos));
 				Project.X = Cos * Radius;
 				Project.Y = Direction.X * Shrink * Radius;
 				Project.Z = Direction.Y * Shrink * Radius;
@@ -180,7 +226,7 @@ FVector UTGOR_AttachComponent::ProjectInside(const FVector& Point) const
 	return Project;
 }
 
-void UTGOR_AttachComponent::SetLimits(float Radius, float AngleX, float AngleY)
+void UTGOR_AttachComponent::SetLimits(double Radius, double AngleX, double AngleY)
 {
 	LimitRadius = FMath::Max(0.f, Radius);
 	LimitAngleX = FMath::Clamp(AngleX, 0.f, 180.0f);
@@ -192,7 +238,7 @@ void UTGOR_AttachComponent::SetLimits(float Radius, float AngleX, float AngleY)
 	MarkRenderStateDirty();
 }
 
-void UTGOR_AttachComponent::SetOffsets(float OffX, float OffY)
+void UTGOR_AttachComponent::SetOffsets(double OffX, double OffY)
 {
 	OffsetAngleX = FMath::Clamp(OffX, -LimitAngleX, LimitAngleX);
 	OffsetAngleY = FMath::Clamp(OffY, -LimitAngleY, LimitAngleY);
@@ -218,7 +264,7 @@ FVector UTGOR_AttachComponent::GetAlignmentLocation() const
 	return GetRelativeLocation();
 }
 
-void UTGOR_AttachComponent::DebugDrawCollision(float Size, float Duration)
+void UTGOR_AttachComponent::DebugDrawCollision(double Size, double Duration)
 {
 	if (ShapeBodySetup)
 	{
@@ -237,7 +283,7 @@ void UTGOR_AttachComponent::DebugDrawCollision(float Size, float Duration)
 
 FBoxSphereBounds UTGOR_AttachComponent::CalcBounds(const FTransform& LocalToWorld) const
 {
-	const float MaxLimitAngleCos = FMath::Max(FMath::Abs(FMath::Cos(LimitAngleX)), FMath::Abs(FMath::Cos(LimitAngleY)));
+	const double MaxLimitAngleCos = FMath::Max(FMath::Abs(FMath::Cos(LimitAngleX)), FMath::Abs(FMath::Cos(LimitAngleY)));
 	FVector BoxPoint = FVector(FMath::Sin(LimitAngleX), FMath::Sin(LimitAngleY), MaxLimitAngleCos) * LimitRadius;
 	return FBoxSphereBounds(FVector::ZeroVector, BoxPoint, LimitRadius).TransformBy(LocalToWorld);
 }
@@ -269,14 +315,14 @@ void UTGOR_AttachComponent::PostEditChangeProperty(FPropertyChangedEvent& Proper
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-FVector CalcLimitConeVert(float AngleX, float AngleY, float Phi, float Ratio)
+FVector CalcLimitConeVert(double AngleX, double AngleY, double Phi, double Ratio)
 {
-	const float CosP = FMath::Cos(Phi);
-	const float SinP = FMath::Sin(Phi);
+	const double CosP = FMath::Cos(Phi);
+	const double SinP = FMath::Sin(Phi);
 
-	const float A = FMath::Square(CosP) * AngleX + FMath::Square(SinP) * AngleY;
-	const float CosA = FMath::Cos(A * Ratio);
-	const float SinA = FMath::Sin(A * Ratio);
+	const double A = FMath::Square(CosP) * AngleX + FMath::Square(SinP) * AngleY;
+	const double CosA = FMath::Cos(A * Ratio);
+	const double SinA = FMath::Sin(A * Ratio);
 
 	return FVector(CosA, CosP * SinA, SinP * SinA);
 }
@@ -284,7 +330,7 @@ FVector CalcLimitConeVert(float AngleX, float AngleY, float Phi, float Ratio)
 
 
 template <EShapeBodySetupHelper UpdateBodySetupAction>
-bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, bool bUseArchetypeBodySetup, float LimitRadius, float AngleX, float AngleY)
+bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, bool bUseArchetypeBodySetup, double LimitRadius, double AngleX, double AngleY)
 {
 	check((bUseArchetypeBodySetup && UpdateBodySetupAction == EShapeBodySetupHelper::InvalidateSharingIfStale) || (!bUseArchetypeBodySetup && UpdateBodySetupAction == EShapeBodySetupHelper::UpdateBodySetup));
 
@@ -298,17 +344,17 @@ bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, boo
 		const int32 ConeSides = 16;
 		const int32 SphereSides = 4;
 
-		auto CreateElem = [&](FKConvexElem& Elem, const float A, const float B) {
+		auto CreateElem = [&](FKConvexElem& Elem, const double A, const double B) {
 
 			Elem.VertexData.Reset((ConeSides + 1) * SphereSides);
 			Elem.VertexData.Emplace(FVector::ZeroVector);
 			Elem.VertexData.Emplace(FVector(LimitRadius, 0, 0));
 			for (int32 ConeSide = 0; ConeSide <= ConeSides; ConeSide++)
 			{
-				const float Azi = 2.f * PI * (A + (B - A) * (float)ConeSide / (float)(ConeSides));
+				const double Azi = 2.0 * PI * (A + (B - A) * (double)ConeSide / (double)(ConeSides));
 				for (int32 SphereSide = 1; SphereSide <= SphereSides; SphereSide++)
 				{
-					const float Ratio = (float)SphereSide / (float)(SphereSides);
+					const double Ratio = (double)SphereSide / (double)(SphereSides);
 					Elem.VertexData.Emplace(CalcLimitConeVert(AngleX, AngleY, Azi, Ratio) * LimitRadius);
 				}
 			}
@@ -319,7 +365,7 @@ bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, boo
 
 		for (int32 Index = 0; Index < Count; Index++)
 		{
-			CreateElem(ShapeBodySetup->AggGeom.ConvexElems[Index], ((float)(Index)) / Count, ((float)(Index + 1)) / Count);
+			CreateElem(ShapeBodySetup->AggGeom.ConvexElems[Index], ((double)(Index)) / Count, ((double)(Index + 1)) / Count);
 		}
 
 		ShapeBodySetup->BodySetupGuid = FGuid::NewGuid();
@@ -339,8 +385,8 @@ bool InvalidateOrUpdateConeBodySetup(TObjectPtr<UBodySetup>& ShapeBodySetup, boo
 
 void UTGOR_AttachComponent::UpdateBodySetup()
 {
-	const float AngleX = FMath::DegreesToRadians(LimitAngleX);
-	const float AngleY = FMath::DegreesToRadians(LimitAngleY);
+	const double AngleX = FMath::DegreesToRadians(LimitAngleX);
+	const double AngleY = FMath::DegreesToRadians(LimitAngleY);
 	if (PrepareSharedBodySetup<UTGOR_AttachComponent>())
 	{
 		bUseArchetypeBodySetup = InvalidateOrUpdateConeBodySetup<EShapeBodySetupHelper::InvalidateSharingIfStale>(ShapeBodySetup, bUseArchetypeBodySetup, LimitRadius, AngleX, AngleY);
@@ -449,8 +495,8 @@ FPrimitiveSceneProxy* UTGOR_AttachComponent::CreateSceneProxy()
 					FVector Prev = LocalToWorld.TransformPosition(CalcLimitConeVert(LimitAngleX, LimitAngleY, 0.0f, 1.0f) * LimitRadius); // CalcConeVert
 					for (int32 ConeSide = 1; ConeSide <= ConeSides; ConeSide++)
 					{
-						float Fraction = (float)ConeSide / (float)(ConeSides);
-						float Azi = 2.f * PI * Fraction;
+						double Fraction = (double)ConeSide / (double)(ConeSides);
+						double Azi = 2.0 * PI * Fraction;
 
 
 						const FVector Current = LocalToWorld.TransformPosition(CalcLimitConeVert(LimitAngleX, LimitAngleY, Azi, 1.0f) * LimitRadius); // CalcConeVert
