@@ -54,6 +54,26 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementThreshold
 *
 */
 USTRUCT(BlueprintType)
+struct DIMENSIONSYSTEM_API FTGOR_MovementImpact
+{
+	GENERATED_USTRUCT_BODY()
+
+		FTGOR_MovementImpact();
+	FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector Normal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Strength;
+};
+
+/**
+*
+*/
+USTRUCT(BlueprintType)
 struct DIMENSIONSYSTEM_API FTGOR_MovementForce
 {
 	GENERATED_USTRUCT_BODY()

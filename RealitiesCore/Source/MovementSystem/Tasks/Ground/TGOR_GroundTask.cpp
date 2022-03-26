@@ -17,8 +17,7 @@
 #include "Engine/ActorChannel.h"
 
 UTGOR_GroundTask::UTGOR_GroundTask()
-	: Super(),
-	LocalUpVector(FVector::UpVector)
+	: Super()
 {
 }
 
@@ -27,25 +26,11 @@ UTGOR_GroundTask::UTGOR_GroundTask()
 void UTGOR_GroundTask::Initialise()
 {
 	Super::Initialise();
-
-	UTGOR_AnimationLibrary::GetHandleComponents(Feet, Identifier.Component->GetOwner(), FootTypes, true);
-
-	LocalUpVector = FVector::ZeroVector;
-	for (UTGOR_HandleComponent* Foot : Feet)
-	{
-		LocalUpVector -= Foot->MovementCone->GetAlignmentDirection();
-	}
-	LocalUpVector.Normalize();
 }
 
 bool UTGOR_GroundTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
 	if (!Super::Invariant(Space, External))
-	{
-		return false;
-	}
-
-	if (Feet.Num() == 0)
 	{
 		return false;
 	}
@@ -103,15 +88,19 @@ void UTGOR_GroundTask::QueryInput(FVector& OutInput, FVector& OutView) const
 
 }
 
+void UTGOR_GroundTask::Context(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick)
+{
+	Super::Context(Space, External, Tick);
+}
+
 void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Analyze ground
-	const FVector Orientation = Space.Angular * LocalUpVector;
-
-	UpdateGroundHandles(Space, Orientation, External.UpVector);
-	TraceForGroundContact(Space, Orientation, External.UpVector);
+	MovementOrientation = Space.Angular * LocalUpVector;
+	UpdateGroundHandles(Space, External.UpVector);
+	TraceForGroundContact(Space, External.UpVector);
 
 	// Add movement dependent external forces to total external forces
 	FTGOR_MovementRepel Repel;
@@ -121,15 +110,16 @@ void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Move
 	MinGroundRatio = 0.0f; // FMath::Clamp(1.0f - MovementContact.MinGroundRatio, 0.0f, MaxGroundRatio);
 
 	// Compute input force
-	const float RawRatio = GetInputForce(Tick, Space, Orientation, External, Repel, Output);
+	const float RawRatio = GetInputForce(Tick, Space, External, Repel, Output);
 
 	const float SpeedRatio = FMath::Clamp(RawRatio, 0.0f, 1.0f);
 
 	// Compute force to make character stand, only take slope into consideration when moving
-	const float Stretch = GetStretch(Tick, Space, Orientation, External);
-	//const FVector Normal = FMath::Lerp(External.UpVector, Contact.FrameNormal, SpeedRatio);
+	const float Stretch = GetStretch(Tick, Space, External);
 	GetStandingForce(Tick, Space, External, MovementContact.FrameNormal, Stretch, Output);
-	GetStandingTorque(Tick, Space, External, MovementContact.FrameNormal, SpeedRatio, Output);
+
+	const FVector Normal = FMath::Lerp(External.UpVector, MovementContact.FrameNormal, SpeedRatio).GetSafeNormal();
+	GetStandingTorque(Tick, Space, External, Normal, SpeedRatio, Output);
 
 	// Compute force applied from the ground to achieve input torque
 	Output.Force += MovementContact.SurfaceOffset ^ Output.Torque;
@@ -140,20 +130,6 @@ void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Move
 
 	// Apply external forces
 	Output.Force += Repel.RepelForce;
-
-	if (Output.Torque.ContainsNaN())
-	{
-		Output.Force = FVector::ZeroVector;
-		Output.Torque = FVector::ZeroVector;
-		ERROR("Torque singularity", Warning);
-	}
-
-	if (Output.Force.ContainsNaN())
-	{
-		Output.Force = FVector::ZeroVector;
-		Output.Torque = FVector::ZeroVector;
-		ERROR("Force singularity", Warning);
-	}
 
 	Super::Update(Space, External, Tick, Output);
 }
@@ -168,10 +144,10 @@ void UTGOR_GroundTask::GetGroundContact(const FTGOR_MovementSpace& Space, FVecto
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector)
+void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& UpVector)
 {
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
-	const FVector Up = (TraceUpVector ? UpVector : Orientation);
+	const FVector Up = (TraceUpVector ? UpVector : MovementOrientation);
 
 	float Weight = 0.0f;
 	float GroundRatio = 0.0f;
@@ -179,11 +155,11 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 	float MaxRatio = 0.0f;
 	FVector Normal = FVector::ZeroVector;
 	FVector Delta = FVector::ZeroVector;
-	for (UTGOR_HandleComponent* Foot : Feet)
+	for (UTGOR_HandleComponent* Foot : Primitives)
 	{
 		FTGOR_ConeTraceOutput HandleTrace;
 		const float Radius = Foot->GetScaledCapsuleRadius();
-		if (Foot->MovementCone->TraceMoving(RootComponent.Get(), Space, GetMaxSpeed(), 4.0, Radius, TraceLengthMultiplier, HandleTrace))
+		if (Foot->MovementCone->TraceSpread(RootComponent.Get(), Space, Radius, TraceLengthMultiplier, HandleTrace))
 		{
 			const FTGOR_MovementDynamic Dynamic = HandleTrace.GetDynamicFromTrace(Space);
 
@@ -195,7 +171,7 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 				Task->SimulateDynamic(Dynamic);
 			}
 
-			const float Ratio = -(HandleTrace.Delta | Orientation) / Foot->MovementCone->LimitRadius;
+			const float Ratio = -(HandleTrace.Delta | MovementOrientation) / Foot->MovementCone->LimitRadius;
 			MinRatio = FMath::Min(MinRatio, Ratio);
 			MaxRatio = FMath::Max(MaxRatio, Ratio);
 			GroundRatio += Ratio;
@@ -236,12 +212,12 @@ void UTGOR_GroundTask::UpdateGroundHandles(const FTGOR_MovementSpace& Space, con
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-float UTGOR_GroundTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const
+float UTGOR_GroundTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
 	return 1.0f;
 }
 
-float UTGOR_GroundTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_GroundTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
@@ -253,7 +229,7 @@ float UTGOR_GroundTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGO
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_GroundTask::TraceForGroundContact(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector)
+void UTGOR_GroundTask::TraceForGroundContact(const FTGOR_MovementSpace& Space, const FVector& UpVector)
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
@@ -306,12 +282,12 @@ float UTGOR_GroundTask::GetFrictionForce(const FTGOR_MovementOutput& Out) const
 		}
 		*/
 		const float SlopeRatio = FMath::Max(0.0f, Slope - (1.0f - SlopeGrip)) * (1.0f / SlopeGrip);
-		return(FootFrictionCoefficient * SlopeRatio);
+		return FootFrictionCoefficient * SlopeRatio;
 	}
 	return 0.0f;
 }
 
-void UTGOR_GroundTask::GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+void UTGOR_GroundTask::GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
@@ -327,7 +303,7 @@ void UTGOR_GroundTask::GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR
 		Repel.RepelNormal = Hit.Normal;
 		const float RepelSpring = WallRepelStrength;
 		const FVector SpringForce = Hit.Normal * Hit.PenetrationDepth * RepelSpring;
-		Repel.RepelForce += SpringForce - Orientation * (SpringForce | Orientation);
+		Repel.RepelForce += SpringForce - MovementOrientation * (SpringForce | MovementOrientation);
 
 		// Compute spring damping
 		// TODO: Can oscillate
@@ -386,7 +362,7 @@ void UTGOR_GroundTask::GetStandingTorque(const FTGOR_MovementTick& Tick, const F
 	const FVector CurrentUp = Space.Angular.GetAxisZ();
 
 	// Rotate to stand upright 
-	const FVector Swivel = CurrentUp ^ External.UpVector;
+	const FVector Swivel = CurrentUp ^ Normal;
 	const FVector SwivelTorque = Swivel * StandupTorque;
 
 	// Lean when rotating and moving fast

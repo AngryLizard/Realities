@@ -98,7 +98,7 @@ FTGORRigUnit_AnchorIK_Execute()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void WeightedMean(TArray<FTransform>& Transforms, const TArray<FTransform>& A, const TArray<FTransform>& B, float Bias)
+void WeightedMean(const FRigUnitContext& Context, const FRigUnit_DebugSettings& DebugSettings, TArray<FTransform>& Transforms, const TArray<FTransform>& A, const TArray<FTransform>& B, float Bias)
 {
 	// Both ends always match
 	Transforms[0] = A[0];
@@ -111,6 +111,11 @@ void WeightedMean(TArray<FTransform>& Transforms, const TArray<FTransform>& A, c
 		const float Ratio = ((float)Index) / (Num - 1);
 		const float Weight = FMath::Lerp(FMath::Square(Ratio), 1.0f - FMath::Square(1.0f - Ratio), Bias);
 		Transforms[Index].Blend(A[Index], B[Index], Weight);
+
+		if (DebugSettings.bEnabled)
+		{
+			Context.DrawInterface->DrawPoint(FTransform::Identity, Transforms[Index].GetLocation(), DebugSettings.Scale * 5.0f, FLinearColor::Yellow);
+		}
 	}
 }
 
@@ -180,7 +185,10 @@ void ChainForwardSolve(const FRigUnitContext& Context, const FRigUnit_DebugSetti
 	const int32 ChainNum = Rest.Num();
 	for (int32 Index = 1; Index < ChainNum; Index++)
 	{
-		const FTransform& Regular = Rest[Index];
+		FTransform Regular = Rest[Index];
+		const float RegularDistance = (Transforms[Index].GetLocation() - Transforms[Index - 1].GetLocation()).Size();
+		Regular.SetLocation(Regular.GetLocation().GetClampedToMaxSize(RegularDistance));
+
 		const FQuat Rotation = SoftRotate(Regular, StartChain[Index - 1], Transforms[Index], MaxAnchorRadians);
 		StartChain[Index] = Regular * Rotation * StartChain[Index - 1];
 
@@ -196,7 +204,11 @@ void ChainBackwardSolve(const FRigUnitContext& Context, const FRigUnit_DebugSett
 	const int32 ChainNum = Rest.Num();
 	for (int32 Index = ChainNum - 1; Index >= 1; Index--)
 	{
-		const FTransform& RegularInv = Rest[Index].Inverse();
+		FTransform Regular = Rest[Index];
+		const float RegularDistance = (Transforms[Index].GetLocation() - Transforms[Index - 1].GetLocation()).Size();
+		Regular.SetLocation(Regular.GetLocation().GetClampedToMaxSize(RegularDistance));
+
+		const FTransform& RegularInv = Regular.Inverse();
 		const FQuat Rotation = SoftRotate(RegularInv, EndChain[Index], Transforms[Index - 1], MaxObjectiveRadians);
 		EndChain[Index - 1] = RegularInv * Rotation * EndChain[Index];
 
@@ -236,7 +248,7 @@ FTGORRigUnit_BendIK_Execute()
 			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, ObjectiveLimitOffset, ObjectiveLimitRadius, EndEE, AnchorLimitOffset, AnchorLimitRadius, Rest, StartChain, EndChain, Transforms);
 
 			// Collapse start and end chain into one
-			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
+			WeightedMean(Context, DebugSettings, Transforms, StartChain, EndChain, 0.0f);
 
 			const float MaxAnchorRadians = FMath::DegreesToRadians(MaxAnchorAngle);
 			const float MaxObjectiveRadians = FMath::DegreesToRadians(MaxObjectiveAngle);
@@ -247,7 +259,7 @@ FTGORRigUnit_BendIK_Execute()
 				ChainBackwardSolve(Context, DebugSettings, Rest, Transforms, EndChain, MaxObjectiveRadians);
 
 				// Collapse both FABRIK iterations into one
-				WeightedMean(Transforms, StartChain, EndChain, 1.0f);
+				WeightedMean(Context, DebugSettings, Transforms, StartChain, EndChain, 1.0f);
 			}
 
 			// Make sure all bones are properly rotated
@@ -297,7 +309,7 @@ FTGORRigUnit_SingleBendIK_Execute()
 			InitialiseBendTransforms(Context, DebugSettings, Chain, StartEE, ObjectiveLimitOffset, ObjectiveLimitRadius, EndEE, AnchorLimitOffset, AnchorLimitRadius, Rest, StartChain, EndChain, Transforms);
 
 			// Collapse start and end chain into one
-			WeightedMean(Transforms, StartChain, EndChain, 0.0f);
+			WeightedMean(Context, DebugSettings, Transforms, StartChain, EndChain, 0.0f);
 
 			const float MaxAnchorRadians = FMath::DegreesToRadians(MaxAnchorAngle);
 			const float MaxObjectiveRadians = FMath::DegreesToRadians(MaxObjectiveAngle);
@@ -307,7 +319,7 @@ FTGORRigUnit_SingleBendIK_Execute()
 				ChainForwardSolve(Context, DebugSettings, Rest, Transforms, StartChain, MaxAnchorRadians);
 
 				// Collapse both FABRIK iterations into one
-				WeightedMean(Transforms, StartChain, EndChain, 1.0f);
+				WeightedMean(Context, DebugSettings, Transforms, StartChain, EndChain, 1.0f);
 			}
 
 			// Make sure all bones are properly rotated

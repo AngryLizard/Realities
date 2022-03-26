@@ -80,22 +80,25 @@ bool UTGOR_AttachComponent::TraceCenter(UTGOR_PilotComponent* Component, const F
 	// Component is not guaranteed to be parent!
 	const FVector Location = Space.Linear + Space.Angular * ConeRelative.TransformPosition(GetAlignmentLocation());
 
-	Output.Direction = Space.Angular * ConeRelative.TransformVectorNoScale(GetAlignmentDirection());
-	const FVector Translation = Output.Direction * (LimitRadius * LengthMultiplier);
+	// Trace with offset
+	auto TraceFunction = [&](const FVector2D& Offset, FVector& Direction, FHitResult& Hit)->bool {
+		Direction = Space.Angular * ConeRelative.TransformVectorNoScale(GetAlignmentDirection(Offset));
+		const FVector Translation = Direction * (LimitRadius * LengthMultiplier);
+		return Component->MovementSphereTraceSweep(TraceRadius, Location, Translation, Hit);
+	};
 
 	FHitResult Hit;
-	if (Component->MovementSphereTraceSweep(TraceRadius, Location, Translation, Hit))
+	if (TraceFunction(FVector2D::ZeroVector, Output.Direction, Hit))
 	{
 		Output.Location = Hit.ImpactPoint;
 		Output.Normal = Hit.Normal;
 		Output.Delta = Output.Location - Location;
-
 		Output.Parent = Component->FindReparentToComponent(Hit.GetComponent(), Hit.BoneName);
 		return true;
 	}
 	else
 	{
-		Output.Location = Location + Translation;
+		Output.Location = Location + Output.Direction * (LimitRadius * LengthMultiplier);
 		Output.Normal = -Output.Direction; // < Could utilise Alignment here somehow, but wrong axis
 		Output.Delta = Output.Location - Location;
 
@@ -130,12 +133,51 @@ bool UTGOR_AttachComponent::TraceMoving(UTGOR_PilotComponent* Component, const F
 				const FVector Normal = FVector::VectorPlaneProject(Output.Normal, ProjectionVector / ProjectionNorm);
 				const double Alpha = Space.RelativeLinearVelocity.Size() * LerpMultiplier / MaxSpeed;
 				Output.Normal = (Output.Normal + Normal * Alpha).GetSafeNormal();
-
 			}
 		}
 		return true;
 	}
 	return false;
+}
+
+bool UTGOR_AttachComponent::TraceSpread(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const
+{
+	check(GetAttachParent() && "Root cone not supported for TraceHandle");
+	const FTransform ConeRelative = GetAttachParent()->GetComponentTransform() * Component->GetComponentTransform().Inverse();
+
+	// Component is not guaranteed to be parent!
+	const FVector Location = Space.Linear + Space.Angular * ConeRelative.TransformPosition(GetAlignmentLocation());
+
+	// Trace with offset
+	auto TraceFunction = [&](const FVector2D& Offset, FVector& Direction, FHitResult& Hit)->bool {
+		Direction = Space.Angular * ConeRelative.TransformVectorNoScale(GetAlignmentDirection(Offset));
+		const FVector Translation = Direction * (LimitRadius * LengthMultiplier);
+		return Component->MovementSphereTraceSweep(TraceRadius, Location, Translation, Hit);
+	};
+
+	FHitResult Hit;
+	if (TraceFunction(FVector2D(0.0, LimitAngleY * 0.25), Output.Direction, Hit))
+	{
+		// TODO: For now only care about this hit, maybe use the closest one instead later
+		Output.Parent = Component->FindReparentToComponent(Hit.GetComponent(), Hit.BoneName);
+
+		const FVector Anchor = Hit.ImpactPoint;
+		if (TraceFunction(FVector2D(LimitAngleX * 0.25, -LimitAngleY * 0.25), Output.Direction, Hit))
+		{
+			const FVector TangentX = Hit.ImpactPoint;
+			if (TraceFunction(FVector2D(-LimitAngleX * 0.25, -LimitAngleY * 0.25), Output.Direction, Hit))
+			{
+				const FVector TangentY = Hit.ImpactPoint;
+
+				Output.Location = (Anchor + TangentX + TangentY) / 3;
+				Output.Normal = ((TangentY - Anchor) ^ (TangentX - Anchor)).GetSafeNormal();
+				Output.Delta = Output.Location - Location;
+				return true;
+			}
+		}
+	}
+
+	return TraceCenter(Component, Space, TraceRadius, LengthMultiplier, Output);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -247,16 +289,16 @@ void UTGOR_AttachComponent::SetOffsets(double OffX, double OffY)
 	MarkRenderStateDirty();
 }
 
-FQuat UTGOR_AttachComponent::GetAlignmentRotation() const
+FQuat UTGOR_AttachComponent::GetAlignmentRotation(const FVector2D& Offset) const
 {
-	const FQuat OffX = FQuat(FVector(0, 0, 1), FMath::DegreesToRadians(OffsetAngleX));
-	const FQuat OffY = FQuat(FVector(0, 1, 0), FMath::DegreesToRadians(OffsetAngleY));
+	const FQuat OffX = FQuat(FVector(0, 0, 1), FMath::DegreesToRadians(OffsetAngleX + Offset.X));
+	const FQuat OffY = FQuat(FVector(0, 1, 0), FMath::DegreesToRadians(OffsetAngleY + Offset.Y));
 	return OffX * OffY;
 }
 
-FVector UTGOR_AttachComponent::GetAlignmentDirection() const
+FVector UTGOR_AttachComponent::GetAlignmentDirection(const FVector2D& Offset) const
 {
-	return GetRelativeTransform().TransformVectorNoScale(GetAlignmentRotation().GetAxisX());
+	return GetRelativeTransform().TransformVectorNoScale(GetAlignmentRotation(Offset).GetAxisX());
 }
 
 FVector UTGOR_AttachComponent::GetAlignmentLocation() const
@@ -469,7 +511,7 @@ FPrimitiveSceneProxy* UTGOR_AttachComponent::CreateSceneProxy()
 			, LimitRadius(InComponent->LimitRadius)
 			, LimitAngleX(FMath::DegreesToRadians(InComponent->LimitAngleX))
 			, LimitAngleY(FMath::DegreesToRadians(InComponent->LimitAngleY))
-			, Alignment(InComponent->GetAlignmentRotation())
+			, Alignment(InComponent->GetAlignmentRotation(FVector2D::ZeroVector))
 			, ShapeColor(InComponent->ShapeColor)
 		{
 			bWillEverBeLit = false;

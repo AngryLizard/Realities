@@ -83,6 +83,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
 		bool TraceMoving(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double MaxSpeed, double LerpMultiplier, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
 
+	/** Traces along the cone center in a triangular shape */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
+		bool TraceSpread(UTGOR_PilotComponent* Component, const FTGOR_MovementSpace& Space, double TraceRadius, double LengthMultiplier, FTGOR_ConeTraceOutput& Output) const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -129,11 +133,11 @@ public:
 
 	/** Get local rotational offset of alignment */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		FQuat GetAlignmentRotation() const;
+		FQuat GetAlignmentRotation(const FVector2D& Offset) const;
 
 	/** Get local alignment direction relative to parent */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")
-		FVector GetAlignmentDirection() const;
+		FVector GetAlignmentDirection(const FVector2D& Offset) const;
 
 	/** Get local alignment location relative to parent */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement")

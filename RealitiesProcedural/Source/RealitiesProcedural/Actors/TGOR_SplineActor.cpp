@@ -61,15 +61,19 @@ void ATGOR_SplineActor::GenerateInstances()
 			// Append new meshes if none have been cached yet
 			if (SegmentIndex >= SplineMeshes.Num())
 			{
-				USplineMeshComponent* Mesh = NewObject<USplineMeshComponent>(this);
-				Mesh->SetupAttachment(GetRootComponent());
-				Mesh->RegisterComponent();
-				Mesh->SetCullDistance(Spline->CachedMaxDrawDistance);
-				SplineMeshes.Emplace(Mesh);
+				SplineMeshes.Emplace(nullptr);
 			}
 
-			// Update SplineMesh
-			USplineMeshComponent* Mesh = SplineMeshes[SegmentIndex++];
+			// Update SplineMesh, create if null
+			USplineMeshComponent*& Mesh = SplineMeshes[SegmentIndex++];
+			if (Mesh == nullptr)
+			{
+				Mesh = NewObject<USplineMeshComponent>(this);
+				Mesh->SetupAttachment(GetRootComponent());
+				Mesh->RegisterComponent();
+			}
+			Mesh->BodyInstance = BodyInstance;
+			Mesh->SetCullDistance(Spline->CachedMaxDrawDistance);
 
 			Mesh->SetForwardAxis(Segment.Axis, false);
 

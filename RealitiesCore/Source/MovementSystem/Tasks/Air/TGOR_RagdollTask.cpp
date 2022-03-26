@@ -51,63 +51,49 @@ void UTGOR_RagdollTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Mov
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
 
-	// Dampen forces
-	Out.AddDampingForce(Tick, Space.RelativeLinearVelocity, BrakeCoefficient * Frame.Strength);
-	Out.AddDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Frame.Strength);
+	const float Radius = FVector2D(Body.Radius, Body.Height * 0.5).Size();
+	const FVector ExternalBias = -External.UpVector * ExternalBiasMultiplier;
+	const FVector Direction = -External.UpVector;//(Space.LinearVelocity + ExternalBias).GetSafeNormal();
+	const FVector Translation = Direction * DetectionDistance;
 
-	// Force towards upright
-	const FVector UpVector = Space.Angular.GetAxisZ();
-	//Out.Force += UpVector * StandupForce * Frame.Strength;
+	// Trace surrounding walls
+	ImpactTime = 1.0f;
+	ImpactLocation = Space.Linear;
+	ImpactNormal = -Direction;
 
-	// Rotate to towards upright 
-	const float InputTorque = StandupTorque * Frame.Strength;
-	const FVector Swivel = UpVector ^ State.Input;
-	const float Ratio = UpVector | State.Input;
-	if (Ratio >= 0.0f)
-	{
-		Out.Torque += Swivel * InputTorque;
-	}
-	else
-	{
-		const float Angle = Swivel.Size();
-		if (Angle >= SMALL_NUMBER)
-		{
-			Out.Torque += Swivel / Angle * InputTorque;
-		}
-		else
-		{
-			Out.Torque += Space.Angular.GetAxisY() * InputTorque;
-		}
-	}
-
-	// Check whether we are hitting the ground, clamp forces to physical ability
 	FHitResult Hit;
-	const float CapsuleRadius = Body.Radius * DetectionMultiplier;
-	const float CapsuleHalfHeight = Body.Height * DetectionMultiplier / 2;
-	if (RootComponent->Overlap(Space.Linear, Space.Angular, CapsuleRadius, CapsuleHalfHeight, Hit))
+	if (RootComponent->MovementSphereTraceSweep(Radius, Space.Linear, Translation, Hit))
 	{
-		// Rotate towards laying
-		const FVector SideVector = (Hit.Normal ^ UpVector) ^ UpVector;
-		const float SideNorm = SideVector.Size();
-		if (SideNorm >= SMALL_NUMBER)
-		{
-			const FVector LayAxis = Hit.Normal ^ (SideVector / SideNorm);
-			Out.Torque += LayAxis * FMath::Max(1.0f - State.Input.Size(), 0.0f) * InputTorque;
-		}
-
-		Out.Force -= External.Force.ProjectOnToNormal(Hit.Normal);
-		Out.Torque -= External.Torque;
-
-		Out.Force = UTGOR_Math::ClampToSize(Out.Force, MaxOnGroundForce * Frame.Strength);
-		Out.Torque = UTGOR_Math::ClampToSize(Out.Torque, MaxOnGroundTorque * Frame.Strength);
-		RagdollAnimationTickOnGround(Space, External, Hit.Normal, Hit.ImpactPoint);
+		ImpactTime = Hit.Time;
+		ImpactNormal = Hit.Normal;
+		ImpactLocation = Hit.ImpactPoint;
 	}
-	else
+
+	if (RootComponent->MovementSphereTraceSweep(Radius, Space.Linear, -Translation, Hit) && Hit.Time < ImpactTime)
 	{
-		Out.Force = UTGOR_Math::ClampToSize(Out.Force, MaxOnGroundForce * InAirMultiplier * Frame.Strength);
-		Out.Torque = UTGOR_Math::ClampToSize(Out.Torque, MaxOnGroundTorque * InAirMultiplier * Frame.Strength);
-		RagdollAnimationTickInAir(Space, External);
+		ImpactTime = Hit.Time;
+		ImpactNormal = Hit.Normal;
+		ImpactLocation = Hit.ImpactPoint;
 	}
+
+	// Amount of how much we're going towards resting position
+	const float Rest = FMath::GetMappedRangeValueClamped(FVector2D(UprightThreshold, 1), FVector2D(0, 1), (1.f - ImpactTime));
+
+	// Dampen forces
+	Out.AddDampingForce(Tick, Space.RelativeLinearVelocity, LinearDamping * Rest * Frame.Strength);
+	Out.AddDampingTorque(Tick, Space.RelativeAngularVelocity, AngularDamping * Rest * Frame.Strength);
+
+	// Rotate towards said axis
+	Out.Torque += ((Space.Angular * LocalUpVector) ^ ImpactNormal) * (UprightTorque * (Frame.Strength * Rest));
+
+	const FVector RelativeVelocity = Space.RelativeLinearVelocity + (Space.RelativeAngularVelocity ^ (ImpactLocation - Space.Linear));
+	Out.Force += FVector::VectorPlaneProject(RelativeVelocity * (-BreakForce * Rest) - External.Force, ImpactNormal);
+
 
 	Super::Update(Space, External, Tick, Out);
+}
+
+float UTGOR_RagdollTask::GetMaxSpeed() const
+{
+	return MaxSpeed;
 }

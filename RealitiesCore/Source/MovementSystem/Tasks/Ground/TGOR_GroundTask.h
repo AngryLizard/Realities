@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 
-#include "MovementSystem/Tasks/TGOR_EuclideanMovementTask.h"
+#include "MovementSystem/Tasks/TGOR_OrientableTask.h"
 #include "TGOR_GroundTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
@@ -16,7 +16,7 @@ class UTGOR_Primitive;
 *
 */
 UCLASS(Blueprintable)
-class MOVEMENTSYSTEM_API UTGOR_GroundTask : public UTGOR_EuclideanMovementTask
+class MOVEMENTSYSTEM_API UTGOR_GroundTask : public UTGOR_OrientableTask
 {
 	GENERATED_BODY()
 
@@ -32,11 +32,11 @@ public:
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 	virtual void Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const override;
+	virtual void Context(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick) override;
 	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
 
 	/** Braking coeffiecient for ground movement */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Control")
@@ -121,10 +121,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Anatomy")
 		float MaximumLegStrength = 1200000.0f;
 
-	/** Arm primitive types */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement|Anatomy")
-		TSet<TSubclassOf<UTGOR_Primitive>> FootTypes;
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -136,22 +132,22 @@ public:
 protected:
 
 	/** Update ground contact handles and return current ground properties */
-	virtual void UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector);
+	virtual void UpdateGroundHandles(const FTGOR_MovementSpace& Space, const FVector& UpVector);
 
 	/** Gets stretch coefficient */
-	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const;
+	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const;
 
 	/** Computes forces depending on input, return speed ratio [0, 1] */
-	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const;
+	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const;
 
 	/** Trace to ground and extract contact point */
-	void TraceForGroundContact(const FTGOR_MovementSpace& Space, const FVector& Orientation, const FVector& UpVector);
+	void TraceForGroundContact(const FTGOR_MovementSpace& Space, const FVector& UpVector);
 
 	/** Get current friction towards ground */
 	float GetFrictionForce(const FTGOR_MovementOutput& Out) const;
 
 	/** Trace surroundings for sideways collision detection */
-	void GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const;
+	void GetRepelForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const;
 
 	/** Computes force to make character stand up, stretching legs by the given amount (-1 for crouch, 0 for standing) */
 	void GetStandingForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FVector& Normal, float Stretch, FTGOR_MovementOutput& Out) const;
@@ -165,17 +161,13 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Upvector according to legs */
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
-		FVector LocalUpVector;
-
-	/** Movement handle of feet */
-	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
-		TArray<UTGOR_HandleComponent*> Feet;
-
 	/** Ground contact */
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
 		FTGOR_MovementContact MovementContact;
+
+	/** Local up vector used for movement */
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
+		FVector MovementOrientation;
 
 	/** Maximum ground ratio supported by current leg setup */
 	UPROPERTY( BlueprintReadOnly, Category = "!TGOR Movement")

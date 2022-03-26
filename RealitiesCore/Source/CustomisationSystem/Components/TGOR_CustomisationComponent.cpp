@@ -425,6 +425,7 @@ void UTGOR_CustomisationComponent::ApplyCustomisationInstance(int32 NodeIndex, c
 
 void UTGOR_CustomisationComponent::ApplyInternalCustomisation()
 {
+#if WANTS_DRAW_MESH_EVENTS
 	// Start drawing
 	{
 		SCOPE_CYCLE_COUNTER(STAT_CustomisationBeginDraw);
@@ -532,6 +533,7 @@ void UTGOR_CustomisationComponent::ApplyInternalCustomisation()
 			const_cast<FDrawToRenderTargetContext&>(TexturePair.Value.Context) = FDrawToRenderTargetContext();
 		}
 	}
+#endif
 }
 
 bool UTGOR_CustomisationComponent::GetCustomisationMatching(int32 NodeIndex, TArray<FTGOR_CustomisationInstance>& CustomisationInstances, UTGOR_Customisation* Content, ETGOR_CustomisationQueryEnumeration Query) const

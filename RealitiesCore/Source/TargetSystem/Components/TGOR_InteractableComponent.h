@@ -43,5 +43,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Interaction")
 		TArray<UTGOR_Target*> Targets;
 
+
+	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+
 private:
 };

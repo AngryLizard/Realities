@@ -348,6 +348,12 @@ TArray<UTGOR_MovementTask*> UTGOR_MovementComponent::GetMovementListOfType(TSubc
 	return Movements;
 }
 
+void UTGOR_MovementComponent::ForceUpdateMovement()
+{
+	// TODO: There are some steps we can leave out to just update movement, for now we want to compute external forces accurately so we just tick zero deltatime.
+	TickPhysics(0.0f);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_MovementComponent::RepNotifyMovementTaskState(const FTGOR_MovementState& Old)
@@ -528,6 +534,12 @@ void UTGOR_MovementComponent::PreComputePhysics(const FTGOR_MovementTick& Tick)
 
 void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output)
 {
+	// Update movement context for all tasks
+	for (UTGOR_MovementTask* MovementSlot : MovementSlots)
+	{
+		MovementSlot->Context(Space, External, Tick);
+	}
+
 	if (GetOwnerRole() != ENetRole::ROLE_SimulatedProxy)
 	{
 		// Update Movement
@@ -549,6 +561,20 @@ void UTGOR_MovementComponent::ComputePhysics(FTGOR_MovementSpace& Space, const F
 	{
 		SCOPE_CYCLE_COUNTER(STAT_MovementTick);
 		CurrentTask->Update(Space, External, Tick, Output);
+
+		if (Output.Torque.ContainsNaN())
+		{
+			Output.Force = FVector::ZeroVector;
+			Output.Torque = FVector::ZeroVector;
+			ERROR("Torque singularity", Warning);
+		}
+
+		if (Output.Force.ContainsNaN())
+		{
+			Output.Force = FVector::ZeroVector;
+			Output.Torque = FVector::ZeroVector;
+			ERROR("Force singularity", Warning);
+		}
 
 		// Update space
 		UTGOR_PilotComponent* RootPilot = GetRootPilot();

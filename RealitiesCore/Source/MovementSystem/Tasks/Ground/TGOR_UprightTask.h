@@ -38,20 +38,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		float StandingStretch = 0.9f;
 
-	/** Threshold (angle) for when character can still stand up [-1, 1], -1 for always and 1 for never */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float StandingThreshold = 0.8f;
-
 	/** Crouch speed multiplier to maximum speed [0, 1] when fully crouched */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		float CrouchSpeedMultiplier = 0.3f;
+
+	/** Threshold for when we regard this movement to be standing upright [-1, 1] for -1 for always and 1 for never */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		float StandingThreshold = 0.25f;
 
 	/** Compute crouch speed slowdown */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		float ComputeCrouchSpeedRatio(float GroundRatio) const;
 
+	/** Attribute for whether we're currently able to stand upright */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TSubclassOf<UTGOR_Attribute> AutonomyAttribute;
 
-	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const override;
+
+	virtual float GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

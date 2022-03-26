@@ -190,6 +190,9 @@ public:
 		return Output;
 	}
 
+	/** Forces a movement mode update */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		void ForceUpdateMovement();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

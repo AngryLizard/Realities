@@ -78,19 +78,23 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** Physics scene information for this component, holds a single rigid body with multiple shapes. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spline Mesh", meta = (ShowOnlyInnerProperties, SkipUCSModifiedProperties))
+		FBodyInstance BodyInstance;
+
 	/** Generate spline mesh instances */
 	UFUNCTION(BlueprintCallable, Category = "Procedural Mesh", Meta = (Keywords = "C++"))
 		virtual void GenerateInstances();
 
 	/** Meshes to spawn */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline Mesh|Collision")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline Mesh")
 		TArray<FTGOR_SplineSegment> Segments;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
 	/** Currently generated spline meshes */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline Mesh|Collision")
+	UPROPERTY(VisibleAnywhere, Category = "Spline Mesh")
 		TArray<USplineMeshComponent*> SplineMeshes;
 
 	/** Count how many segments are defined */

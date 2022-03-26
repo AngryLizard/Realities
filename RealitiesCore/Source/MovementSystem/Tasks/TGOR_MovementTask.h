@@ -106,6 +106,9 @@ public:
 	/** Process movement, only called once per engine tick (opposed to simulation tick) */
 	virtual void Process(float DeltaTime);
 
+	/** Gets called every simulation tick even if not scheduled before Invariant is checked */
+	virtual void Context(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick);
+
 	/** Simulate one movement tick */
 	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Output);
 

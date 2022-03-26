@@ -3,17 +3,18 @@
 
 #include "CoreMinimal.h"
 
-#include "MovementSystem/Tasks/TGOR_EuclideanMovementTask.h"
+#include "MovementSystem/Tasks/TGOR_OrientableTask.h"
 #include "TGOR_RagdollTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
 
+class UTGOR_Attribute;
 
 /**
 *
 */
 UCLASS(Blueprintable)
-class MOVEMENTSYSTEM_API UTGOR_RagdollTask : public UTGOR_EuclideanMovementTask
+class MOVEMENTSYSTEM_API UTGOR_RagdollTask : public UTGOR_OrientableTask
 {
 	GENERATED_BODY()
 
@@ -32,51 +33,61 @@ public:
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const override;
 	virtual void Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out) override;
 
+	virtual float GetMaxSpeed() const;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	/** Torque damping coefficient */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float AngularDamping = 1000.0f;
-
 	/** Braking coeffiecient when touching ground */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float BrakeCoefficient = 6000.0f;
+		float LinearDamping = 600.0f;
 
-	/** Detector capsule size multiplier */
+	/** Torque damping coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float DetectionMultiplier = 1.2f;
+		float AngularDamping = 100.0f;
 
-	/** Force applied trying to stand up */
+	/** Upright torque coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float StandupForce = 80000.0f;
+		float UprightTorque = 200.0f;
 
-	/** Torque applied trying to stand up */
+	/** Break force coefficient */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float StandupTorque = 3500.0f;
+		float BreakForce = 200.0f;
 
 
-	/** Maximum achievable force when on ground */
+	/** Collision detection distance */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float MaxOnGroundForce = 240000.0f;
+		float DetectionDistance = 350.0f;
 
-	/** Maximum achievable torque when on ground */
+	/** How much external force direction is taken into consideration */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float MaxOnGroundTorque = 8000.0f;
+		float ExternalBiasMultiplier = 10.0f;
 
-	/** Maximum achievable force/torque multiplier when in mid air */
+	/** Maximum linear speed we detect for movement applications */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
-		float InAirMultiplier = 0.1f;
+		float MaxSpeed = 1200.0f;
+
+	/** Relative lateral movement angle threshold for when we start rotating upright */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		float UprightThreshold = 0.5f;
+
+	/** Attribute for how much we try to stand upright in ]0,1] for 1 if always */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		TSubclassOf<UTGOR_Attribute> AutonomyAttribute;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
-	/** Called every simulation tick when currently in mid-air */
-	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		void RagdollAnimationTickInAir(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
+	/** Impact location */
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
+		FVector ImpactLocation;
 
-	/** Called every simulation tick when currently hitting a surface */
-	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		void RagdollAnimationTickOnGround(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FVector& SurfaceNormal, const FVector& SurfacePoint);
+	/** Impact normal */
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
+		FVector ImpactNormal;
+
+	/** Impact time */
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
+		float ImpactTime;
 
 };

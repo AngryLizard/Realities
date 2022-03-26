@@ -200,7 +200,8 @@ void UTGOR_MontageMovementTask::Update(const FTGOR_MovementSpace& Space, const F
 	*/
 
 	// Simulate move
-	RootComponent->SimulateMove(Out, Offset, Tick.DeltaTime, false);
+	FTGOR_MovementImpact MovementImpact;
+	RootComponent->SimulateMove(Out, Offset, Tick.DeltaTime, false, MovementImpact);
 	AttachedTask->SimulateDynamic(Out);
 
 	Super::Update(Space, External, Tick, Output);

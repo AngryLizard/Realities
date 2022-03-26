@@ -508,7 +508,7 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 	if (Hit.bBlockingHit)
 	{
 		// Project onto surface normal TODO: Will not work on rotating objects because Unreal doesn't care about angular velocity
-		float Inertial = ComputeInertial(Hit.ImpactPoint, Hit.ImpactNormal);
+		float Inertial = ComputeInertial(Hit.ImpactPoint, Hit.Normal);
 		FVector WorldVelocity = FVector::ZeroVector;
 		UTGOR_ColliderComponent* Other = nullptr;
 		if (Hit.Component.IsValid() && Hit.Component->GetOwner() != Actor)
@@ -518,7 +518,7 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 			{
 				const FTGOR_MovementSpace MovementSpace = Other->ComputeSpace();
 				WorldVelocity = MovementSpace.PointVelocity(Hit.ImpactPoint);
-				Inertial += Other->ComputeInertial(Hit.ImpactPoint, Hit.ImpactNormal);
+				Inertial += Other->ComputeInertial(Hit.ImpactPoint, Hit.Normal);
 			}
 			else
 			{
@@ -548,18 +548,20 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep)
+void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult)
 {
 	SCOPE_CYCLE_COUNTER(STAT_Move);
 
-	// Make sure updated component is at the right location
+	// Default to 0-strength impact against the surrounding air
+	ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity, false);
 
+	// Make sure updated component is at the right location
 	if (Timestep >= SMALL_NUMBER && Sweep)
 	{
 		INC_DWORD_STAT_BY(STAT_Iteration, 1);
 
 		// Compute translation
-		const int32 Iterations = SimulateTranslate(Space, Offset, Timestep, Sweep, 1.0f, MaxCollisionIterations);
+		const int32 Iterations = SimulateTranslate(Space, Offset, Timestep, Sweep, ImpactResult, 1.0f, MaxCollisionIterations);
 
 		Space.Linear = GetComponentLocation();
 		Space.Angular = GetComponentQuat();
@@ -574,12 +576,16 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTG
 	}
 }
 
-int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Ratio, int32 Iteration)
+int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration)
 {
 	INC_DWORD_STAT_BY(STAT_Translation, 1);
 
-	AActor* const Actor = GetOwner();
+	// Initialise hitresult
+	FHitResult Hit(NoInit);
+	Hit.bBlockingHit = false;
+	Hit.Time = 1.f;
 
+	AActor* const Actor = GetOwner();
 	if (Ratio >= SMALL_NUMBER && Iteration >= 0)
 	{
 		const FQuat OffsetRotation = FQuat::Slerp(FQuat::Identity, Offset.Angular, Ratio);
@@ -589,11 +595,6 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, con
 		const FQuat DeltaQuat = FQuat(W.X, W.Y, W.Z, 0.0f);
 		Space.Angular = OffsetRotation * (Space.Angular + (DeltaQuat * Ratio) * Space.Angular);
 		Space.Angular.Normalize();
-
-		// Initialise hitresult
-		FHitResult Hit(NoInit);
-		Hit.bBlockingHit = false;
-		Hit.Time = 1.f;
 
 		// Move and rotate component (Copied from SafeMove but without recomputing hitresult)
 
@@ -614,16 +615,18 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, con
 		////SafeMoveUpdatedComponent(Translation, Base.Rotation, SweepsCollision, Hit, ETeleportType::None);
 		//const EMoveComponentFlags IncludeBlockingOverlapsWithoutEvents = (MOVECOMP_NeverIgnoreBlockingOverlaps | MOVECOMP_DisableBlockingOverlapDispatch);
 		//MoveComponent(Translation, Space.Angular, SweepsCollision && Sweep, &Hit, MOVECOMP_NoFlags, ETeleportType::None);
-
 		if (Collide(Space, Hit))
 		{
+			ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity.ProjectOnToNormal(Hit.Normal), true);
+
 			// Unrotate base
 			const float Rest = FMath::Max(Ratio - Hit.Time, 0.0f);
 			Space.Angular = Space.Angular - (DeltaQuat * Rest) * Space.Angular;
 			Space.Angular.Normalize();
 
-			// Slide further along surface
-			return SimulateTranslate(Space, Offset, Timestep, Sweep, Rest, Iteration - 1);
+			// Slide further along surface (Ignore impact result)
+			FTGOR_MovementImpact DummyImpact;
+			return SimulateTranslate(Space, Offset, Timestep, Sweep, DummyImpact, Rest, Iteration - 1);
 		}
 	}
 	return Iteration;

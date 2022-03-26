@@ -36,10 +36,10 @@ bool UTGOR_StrafingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR
 }
 
 
-float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_StrafingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	// Parent implements damping
-	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
+	Super::GetInputForce(Tick, Space, External, Repel, Out);
 
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();

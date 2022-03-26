@@ -122,7 +122,7 @@ void UTGOR_ProcessComponent::UpdateContent_Implementation(FTGOR_SpawnerDependenc
 	{
 		for (UTGOR_ProcessTask* ProcessSlot : Pair.Value)
 		{
-			ProcessSlot->MarkPendingKill();
+			ProcessSlot->MarkAsGarbage();
 		}
 	}
 }

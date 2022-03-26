@@ -31,20 +31,23 @@ bool UTGOR_UprightTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_
 		return false;
 	}
 
-	return (Space.Angular.GetAxisZ() | External.UpVector) > StandingThreshold;
+	if (GetAttribute(AutonomyAttribute, 1.0f) < 0.5f)
+	{
+		return false;
+	}
+
+	return ((Space.Angular * LocalUpVector) | External.UpVector) > StandingThreshold;
 }
 
 float UTGOR_UprightTask::ComputeCrouchSpeedRatio(float GroundRatio) const
 {
 	// Max velocity depends on current leg length
-
-
 	const float RelativeRatio = (GroundRatio - MinGroundRatio) / (MaxGroundRatio - MinGroundRatio);
 	const float SpeedRatio = FMath::Clamp((RelativeRatio - CrouchStretch) / (StandingStretch - CrouchStretch), 0.0f, 1.0f);
 	return FMath::Lerp(CrouchSpeedMultiplier, 1.0f, SpeedRatio);
 }
 
-float UTGOR_UprightTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const
+float UTGOR_UprightTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 

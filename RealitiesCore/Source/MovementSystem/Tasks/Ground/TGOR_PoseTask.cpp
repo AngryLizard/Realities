@@ -43,7 +43,7 @@ bool UTGOR_PoseTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_Mov
 	return true;
 }
 
-float UTGOR_PoseTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External) const
+float UTGOR_PoseTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 
@@ -52,13 +52,13 @@ float UTGOR_PoseTask::GetStretch(const FTGOR_MovementTick& Tick, const FTGOR_Mov
 	return UpInput * UpRight * 2.0f - 1.0f;
 }
 
-float UTGOR_PoseTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_PoseTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	const FTGOR_MovementInput& State = Identifier.Component->GetState();
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 
 	// Parent implements damping
-	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
+	Super::GetInputForce(Tick, Space, External, Repel, Out);
 
 	// Filter sideways input
 	Out.Force = -MovementContact.FrameVelocity * BrakeCoefficient;

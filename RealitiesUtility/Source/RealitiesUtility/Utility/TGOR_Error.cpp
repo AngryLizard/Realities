@@ -37,7 +37,7 @@ void UTGOR_Error::Error(FString Message, FString Location, FString File, FString
 
 void UTGOR_Error::Report(FString Message, float Time)
 {
-	GEngine->AddOnScreenDebugMessage(-1, Time, FColor(0xFF202020), Message);
+	GEngine->AddOnScreenDebugMessage(-1, Time, FColor(0xFFE0E0E0), Message);
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 

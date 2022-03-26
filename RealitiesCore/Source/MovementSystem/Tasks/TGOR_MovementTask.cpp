@@ -112,6 +112,10 @@ void UTGOR_MovementTask::Process(float DeltaTime)
 	ConsumeRootMotion(DeltaTime);
 }
 
+void UTGOR_MovementTask::Context(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick)
+{
+}
+
 void UTGOR_MovementTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementTick& Tick, FTGOR_MovementOutput& Out)
 {
 }

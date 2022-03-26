@@ -54,7 +54,7 @@ void ATGOR_HitVolume::AssignOwnerInstigator(AActor* Actor)
 	OwnerInstigator = Actor;
 }
 
-ATGOR_PhysicsVolume* ATGOR_HitVolume::GetPhysicsVolume(ATGOR_PhysicsVolume* Volume, const FVector& Location) const
+ATGOR_PhysicsVolume* ATGOR_HitVolume::QueryPhysicsVolume(ATGOR_PhysicsVolume* Volume, const FVector& Location) const
 {
 	// Check current volume
 	if (IsValid(Volume) && Volume->IsInside(Location))

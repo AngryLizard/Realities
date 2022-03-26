@@ -143,11 +143,11 @@ public:
 public:
 	/** Simulate move for a given time */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		void SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep);
+		void SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult);
 
 	/** Translate over a given time, returns hit form last iteration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Ratio, int32 Iteration);
+		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration);
 
 	/** Tries to resolve a penetration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))

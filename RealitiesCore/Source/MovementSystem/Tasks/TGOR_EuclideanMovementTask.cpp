@@ -72,7 +72,7 @@ void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& 
 	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Out, DeltaTime);
 
 	// Simulate move
-	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep);
+	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep, LastMovementImpact);
 	EuclideanTask->SimulateDynamic(Out);
 }
 

@@ -61,6 +61,25 @@ float FTGOR_MovementThreshold::ThresholdTime(const FTGOR_Time& A, const FTGOR_Ti
 	return FMath::Min((Delta * Delta) / (TimeThreshold * TimeThreshold), 1.0f);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FTGOR_MovementImpact::FTGOR_MovementImpact()
+	: Normal(FVector::ZeroVector),
+	Strength(0.0f)
+{
+}
+
+FTGOR_MovementImpact::FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact)
+	: FTGOR_MovementImpact()
+{
+	const double SpeedSq = Velocity.SizeSquared();
+	if (!FMath::IsNearlyZero(SpeedSq))
+	{
+		const double Speed = FMath::Sqrt(SpeedSq);
+		Strength = HasImpact ? Speed : 0.0;
+		Normal = Velocity / -Speed;
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

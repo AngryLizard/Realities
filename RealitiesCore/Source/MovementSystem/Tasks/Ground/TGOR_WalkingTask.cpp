@@ -37,10 +37,10 @@ void UTGOR_WalkingTask::Initialise()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
+float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const
 {
 	// Parent implements damping
-	Super::GetInputForce(Tick, Space, Orientation, External, Repel, Out);
+	Super::GetInputForce(Tick, Space, External, Repel, Out);
 
 	const FTGOR_MovementFrame& Frame = Identifier.Component->GetFrame();
 	const FTGOR_MovementBody& Body = RootComponent->GetBody();
@@ -49,7 +49,7 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 	const float Speed = MovementContact.FrameVelocity.Size(); // (MovementContact.FrameVelocity - External.UpVector * (MovementContact.FrameVelocity | External.UpVector)).Size(); //
 
 	const FTGOR_Direction Input = MovementContact.FrameInput;
-	const float FinalMaximumSpeed = MaximumSpeed* GetSpeedRatio();
+	const float FinalMaximumSpeed = MaximumSpeed * GetSpeedRatio();
 	if (FinalMaximumSpeed >= SMALL_NUMBER)
 	{
 		// Rotate towards input direction
@@ -84,7 +84,7 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 			// Apply centripetal forces for nice curves
 			Out.Force += Body.GetMassedLinear(MovementContact.FrameAngular ^ MovementContact.FrameVelocity);
 		}
-		return SpeedRatio;
+		return Speed / FinalMaximumSpeed;
 	}
 	return 0.0f;
 }

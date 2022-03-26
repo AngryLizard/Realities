@@ -49,7 +49,7 @@ public:
 
 	/** Get volume given location and previous volume */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Combat|Internal", Meta = (Keywords = "C++"))
-		ATGOR_PhysicsVolume* GetPhysicsVolume(ATGOR_PhysicsVolume* Volume, const FVector& Location) const;
+		ATGOR_PhysicsVolume* QueryPhysicsVolume(ATGOR_PhysicsVolume* Volume, const FVector& Location) const;
 
 	/** Update HitVolume, return false if all activity has concluded and this Volume is to be despawned */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Combat|Internal", Meta = (Keywords = "C++"))

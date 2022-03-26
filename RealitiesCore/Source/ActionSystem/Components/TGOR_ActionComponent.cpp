@@ -449,16 +449,16 @@ float UTGOR_ActionComponent::GetClientPing()
 	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (!IsValid(Pawn))
 	{
-		return(0.0f);
+		return 0.0f;
 	}
 
 	APlayerState* PlayerState = Pawn->GetPlayerState();
 	if (!IsValid(PlayerState))
 	{
-		return(0.0f);
+		return 0.0f;
 	}
 
-	return(PlayerState->GetPing());
+	return PlayerState->GetPingInMilliseconds();
 }
 
 void UTGOR_ActionComponent::GetNetOccupation(ETGOR_NetOccupation& Branches)

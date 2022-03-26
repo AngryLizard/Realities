@@ -82,7 +82,7 @@ bool ATGOR_ProjectileHitVolume::Update(float DeltaTime)
 			}
 
 			// Find new volume
-			It->Volume = GetPhysicsVolume(It->Volume, It->Dynamic.Linear);
+			It->Volume = QueryPhysicsVolume(It->Volume, It->Dynamic.Linear);
 
 			// Display current state
 			OnDisplay(*It);
@@ -110,7 +110,7 @@ void ATGOR_ProjectileHitVolume::Shoot(const FTGOR_AimInstance& Target, const FTG
 
 	Projectile.Dynamic.Linear = GetActorLocation();
 	Projectile.Dynamic.LinearVelocity = UTGOR_Math::Normalize(Projectile.Target - Projectile.Dynamic.Linear) * InitialVelocity;
-	Projectile.Volume = GetPhysicsVolume(nullptr, Projectile.Dynamic.Linear);
+	Projectile.Volume = QueryPhysicsVolume(nullptr, Projectile.Dynamic.Linear);
 	Projectile.Forces = Forces;
 
 	Projectiles.Emplace(Projectile);

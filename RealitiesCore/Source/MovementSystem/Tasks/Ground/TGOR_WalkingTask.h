@@ -55,7 +55,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
-	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FVector& Orientation, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
+	virtual float GetInputForce(const FTGOR_MovementTick& Tick, const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External, const FTGOR_MovementRepel& Repel, FTGOR_MovementOutput& Out) const override;
 
 /*
 	////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -41,6 +41,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
+		FTGOR_MovementImpact LastMovementImpact;
+
 	UPROPERTY(Transient)
 		TWeakObjectPtr<UTGOR_PilotComponent> RootComponent;
 
