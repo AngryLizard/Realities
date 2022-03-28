@@ -65,7 +65,7 @@ FTGORRigUnit_LookAtIK_Execute()
 
 			Transform.SetRotation(Offset * Transform.GetRotation());
 
-			Hierarchy->SetGlobalTransform(Cache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Cache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{
@@ -130,7 +130,7 @@ FTGORRigUnit_EyelidIK_Execute()
 
 			Transform.SetRotation(LidRotation * Transform.GetRotation());
 
-			Hierarchy->SetGlobalTransform(Cache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(Cache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
 
 			if (DebugSettings.bEnabled)
 			{

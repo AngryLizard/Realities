@@ -35,12 +35,12 @@ FTGORRigUnit_FingerTransform_Execute()
 			FTransform BaseTransform = Hierarchy->GetLocalTransform(BaseCache);
 			const float BaseSpreadRadians = FMath::DegreesToRadians(BaseSpreadRange.X + Spread * (BaseSpreadRange.Y - BaseSpreadRange.X));
 			BaseTransform.SetRotation(FQuat(BaseSpreadAxis, BaseSpreadRadians) * BaseTransform.GetRotation());
-			Hierarchy->SetLocalTransform(BaseCache, BaseTransform, false, true);
+			Hierarchy->SetLocalTransform(BaseCache, BaseTransform, true);
 
 			FTransform FingerTransform = Hierarchy->GetLocalTransform(FingerCache);
 			const float FingerSpreadRadians = FMath::DegreesToRadians(FingerSpreadRange.X + Spread * (FingerSpreadRange.Y - FingerSpreadRange.X));
 			FingerTransform.SetRotation(FQuat(FingerSpreadAxis, FingerSpreadRadians) * FingerTransform.GetRotation());
-			Hierarchy->SetLocalTransform(FingerCache, FingerTransform, false, true);
+			Hierarchy->SetLocalTransform(FingerCache, FingerTransform, true);
 
 			if (DebugSettings.bEnabled)
 			{

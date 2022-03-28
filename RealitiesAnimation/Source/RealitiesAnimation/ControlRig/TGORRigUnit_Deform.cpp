@@ -98,7 +98,7 @@ FTGORRigUnit_DeformChain_Execute()
 				FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 				Transform.SetLocation(Deform.GetLocation() + TargetDirection * CurrentLength);
 				Transform.SetRotation(TipTransform.GetRotation() * OffsetRotation.Quaternion());
-				Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
@@ -176,7 +176,7 @@ FTGORRigUnit_DeformTranslate_Execute()
 
 						FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 						FTGORRigUnit_ConvertSpace::ConvertSpace(Transform, TargetTransform, AbsPivot, DeformPivot, AbsDeformTranslate);
-						Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
+						Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
 					}
 				}
 			}
@@ -229,7 +229,7 @@ FTGORRigUnit_DeformInitial_Execute()
 
 			FTransform Transform = Hierarchy->GetGlobalTransform(ObjBaseCache);
 			FTGORRigUnit_ConvertSpace::ConvertSpace(Transform, AbsTransform, AbsPivot, DeformPivot, AbsDeformTranslate);
-			Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, false, PropagateToChildren != ETGOR_Propagation::Off);
+			Hierarchy->SetGlobalTransform(ObjBaseCache, Transform, PropagateToChildren != ETGOR_Propagation::Off);
 		}
 	}
 }
@@ -286,7 +286,7 @@ FTGORRigUnit_DeformRoot_Execute()
 				DeformPivot.SetScale3D(FVector::OneVector);
 
 				// TODO: Possibly include offset computation
-				Hierarchy->SetGlobalTransform(ObjBaseCache, DeformPivot, false, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, DeformPivot, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}

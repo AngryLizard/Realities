@@ -72,7 +72,7 @@ FTGORRigUnit_ObjectivePlanarProject_Execute()
 					Objective.SetLocation(Pivot + Delta * Closeness);
 				}
 
-				Hierarchy->SetGlobalTransform(ObjBaseCache, Objective, false, PropagateToChildren != ETGOR_Propagation::Off);
+				Hierarchy->SetGlobalTransform(ObjBaseCache, Objective, PropagateToChildren != ETGOR_Propagation::Off);
 			}
 		}
 	}
@@ -117,7 +117,7 @@ FTGORRigUnit_BulgeBellCurve_Execute()
 
 			FTransform Transform = Bulge;
 			Transform.SetScale3D(Transform.GetScale3D() * FVector(FMath::Lerp(1.0f, Scale, ScaleMask.X), FMath::Lerp(1.0f, Scale, ScaleMask.Y), FMath::Lerp(1.0f, Scale, ScaleMask.Z)));
-			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false, false);
+			Hierarchy->SetGlobalTransform(BulgeCache, Transform, false);
 		}
 	}
 }

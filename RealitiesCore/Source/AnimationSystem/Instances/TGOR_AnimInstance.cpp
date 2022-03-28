@@ -290,7 +290,7 @@ void UTGOR_AnimInstance::UpdateHandles()
 					int32 ControlIndex = Hierarchy->GetIndex(FRigElementKey(Handle->ControlName, ERigElementType::Control));
 					if (ControlIndex != INDEX_NONE)
 					{
-						Hierarchy->SetGlobalTransform(ControlIndex, Transform, false, true);
+						Hierarchy->SetGlobalTransform(ControlIndex, Transform, true);
 					}
 				}
 			}

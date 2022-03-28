@@ -938,7 +938,7 @@ bool UTGOR_ActionComponent::ApplyActionSetup(FTGOR_LoadoutInstance Setup)
 	{
 		for (UTGOR_ActionTask* ActionSlot : Pair.Value)
 		{
-			ActionSlot->MarkPendingKill();
+			ActionSlot->MarkAsGarbage();
 		}
 	}
 

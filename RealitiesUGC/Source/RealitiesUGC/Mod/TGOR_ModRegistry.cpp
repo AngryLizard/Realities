@@ -130,7 +130,7 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 			UClass* AssetClass = LoadObject<UClass>(Mod, *ClassPath);
 			if (!IsValid(AssetClass))
 			{
-				ERRET("ContentLoad: Couldn't load class path", Error, false);
+				ERRET(FString("ContentLoad: Couldn't load class path ") + ClassPath, Error, false);
 			}
 			else if (AssetClass->IsChildOf(UTGOR_Content::StaticClass()))
 			{

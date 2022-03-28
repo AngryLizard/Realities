@@ -65,7 +65,7 @@ void UTGOR_RetargetComponent::UpdateTransforms(float DeltaTime)
 			for (auto Iter = RetargetRigControlMapping.CreateConstIterator(); Iter; ++Iter)
 			{
 				const FTransform& Transform = SourceHierarchy->GetGlobalTransform(Iter.Value());
-				TargetHierarchy->SetGlobalTransform(Iter.Key(), Transform, false, true);
+				TargetHierarchy->SetGlobalTransform(Iter.Key(), Transform, true);
 			}
 		}
 	}

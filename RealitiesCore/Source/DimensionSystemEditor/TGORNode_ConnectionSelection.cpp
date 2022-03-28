@@ -235,11 +235,8 @@ TSharedRef<SWidget> FTGORNode_ConnectionSelection::OnGetDimensionSelection() con
 	FClassViewerInitializationOptions Options;
 	Options.bShowUnloadedBlueprints = true;
 	Options.bShowNoneOption = true;
-
 	//Options.PropertyHandle = ClassUPropertyHandle;
-
-	TSharedPtr<FConnectionSlectionClassFilter> ClassFilter = MakeShareable(new FConnectionSlectionClassFilter);
-	Options.ClassFilter = ClassFilter;
+	Options.ClassFilters.Emplace(MakeShareable(new FConnectionSlectionClassFilter));
 	Options.bIsBlueprintBaseOnly = true;
 	Options.bIsPlaceableOnly = false;
 	Options.NameTypeToDisplay = EClassViewerNameTypeToDisplay::ClassName;
