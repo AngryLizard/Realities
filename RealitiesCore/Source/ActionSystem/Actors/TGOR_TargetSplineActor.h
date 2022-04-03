@@ -1,0 +1,52 @@
+// TGOR (C) // CHECKED //
+#pragma once
+
+#include "CoreMinimal.h"
+
+#include "CoreSystem/Actors/TGOR_Actor.h"
+#include "TGOR_TargetSplineActor.generated.h"
+
+///////////////////////////////////////////////// DECL /////////////////////////////////////////////////
+
+class USplineComponent;
+
+/**
+* TGOR_TargetSplineActor
+*/
+UCLASS(BlueprintType, Blueprintable)
+class ACTIONSYSTEM_API ATGOR_TargetSplineActor : public ATGOR_Actor
+{
+	GENERATED_BODY()
+	
+public:
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	ATGOR_TargetSplineActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void BeginPlay() override;
+
+	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
+
+
+	////////////////////////////////////////////// COMPONENTS //////////////////////////////////////////
+private:
+
+	/** Spline component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Actor, meta = (AllowPrivateAccess = "true"))
+		USplineComponent* SplineComponent;
+
+public:
+
+	FORCEINLINE USplineComponent* GetSpline() const { return SplineComponent; }
+
+	// Offset from the socket / bone location
+	UPROPERTY(EditAnywhere, Interp, Category = "!TGOR Animation")
+		float SplineProgress;
+
+	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
+private:
+	
+};
