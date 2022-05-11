@@ -9,6 +9,8 @@
 #include "Components/SphereComponent.h"
 #include "TGOR_DamageComponent.generated.h"
 
+class USkeletalMeshComponent;
+
 /**
  * 
  */
@@ -19,6 +21,15 @@ class ACTIONSYSTEM_API UTGOR_DamageComponent : public USphereComponent
 
 public:
 	UTGOR_DamageComponent();
+	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
+	/** Initiate damage component, first time setup */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Combat|Internal", Meta = (Keywords = "C++"))
+		void InitialiseDamage(USkeletalMeshComponent* MeshComp, float Radius, float TotalTime, float Strength);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -37,4 +48,17 @@ public:
 	/** Channel used for hits */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Combat")
 		TEnumAsByte<ECollisionChannel> HitChannel;
+
+	UFUNCTION()
+		void OnDamageOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+
+	float TimelineTotalTime = 1.f;
+	float TimelineCurrentTime = 0.f;
+	float ImpactStrength = 1.f;
+
 };

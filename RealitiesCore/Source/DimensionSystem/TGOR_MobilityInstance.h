@@ -59,7 +59,7 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementImpact
 	GENERATED_USTRUCT_BODY()
 
 		FTGOR_MovementImpact();
-	FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact);
+	FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact, UPrimitiveComponent* ImpactComponent);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +68,9 @@ struct DIMENSIONSYSTEM_API FTGOR_MovementImpact
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Strength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TWeakObjectPtr<UPrimitiveComponent> Component;
 };
 
 /**
@@ -455,14 +458,6 @@ public:
 	/** Surface area from each axis in m^2 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
 		FVector Faces;
-
-	/** Core component elasticity on collision response [0, 1] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
-		FTGOR_Normal Elasticity;
-
-	/** Core component friction coefficient [0, 1] */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
-		FTGOR_Normal Friction;
 };
 
 template<> struct TStructOpsTypeTraits<FTGOR_MovementBody> : public TStructOpsTypeTraitsBase2<FTGOR_MovementBody>

@@ -82,6 +82,26 @@ enum class ETGOR_AimDistanceEnumeration : uint8
 	OutReach
 };
 
+UENUM(BlueprintType)
+enum class ETGOR_MovementRestrict : uint8
+{
+	/** Always allowed */
+	Always,
+	/** Only allowed while the action is already running. */
+	OnlyRunning
+};
+
+UENUM(BlueprintType)
+enum class ETGOR_InputTrigger : uint8
+{
+	/** Trigger action on input, don't change input state */
+	TriggerOnly,
+	/** Trigger action on input and change input state */
+	TriggerInput,
+	/** Change input state */
+	InputOnly
+};
+
 /**
 * TGOR_Action handles any kind of replicated actions
 */
@@ -148,10 +168,6 @@ protected:
 	/** Multiple of owner radius/height for range distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "AimRange == ETGOR_AimDistanceEnumeration::InRange || AimRange == ETGOR_AimDistanceEnumeration::OutReach"))
 		float AimRangeDistance = 7.0f;
-	
-	/** Whether to check for current movement mode */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool CheckMovement;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -173,10 +189,6 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
-	/** Which type of input this action is triggered by */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<TSubclassOf<UTGOR_Input>> TriggerInputs;
 
 	/** Automatically trigger if valid condition */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -205,9 +217,9 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** Inputs captured by this action */
+	/** Inputs captured by this action, triggers action on input if checked */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName= "Captured Inputs"))
-		TArray<TSubclassOf<UTGOR_Input>> InputInsertions;
+		TMap<TSubclassOf<UTGOR_Input>, ETGOR_InputTrigger> InputInsertions;
 	DECL_INSERTION(InputInsertions);
 
 	/** Event captured by this action */
@@ -225,9 +237,9 @@ public:
 		TArray<TSubclassOf<UTGOR_Target>> TargetInsertions;
 	DECL_INSERTION(TargetInsertions);
 
-	/** Movement modes that support this action */
+	/** Movement modes that support this action, check if only supported while running */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Movement>> MovementInsertions;
+		TMap<TSubclassOf<UTGOR_Movement>, ETGOR_MovementRestrict> MovementInsertions;
 	DECL_INSERTION(MovementInsertions);
 
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;

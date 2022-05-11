@@ -25,7 +25,7 @@ int32 GetNewIndexForOldVertIndex(const FMatrix& Transform, int32 MeshVertIndex, 
 	else
 	{
 		// Copy position
-		int32 SectionVertIndex = Vertices.Add(Transform.TransformPosition(VertexBuffers.PositionVertexBuffer.VertexPosition(MeshVertIndex)));
+		int32 SectionVertIndex = Vertices.Add(Transform.TransformPosition(FVector(VertexBuffers.PositionVertexBuffer.VertexPosition(MeshVertIndex))));
 
 		// Copy normal
 		Normals.Add(Transform.TransformVector(FVector4d(VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(MeshVertIndex))));

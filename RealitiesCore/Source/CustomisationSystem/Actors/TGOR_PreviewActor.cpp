@@ -138,8 +138,8 @@ bool ATGOR_PreviewActor::ProbeMesh(USkinnedMeshComponent* ProbeTarget, const FVe
                 if (TrianglePtr)
                 {
                     const FTGOR_MergeUVTri& Tri = Section.Triangles[*TrianglePtr];
-                    OutCenter = (Tri.V0.Pos + Tri.V1.Pos + Tri.V2.Pos) / 3;
-                    OutNormal = (Tri.V0.Normal() + Tri.V1.Normal() + Tri.V2.Normal()).GetSafeNormal();
+                    OutCenter = FVector(Tri.V0.Pos + Tri.V1.Pos + Tri.V2.Pos) / 3;
+                    OutNormal = FVector(Tri.V0.Normal() + Tri.V1.Normal() + Tri.V2.Normal()).GetSafeNormal();
                     return true;
                 }
             }

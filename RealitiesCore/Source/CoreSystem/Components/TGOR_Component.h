@@ -32,7 +32,6 @@ public:
 	/** Get component from owner actor */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR System", Meta = (DeterminesOutputType = "ComponentClass", ExpandEnumAsExecs = "Branches", Keywords = "C++"))
 		UActorComponent* GetOwnerComponent(TSubclassOf<UActorComponent> ComponentClass, ETGOR_FetchEnumeration& Branches);
-
 	template<typename T> T* GetOwnerComponent() const
 	{
 		AActor* Actor = GetOwner();
@@ -42,7 +41,6 @@ public:
 	/** Get component from owner actor */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR System", Meta = (DeterminesOutputType = "ComponentClass", ExpandEnumAsExecs = "Branches", Keywords = "C++"))
 		TArray<UActorComponent*> GetOwnerComponents(TSubclassOf<UActorComponent> ComponentClass, ETGOR_FetchEnumeration& Branches);
-
 	template<typename T> TArray<T*> GetOwnerComponents() const
 	{
 		AActor* Actor = GetOwner();

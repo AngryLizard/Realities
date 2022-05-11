@@ -461,11 +461,11 @@ float UTGOR_ColliderComponent::ComputeInertial(const FVector& Point, const FVect
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-FVector UTGOR_ColliderComponent::ComputeCollisionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial)
+FVector UTGOR_ColliderComponent::ComputeCollisionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial, float Elasticity)
 {
 	const float VerticalVelocity = (Normal | RelativeVelocity);
 	const FVector Project = Normal * VerticalVelocity;
-	const FVector Impulse = (1 + Body.Elasticity.Value) * Project * InvInertial;
+	const FVector Impulse = Project * ((1.0f + Elasticity) * InvInertial);
 
 	Impact(Space, Point, Impulse);
 
@@ -481,28 +481,25 @@ FVector UTGOR_ColliderComponent::ComputeCollisionResponse(FTGOR_MovementSpace& S
 	return Impulse;
 }
 
-FVector UTGOR_ColliderComponent::ComputeFrictionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial)
+FVector UTGOR_ColliderComponent::ComputeFrictionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial, float Friction)
 {
 	// Get slide vector
 	const float VerticalVelocity = (Normal | RelativeVelocity);
 	const FVector Project = Normal * VerticalVelocity;
 	const FVector Slide = RelativeVelocity - Project;
-	const float Limit = Slide.Size();
-	if (Limit >= SMALL_NUMBER)
+	const float Speed = Slide.Size();
+	if (Speed >= SMALL_NUMBER)
 	{
 		// Compute slide direction
-		const FVector Direction = Slide / Limit;
+		const FVector Direction = Slide / Speed;
 
-		// Compute friction force (depends on downward force aka project), limit to prevent going backwards
-		const float Value = FMath::Min(Project.Size() * Body.Friction.Value, Limit);
-
-		// Set final friction force
-		return ComputeCollisionResponse(Space, Point, Direction * Value, Direction, InvInertial);
+		// Set final friction force (acts like a collision with negative elasticity in slide direction)
+		return ComputeCollisionResponse(Space, Point, Slide, Direction, InvInertial, Friction - 1.0f);
 	}
 	return FVector::ZeroVector;
 }
 
-bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResult& Hit)
+bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResult& Hit, float Elasticity, float Friction)
 {
 	AActor* const Actor = GetOwner();
 	if (Hit.bBlockingHit)
@@ -531,8 +528,8 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 		{
 			const float InvInertial = 1.0f / Inertial;
 			const FVector RelativeVelocity = (Space.LinearVelocity - WorldVelocity);
-			const FVector Impulse = ComputeCollisionResponse(Space, Hit.ImpactPoint, RelativeVelocity, Hit.Normal, InvInertial);
-			const FVector Slide = ComputeFrictionResponse(Space, Hit.ImpactPoint, RelativeVelocity, Hit.Normal, InvInertial);
+			const FVector Impulse = ComputeCollisionResponse(Space, Hit.ImpactPoint, RelativeVelocity, Hit.Normal, InvInertial, Elasticity);
+			const FVector Slide = ComputeFrictionResponse(Space, Hit.ImpactPoint, RelativeVelocity, Hit.Normal, InvInertial, Friction);
 
 			// Inflict if the collider is a mobility component
 			if (IsValid(Other))
@@ -548,12 +545,12 @@ bool UTGOR_ColliderComponent::Collide(FTGOR_MovementSpace& Space, const FHitResu
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult)
+void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult)
 {
 	SCOPE_CYCLE_COUNTER(STAT_Move);
 
 	// Default to 0-strength impact against the surrounding air
-	ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity, false);
+	ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity, false, nullptr);
 
 	// Make sure updated component is at the right location
 	if (Timestep >= SMALL_NUMBER && Sweep)
@@ -561,7 +558,7 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTG
 		INC_DWORD_STAT_BY(STAT_Iteration, 1);
 
 		// Compute translation
-		const int32 Iterations = SimulateTranslate(Space, Offset, Timestep, Sweep, ImpactResult, 1.0f, MaxCollisionIterations);
+		const int32 Iterations = SimulateTranslate(Space, Offset, Timestep, Sweep, Elasticity, Friction, ImpactResult, 1.0f, MaxCollisionIterations);
 
 		Space.Linear = GetComponentLocation();
 		Space.Angular = GetComponentQuat();
@@ -576,7 +573,7 @@ void UTGOR_ColliderComponent::SimulateMove(FTGOR_MovementSpace& Space, const FTG
 	}
 }
 
-int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration)
+int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration)
 {
 	INC_DWORD_STAT_BY(STAT_Translation, 1);
 
@@ -615,9 +612,9 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, con
 		////SafeMoveUpdatedComponent(Translation, Base.Rotation, SweepsCollision, Hit, ETeleportType::None);
 		//const EMoveComponentFlags IncludeBlockingOverlapsWithoutEvents = (MOVECOMP_NeverIgnoreBlockingOverlaps | MOVECOMP_DisableBlockingOverlapDispatch);
 		//MoveComponent(Translation, Space.Angular, SweepsCollision && Sweep, &Hit, MOVECOMP_NoFlags, ETeleportType::None);
-		if (Collide(Space, Hit))
+		if (Collide(Space, Hit, Elasticity, Friction))
 		{
-			ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity.ProjectOnToNormal(Hit.Normal), true);
+			ImpactResult = FTGOR_MovementImpact(Space.LinearVelocity.ProjectOnToNormal(Hit.Normal), true, Hit.GetComponent());
 
 			// Unrotate base
 			const float Rest = FMath::Max(Ratio - Hit.Time, 0.0f);
@@ -626,7 +623,7 @@ int32 UTGOR_ColliderComponent::SimulateTranslate(FTGOR_MovementSpace& Space, con
 
 			// Slide further along surface (Ignore impact result)
 			FTGOR_MovementImpact DummyImpact;
-			return SimulateTranslate(Space, Offset, Timestep, Sweep, DummyImpact, Rest, Iteration - 1);
+			return SimulateTranslate(Space, Offset, Timestep, Sweep, Elasticity, Friction, DummyImpact, Rest, Iteration - 1);
 		}
 	}
 	return Iteration;

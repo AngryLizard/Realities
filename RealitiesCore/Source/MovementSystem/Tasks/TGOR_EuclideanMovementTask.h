@@ -39,14 +39,30 @@ public:
 		void SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float DeltaTime, bool Sweep);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Core component elasticity on collision response [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
+		FTGOR_Normal Elasticity = 0.1f;
+
+	/** Core component friction coefficient [0, 1] */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Movement")
+		FTGOR_Normal Friction = 0.1f;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/** Called if an impact was registered. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+		void OnSymplecticCollision(const FTGOR_MovementSpace& Space, const FVector& Normal, const float Strength, float DeltaTime);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
 	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
 		FTGOR_MovementImpact LastMovementImpact;
 
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
 		TWeakObjectPtr<UTGOR_PilotComponent> RootComponent;
 
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, BlueprintReadOnly, Category = "!TGOR Movement")
 		TWeakObjectPtr<UTGOR_EuclideanPilotTask> EuclideanTask;
 };

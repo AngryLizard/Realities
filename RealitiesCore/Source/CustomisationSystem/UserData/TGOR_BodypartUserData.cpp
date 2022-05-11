@@ -227,8 +227,8 @@ void UTGOR_BodypartUserData::BakeData(USkeletalMesh* SourceMesh)
 				RenderSection.TriangleCount++;
 			}
 
-			RenderSection.Extend = (MaxPos - MinPos) / 2;
-			RenderSection.Center = (MaxPos + MinPos) / 2;
+			RenderSection.Extend = FVector(MaxPos - MinPos) / 2;
+			RenderSection.Center = FVector(MaxPos + MinPos) / 2;
 
 
 #if WITH_EDITOR

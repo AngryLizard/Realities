@@ -86,8 +86,8 @@ void UTGOR_RagdollTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Mov
 	// Rotate towards said axis
 	Out.Torque += ((Space.Angular * LocalUpVector) ^ ImpactNormal) * (UprightTorque * (Frame.Strength * Rest));
 
-	const FVector RelativeVelocity = Space.RelativeLinearVelocity + (Space.RelativeAngularVelocity ^ (ImpactLocation - Space.Linear));
-	Out.Force += FVector::VectorPlaneProject(RelativeVelocity * (-BreakForce * Rest) - External.Force, ImpactNormal);
+	const FVector RelativeVelocity = Space.RelativeLinearVelocity;// +(Space.RelativeAngularVelocity ^ (ImpactLocation - Space.Linear));
+	Out.Force += FVector::VectorPlaneProject(RelativeVelocity * (-BreakForce * Rest) - External.Force, ImpactNormal) * (ImpactNormal | External.UpVector);
 
 
 	Super::Update(Space, External, Tick, Out);

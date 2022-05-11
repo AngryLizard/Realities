@@ -394,7 +394,8 @@ void UTGOR_GroundTask::LimitForces(const FTGOR_MovementSpace& Space, const FTGOR
 
 		// Compute max applicable force in any direction
 		const float FrictionForce = GetFrictionForce(Out);
-		const float MaxPlaneForce = AirControl * Frame.Strength + FrictionForce * FMath::Clamp(UpForce, 0.0f, MaxLegForce);
+		const float FrictionExternalForce = UpForce; // (External.Force | FrameNormal)
+		const float MaxPlaneForce = AirControl * Frame.Strength + FrictionForce * FMath::Clamp(FrictionExternalForce, 0.0f, MaxLegForce);
 		FVector DesiredPlaneForce = UTGOR_Math::ClampToSize(PlaneForce, MaxPlaneForce);
 
 		// Split planeforce into forward movement and sideways direction

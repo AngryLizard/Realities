@@ -48,8 +48,8 @@ struct CUSTOMISATIONSYSTEM_API FTGOR_ExportVertex
 
 struct CUSTOMISATIONSYSTEM_API FTGOR_ExportMorph
 {
-	FVector3f Position = FVector::ZeroVector;
-	FVector3f Normal = FVector::ZeroVector;
+	FVector3f Position = FVector3f::ZeroVector;
+	FVector3f Normal = FVector3f::ZeroVector;
 };
 
 struct CUSTOMISATIONSYSTEM_API FTGOR_ExportSection

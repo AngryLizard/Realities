@@ -65,11 +65,12 @@ float FTGOR_MovementThreshold::ThresholdTime(const FTGOR_Time& A, const FTGOR_Ti
 
 FTGOR_MovementImpact::FTGOR_MovementImpact()
 	: Normal(FVector::ZeroVector),
-	Strength(0.0f)
+	Strength(0.0f),
+	Component(nullptr)
 {
 }
 
-FTGOR_MovementImpact::FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact)
+FTGOR_MovementImpact::FTGOR_MovementImpact(const FVector& Velocity, bool HasImpact, UPrimitiveComponent* ImpactComponent)
 	: FTGOR_MovementImpact()
 {
 	const double SpeedSq = Velocity.SizeSquared();
@@ -79,6 +80,8 @@ FTGOR_MovementImpact::FTGOR_MovementImpact(const FVector& Velocity, bool HasImpa
 		Strength = HasImpact ? Speed : 0.0;
 		Normal = Velocity / -Speed;
 	}
+
+	Component = ImpactComponent;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -464,9 +467,7 @@ FTGOR_MovementBody::FTGOR_MovementBody()
 :	FTGOR_MovementShape(),
 	Mass(1.0f),
 	Inertia(FVector::OneVector),
-	Faces(FVector::ZeroVector),
-	Elasticity(0.5f),
-	Friction(0.5f)
+	Faces(FVector::ZeroVector)
 {
 }
 
@@ -484,8 +485,6 @@ void FTGOR_MovementBody::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleto
 	Package.WriteEntry(Mass);
 	Package.WriteEntry(Inertia);
 	Package.WriteEntry(Faces);
-	Package.WriteEntry(Elasticity);
-	Package.WriteEntry(Friction);
 }
 
 void FTGOR_MovementBody::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context)
@@ -494,8 +493,6 @@ void FTGOR_MovementBody::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton
 	Package.ReadEntry(Mass);
 	Package.ReadEntry(Inertia);
 	Package.ReadEntry(Faces);
-	Package.ReadEntry(Elasticity);
-	Package.ReadEntry(Friction);
 }
 
 void FTGOR_MovementBody::SetFromBox(const FVector& SurfaceSparsity, const FVector& Dimensions, float Weight)

@@ -122,10 +122,10 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 			{
 				for (uint32 SourceVertexIndex = SourceRenderSection.BaseVertexIndex; SourceVertexIndex < SourceRenderSection.BaseVertexIndex + SourceRenderSection.NumVertices; SourceVertexIndex++)
 				{
-					const FVector SourcePosition = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(SourceVertexIndex);
+					const FVector3f SourcePosition = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(SourceVertexIndex);
 					for (uint32 TargetVertexIndex = 0; TargetVertexIndex < TargetVertexNum; TargetVertexIndex++)
 					{
-						const FVector TargetPosition = TargetMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(TargetVertexIndex);
+						const FVector3f TargetPosition = TargetMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(TargetVertexIndex);
 
 						if ((SourcePosition - TargetPosition).SizeSquared() < Threshold * Threshold)
 						{
@@ -195,12 +195,12 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 						FTGOR_SkeletalMergeVertex& Bv = Vertices[B];
 						FTGOR_SkeletalMergeVertex& Cv = Vertices[C];
 
-						const FVector Ap = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Av.Index);
-						const FVector Bp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Bv.Index);
-						const FVector Cp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Cv.Index);
+						const FVector3f Ap = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Av.Index);
+						const FVector3f Bp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Bv.Index);
+						const FVector3f Cp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(Cv.Index);
 
-						const FVector E1 = Bp - Ap;
-						const FVector E2 = Cp - Ap;
+						const FVector3f E1 = Bp - Ap;
+						const FVector3f E2 = Cp - Ap;
 						
 						const FVector2D F1 = Bv.UV - Av.UV;
 						const FVector2D F2 = Cv.UV - Av.UV;
@@ -224,21 +224,21 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 			}
 
 			// Find duplicates and merge tangents, compute extend/center
-			FVector MinPos = FVector(FLT_MAX);
-			FVector MaxPos = FVector(-FLT_MAX);
+			FVector3f MinPos = FVector3f(FLT_MAX);
+			FVector3f MaxPos = FVector3f(-FLT_MAX);
 
 			const int32 Vn = Vertices.Num();
 			for (int32 Vi = 0; Vi < Vn; Vi++)
 			{
 				FTGOR_SkeletalMergeVertex& V = Vertices[Vi];
 
-				const FVector Vp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(V.Index);
+				const FVector3f Vp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(V.Index);
 				for (int32 Wi = Vi+1; Wi < Vn; Wi++)
 				{
 					FTGOR_SkeletalMergeVertex& W = Vertices[Wi];
 
 					// Find 
-					const FVector Wp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(W.Index);
+					const FVector3f Wp = SourceMergeLODData.StaticVertexBuffers.PositionVertexBuffer.VertexPosition(W.Index);
 					if ((Vp - Wp).SizeSquared() < Threshold * Threshold)
 					{
 						V.Tangent += W.Tangent;
@@ -254,8 +254,8 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 				MaxPos = MaxPos.ComponentMax(Vp);
 			}
 
-			RenderSection.Extend = (MaxPos - MinPos) / 2;
-			RenderSection.Center = (MaxPos + MinPos) / 2;
+			RenderSection.Extend = FVector(MaxPos - MinPos) / 2;
+			RenderSection.Center = FVector(MaxPos + MinPos) / 2;
 
 			// Vertex Postprocessing
 			for (FTGOR_SkeletalMergeVertex& V : Vertices)
@@ -282,7 +282,7 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 					V.Bitangent = FVector(TargetMergeLODData.StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentY(*OverlapPtr));
 
 					const FVector3f RefNormal = TargetMergeLODData.StaticVertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(*OverlapPtr);
-					const FVector3f Normal = (V.Bitangent ^ FVector3f(FVector4f(V.Tangent)))* V.Tangent.W;
+					const FVector3f Normal = (FVector3f(V.Bitangent) ^ FVector3f(FVector4f(V.Tangent)))* V.Tangent.W;
 
 					V.Tangent.W *= (RefNormal | Normal);
 				}
@@ -319,7 +319,7 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 				W.UV[1] = FVector2f(V.Point);
 				W.Color = FLinearColor(V.Target) / 2 + FLinearColor(0.5f, 0.5f, 0.5f, 0.5f);
 				W.Tangent = FVector4f(V.Tangent);
-				W.Bitangent = FVector4f(V.Bitangent);
+				W.Bitangent = FVector3f(V.Bitangent);
 			};
 
 			// Generate projection
@@ -358,7 +358,7 @@ void UTGOR_SkeletalMergeUserData::BakeData(USkeletalMesh* SourceMesh)
 					Tri.V1.UV[0] += ComputeExpand(Tri.V1.UV[0], Tri.V2.UV[0], Tri.V0.UV[0], PaddingDistance);
 					Tri.V2.UV[0] += ComputeExpand(Tri.V2.UV[0], Tri.V0.UV[0], Tri.V1.UV[0], PaddingDistance);
 
-					const FVector Offset = FVector(0.0f, 0.0f, -0.25f);
+					const FVector3f Offset = FVector3f(0.0f, 0.0f, -0.25f);
 					Tri.V0.Pos += Offset;
 					Tri.V1.Pos += Offset;
 					Tri.V2.Pos += Offset;

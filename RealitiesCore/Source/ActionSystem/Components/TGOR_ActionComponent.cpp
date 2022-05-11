@@ -260,6 +260,16 @@ bool UTGOR_ActionComponent::IsRunningActionType(TSubclassOf<UTGOR_Action> Type) 
 	return false;
 }
 
+bool UTGOR_ActionComponent::IsOperatingActionType(TSubclassOf<UTGOR_Action> Type) const
+{
+	if (*Type && IsRunningAny())
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[ActionState.ActiveSlot];
+		return IsValid(ActionSlot) && ActionSlot->GetAction()->IsA(Type) && ActionState.State == ETGOR_ActionStateEnumeration::Operate;
+	}
+	return false;
+}
+
 bool UTGOR_ActionComponent::IsRunningActionSupporting(const UTGOR_Action* Action) const
 {
 	if (IsRunningAny())

@@ -212,17 +212,17 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 	bool HasTrigger = false;
 
 	// Update input values in slot
-	for (UTGOR_Input* Input : Identifier.Content->Instanced_InputInsertions.GetListOfType(InputType))
+	for (const auto& InputPair : Identifier.Content->Instanced_InputInsertions.GetListOfType(InputType))
 	{
 		bool ReadyForTrigger = true;
 
-		float* Ptr = Inputs.Inputs.Find(Input);
+		float* Ptr = Inputs.Inputs.Find(InputPair.Key);
 		if (Ptr)
 		{
 			// Only do stuff if we actually changed
 			if (!FMath::IsNearlyEqual((*Ptr), Value))
 			{
-				if (Input->IsActive((*Ptr)))
+				if (InputPair.Key->IsActive((*Ptr)))
 				{
 					ReadyForTrigger = false; // Input is already on
 				}
@@ -231,27 +231,25 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 
 				if (IsRunning())
 				{
-					OnInputChanged(Input, Value);
+					OnInputChanged(InputPair.Key, Value);
 					ReadyForTrigger = false; // We're already running
 					Handled = true;
 				}
 			}
 		}
-		else
+		// Never add inputs that we only use for action triggers
+		else if (InputPair.Value != ETGOR_InputTrigger::TriggerOnly)
 		{
-			Inputs.Inputs.Emplace(Input, Value);
+			Inputs.Inputs.Emplace(InputPair.Key, Value);
 		}
 
-		if (ReadyForTrigger && Input->IsActive(Value) && !HasTrigger)
+		// Look for inputs that schedule actions
+		if (ReadyForTrigger && 
+			InputPair.Value != ETGOR_InputTrigger::InputOnly && 
+			InputPair.Key->IsActive(Value) && 
+			!HasTrigger)
 		{
-			// Look for inputs that schedule actions
-			for (TSubclassOf<UTGOR_Input> TriggerInput : Identifier.Content->TriggerInputs)
-			{
-				if (Input->IsA(TriggerInput))
-				{
-					HasTrigger = true;
-				}
-			}
+			HasTrigger = true;
 		}
 	}
 
@@ -358,11 +356,30 @@ bool UTGOR_ActionTask::HasValidTarget() const
 
 bool UTGOR_ActionTask::HasValidMovement() const
 {
-	if (MovementComponent.IsValid())
+	// If there is no movement we don't restrict
+	if (!MovementComponent.IsValid())
 	{
-		// Check whether movement mode is supported
-		UTGOR_MovementTask* CurrentTask = MovementComponent->GetMovementTask();
-		return (!Identifier.Content->CheckMovement || (IsValid(CurrentTask) && Identifier.Content->Instanced_MovementInsertions.Contains(CurrentTask->GetMovement())));
+		return true;
+	}
+
+	// Not running any movement
+	UTGOR_MovementTask* CurrentTask = MovementComponent->GetMovementTask();
+	if (!IsValid(CurrentTask))
+	{
+		return false;
+	}
+
+	// If there are no restrictions we allow all movements but issue a warning.
+	// Actions that don't require a movement check on a character with movement are almost always a sign they have been forgotten.
+	if (!ensureMsgf(Identifier.Content->Instanced_MovementInsertions.Collection.Num() > 0, TEXT("There is movement but no restriction defined. Please explicitely allow all allowed movements.")))
+	{
+		return true;
+	}
+
+	// Check whether movement mode is supported
+	if (ETGOR_MovementRestrict* Ptr = Identifier.Content->Instanced_MovementInsertions.Collection.Find(CurrentTask->GetMovement()))
+	{
+		return (*Ptr == ETGOR_MovementRestrict::Always) || IsRunning();
 	}
 	return false;
 }

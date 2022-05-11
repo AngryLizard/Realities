@@ -119,18 +119,18 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-
+	
 	/** Compute collision with a given relative velocity, return impulse */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		FVector ComputeCollisionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial);
+		FVector ComputeCollisionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial, float Elasticity);
 
 	/** Translate over a given time, return impulse */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		FVector ComputeFrictionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial);
+		FVector ComputeFrictionResponse(FTGOR_MovementSpace& Space, const FVector& Point, const FVector& RelativeVelocity, const FVector& Normal, float InvInertial, float Friction);
 
 	/** Computes impact resolution from a given hit result, returns whether a collision actually happened */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		bool Collide(FTGOR_MovementSpace& Space, const FHitResult& Hit);
+		bool Collide(FTGOR_MovementSpace& Space, const FHitResult& Hit, float Elasticity, float Friction);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -143,11 +143,11 @@ public:
 public:
 	/** Simulate move for a given time */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		void SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult);
+		void SimulateMove(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult);
 
 	/** Translate over a given time, returns hit form last iteration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration);
+		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration);
 
 	/** Tries to resolve a penetration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))

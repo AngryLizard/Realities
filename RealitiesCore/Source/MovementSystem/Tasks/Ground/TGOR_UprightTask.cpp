@@ -31,7 +31,7 @@ bool UTGOR_UprightTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_
 		return false;
 	}
 
-	if (GetAttribute(AutonomyAttribute, 1.0f) < 0.5f)
+	if (GetAttribute(AutonomyAttribute, 1.0f) < AutonomyThreshold)
 	{
 		return false;
 	}

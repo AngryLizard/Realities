@@ -72,8 +72,13 @@ void UTGOR_EuclideanMovementTask::SimulateSymplectic(const FTGOR_MovementSpace& 
 	const FTGOR_MovementPosition Offset = TickAnimationRootMotion(Out, DeltaTime);
 
 	// Simulate move
-	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep, LastMovementImpact);
+	RootComponent->SimulateMove(Out, Offset, DeltaTime, Sweep, Elasticity.Value, Friction.Value, LastMovementImpact);
 	EuclideanTask->SimulateDynamic(Out);
+
+	if (!FMath::IsNearlyZero(LastMovementImpact.Strength))
+	{
+		OnSymplecticCollision(Space, LastMovementImpact.Normal, LastMovementImpact.Strength, DeltaTime);
+	}
 }
 
 void UTGOR_EuclideanMovementTask::PrepareStart()

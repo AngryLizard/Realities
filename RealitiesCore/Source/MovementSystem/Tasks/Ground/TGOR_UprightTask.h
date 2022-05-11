@@ -50,6 +50,10 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		float ComputeCrouchSpeedRatio(float GroundRatio) const;
 
+	/** Attribute threshold for when this movement is valid */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
+		float AutonomyThreshold = 0.5f;
+
 	/** Attribute for whether we're currently able to stand upright */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Movement")
 		TSubclassOf<UTGOR_Attribute> AutonomyAttribute;

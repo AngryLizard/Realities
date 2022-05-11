@@ -87,13 +87,7 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
-		float BodyElasticity = 0.1f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
-		float BodyFriction = 0.1f;
-	
+		
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "!TGOR Movement")
 		float SpawnWeight = 1.0f;
 

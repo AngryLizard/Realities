@@ -103,8 +103,8 @@ FTGORRigUnit_HingeIK_Execute()
 			}
 
 			// Transform to propagate along the hinge
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], HingeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], Objective.GetLocation(), Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], HingeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], Objective.GetLocation(), Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			EE.SetRotation(FTGORRigUnit_RotateToward::ComputeHeadingRotation(ObjectiveSettings.EffectorForwardAxis, EEForwardTarget, ObjectiveSettings.EffectorUpAxis, EEUpTarget));
@@ -243,9 +243,9 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			}
 
 			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			FTransform Foot;
@@ -383,9 +383,9 @@ FTGORRigUnit_ClavicleIK_Execute()
 			}
 
 			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowards(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
 
 			// Set foot transform
 			FTransform EE;

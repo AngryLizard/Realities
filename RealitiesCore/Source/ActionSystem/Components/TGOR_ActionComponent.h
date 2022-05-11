@@ -155,6 +155,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunningActionType(TSubclassOf<UTGOR_Action> Type) const;
 
+	/** Check whether given action type is currently operating */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsOperatingActionType(TSubclassOf<UTGOR_Action> Type) const;
+
 	/** Check whether given action type is supported by the currently running action (used by e.g. abilities running off already running actions) */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunningActionSupporting(const UTGOR_Action* Action) const;

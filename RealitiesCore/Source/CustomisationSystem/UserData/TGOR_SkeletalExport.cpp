@@ -163,7 +163,7 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 		FTransform BoneTransform = OutputSkeleton.GetRefBonePose()[BoneIndex];
 		Bone.Location = FVector3f(BoneTransform.GetLocation());
 		Bone.Rotation = FQuat4f(BoneTransform.GetRotation());
-		Bone.Scale = BoneTransform.GetScale3D();
+		Bone.Scale = FVector3f(BoneTransform.GetScale3D());
 
 
 		// Set bind matrix
@@ -193,12 +193,12 @@ FTGOR_SkeletalMeshExport::FTGOR_SkeletalMeshExport(const FTGOR_BodypartMergeOutp
 		MorphBuffer.SetNum(VertexCount);
 
 		MorphTarget.MinMorph = FTGOR_ExportMorph();
-		MorphTarget.MinMorph.Position = FVector(FLT_MAX);
-		MorphTarget.MinMorph.Normal = FVector(FLT_MAX);
+		MorphTarget.MinMorph.Position = FVector3f(FLT_MAX);
+		MorphTarget.MinMorph.Normal = FVector3f(FLT_MAX);
 
 		MorphTarget.MaxMorph = FTGOR_ExportMorph();
-		MorphTarget.MaxMorph.Position = FVector(-FLT_MAX);
-		MorphTarget.MaxMorph.Normal = FVector(-FLT_MAX);
+		MorphTarget.MaxMorph.Position = FVector3f(-FLT_MAX);
+		MorphTarget.MaxMorph.Normal = FVector3f(-FLT_MAX);
 
 		UMorphTarget* MorphAsset = OutputMorphTargets[MorphIndex];
 		const FMorphTargetLODModel& Model = MorphAsset->GetMorphLODModels()[0];
