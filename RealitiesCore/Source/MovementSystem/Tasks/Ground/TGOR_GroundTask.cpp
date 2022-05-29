@@ -111,22 +111,24 @@ void UTGOR_GroundTask::Update(const FTGOR_MovementSpace& Space, const FTGOR_Move
 
 	// Compute input force
 	const float RawRatio = GetInputForce(Tick, Space, External, Repel, Output);
-
-	const float SpeedRatio = FMath::Clamp(RawRatio, 0.0f, 1.0f);
+	const float TotalSpeedRatio = FMath::Clamp(RawRatio * MovementContact.FrameVelocity.SizeSquared() / FMath::Square(GetMaxSpeed()), 0.0f, 1.0f);
+	const float InputSpeedRatio = FMath::Clamp(RawRatio, 0.0f, 1.0f);
 
 	// Compute force to make character stand, only take slope into consideration when moving
 	const float Stretch = GetStretch(Tick, Space, External);
 	GetStandingForce(Tick, Space, External, MovementContact.FrameNormal, Stretch, Output);
 
-	const FVector Normal = FMath::Lerp(External.UpVector, MovementContact.FrameNormal, SpeedRatio).GetSafeNormal();
-	GetStandingTorque(Tick, Space, External, Normal, SpeedRatio, Output);
+	const FVector SlopeForward = FVector::VectorPlaneProject(External.UpVector, MovementContact.FrameNormal).GetSafeNormal();
+	const float SlopeIntensity = FMath::Square(MovementContact.FrameForward | SlopeForward);
+	const FVector Normal = FMath::Lerp(External.UpVector, MovementContact.FrameNormal, TotalSpeedRatio * SlopeIntensity).GetSafeNormal();
+	GetStandingTorque(Tick, Space, External, Normal, TotalSpeedRatio, Output);
 
 	// Compute force applied from the ground to achieve input torque
 	Output.Force += MovementContact.SurfaceOffset ^ Output.Torque;
 
 	// Compute final desired force, try to counteract external forces
 	Output.Force -= Repel.RepelForce + External.Force;
-	LimitForces(Space, External, SpeedRatio, Output);
+	LimitForces(Space, External, InputSpeedRatio, Output);
 
 	// Apply external forces
 	Output.Force += Repel.RepelForce;

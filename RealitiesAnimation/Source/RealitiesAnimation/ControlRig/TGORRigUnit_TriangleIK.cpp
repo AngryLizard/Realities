@@ -149,10 +149,10 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.Offset);
 
 			// Compute initial leg properties
-			const FTransform InitialUpperLeg = Hierarchy->GetInitialGlobalTransform(Chain[0]);
-			const FTransform InitialLowerLeg = Hierarchy->GetInitialGlobalTransform(Chain[1]);
-			const FTransform InitialAnkle = Hierarchy->GetInitialGlobalTransform(Chain[2]);
-			const FTransform InitialFoot = Hierarchy->GetInitialGlobalTransform(Chain[3]);
+			const FTransform InitialUpperLeg =	Hierarchy->GetGlobalTransform(Chain[0]);
+			const FTransform InitialLowerLeg =	Hierarchy->GetGlobalTransform(Chain[1]);
+			const FTransform InitialAnkle =		Hierarchy->GetGlobalTransform(Chain[2]);
+			const FTransform InitialFoot =		Hierarchy->GetGlobalTransform(Chain[3]);
 
 			// Compute objective deltas
 			const FTransform UpperLeg = Hierarchy->GetGlobalTransform(Chain[0]);
@@ -291,10 +291,10 @@ FTGORRigUnit_ClavicleIK_Execute()
 			const FVector EELocation = Objective.TransformPosition(ObjectiveSettings.Offset);
 
 			// Compute initial leg properties
-			const FTransform InitialClavicle = Hierarchy->GetInitialGlobalTransform(Chain[0]);
-			const FTransform InitialUpperArm = Hierarchy->GetInitialGlobalTransform(Chain[1]);
-			const FTransform InitialLowerArm = Hierarchy->GetInitialGlobalTransform(Chain[2]);
-			const FTransform InitialHand = Hierarchy->GetInitialGlobalTransform(Chain[3]);
+			const FTransform InitialClavicle =	Hierarchy->GetGlobalTransform(Chain[0]);
+			const FTransform InitialUpperArm =	Hierarchy->GetGlobalTransform(Chain[1]);
+			const FTransform InitialLowerArm =	Hierarchy->GetGlobalTransform(Chain[2]);
+			const FTransform InitialHand =		Hierarchy->GetGlobalTransform(Chain[3]);
 
 			FVector Lengths;
 			Lengths.X = (InitialClavicle.GetLocation() - InitialUpperArm.GetLocation()).Size() * Customisation.X;

@@ -27,6 +27,9 @@ public:
 	TSharedPtr<FUICommandInfo> MirrorLeftToRight;
 	TSharedPtr<FUICommandInfo> FlipLeftToRight;
 
+	TSharedPtr<FUICommandInfo> MirrorRightToLeft;
+	TSharedPtr<FUICommandInfo> FlipRightToLeft;
+
 	/**
 	 * Initialize commands
 	 */

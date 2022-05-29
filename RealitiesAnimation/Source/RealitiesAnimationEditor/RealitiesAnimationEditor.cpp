@@ -66,6 +66,9 @@ TSharedRef<SWidget> FRealitiesSequenceCustomization::MakeModifiersMenu()
 
 		MenuBuilder.AddMenuEntry(FTGOR_ModifierCommands::Get().MirrorLeftToRight);
 		MenuBuilder.AddMenuEntry(FTGOR_ModifierCommands::Get().FlipLeftToRight);
+
+		MenuBuilder.AddMenuEntry(FTGOR_ModifierCommands::Get().MirrorRightToLeft);
+		MenuBuilder.AddMenuEntry(FTGOR_ModifierCommands::Get().FlipRightToLeft);
 	}
 	MenuBuilder.EndSection();
 
@@ -82,6 +85,9 @@ void FRealitiesSequenceCustomization::BindCommands()
 
 	ModifierCommandBindings->MapAction(Commands.MirrorLeftToRight, FExecuteAction::CreateLambda([]() { FTGOR_ModifierMirror().FlipLeftToRight(false); }));
 	ModifierCommandBindings->MapAction(Commands.FlipLeftToRight, FExecuteAction::CreateLambda([]() { FTGOR_ModifierMirror().FlipLeftToRight(true); }));
+
+	ModifierCommandBindings->MapAction(Commands.MirrorRightToLeft, FExecuteAction::CreateLambda([]() { FTGOR_ModifierMirror().FlipRightToLeft(false); }));
+	ModifierCommandBindings->MapAction(Commands.FlipRightToLeft, FExecuteAction::CreateLambda([]() { FTGOR_ModifierMirror().FlipRightToLeft(true); }));
 }
 
 void FRealitiesAnimationEditor::StartupModule()

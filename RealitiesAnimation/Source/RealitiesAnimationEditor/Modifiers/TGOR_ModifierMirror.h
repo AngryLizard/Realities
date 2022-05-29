@@ -14,6 +14,7 @@ struct FTGOR_ModifierMirror
 	void TimeOffsetHalf();
 
 	void FlipLeftToRight(bool bWithOffet);
+	void FlipRightToLeft(bool bWithOffet);
 };
 
 

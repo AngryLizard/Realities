@@ -64,7 +64,6 @@ void FTGOR_ModifierMirror::Mirror()
 	Sequencer.Pin()->NotifyMovieSceneDataChanged(EMovieSceneDataChangeType::RefreshAllImmediately);
 }
 
-#pragma optimize( "", off )
 void FTGOR_ModifierMirror::Loop()
 {
 	TWeakPtr<ISequencer> Sequencer = GetSequencer();
@@ -164,13 +163,6 @@ void FTGOR_ModifierMirror::TimeOffsetHalf()
 	// Loop again to normalise data (technically not necessary, but looks nicer)
 	Loop();
 }
-#pragma optimize( "", on )
-
-
-bool HasLeft(FString& String)
-{
-	return String.Contains("_L") || String.Contains("Left");
-}
 
 void FTGOR_ModifierMirror::FlipLeftToRight(bool bWithOffet)
 {
@@ -226,6 +218,84 @@ void FTGOR_ModifierMirror::FlipLeftToRight(bool bWithOffet)
 		{
 			const FName& Name = MetaData[Index].Name;
 			if (FMovieSceneFloatChannel* const * Ptr = Section.Value.Find(Name))
+			{
+				FMovieSceneFloatChannel* Source = *Ptr;
+				FMovieSceneFloatChannel* Target = Channels[Index];
+
+				// Make perfect copy
+				TArray<FFrameNumber> Times(Source->GetTimes());
+				TArray<FMovieSceneFloatValue> Values(Source->GetValues());
+				Target->Set(Times, Values);
+
+				Select.Emplace(Name);
+			}
+		}
+
+		Sequencer.Pin()->SelectByChannels(Section.Key, Select, false, true);
+	}
+
+	// Apply looping/mirror operations
+	Mirror();
+	if (bWithOffet)
+	{
+		TimeOffsetHalf();
+	}
+}
+
+void FTGOR_ModifierMirror::FlipRightToLeft(bool bWithOffet)
+{
+	TWeakPtr<ISequencer> Sequencer = GetSequencer();
+	if (!Sequencer.IsValid() || !Sequencer.Pin()->GetFocusedMovieSceneSequence())
+	{
+		return;
+	}
+
+	// Loop every input to catch non-mirrored properties too
+	Loop();
+
+	UMovieScene* MovieScene = Sequencer.Pin()->GetFocusedMovieSceneSequence()->GetMovieScene();
+	TRange<FFrameNumber> PlaybackRange = MovieScene->GetPlaybackRange();
+
+	TArray<const IKeyArea*> OutSelectedKeyAreas;
+	Sequencer.Pin()->GetSelectedKeyAreas(OutSelectedKeyAreas);
+
+	static TMap<FString, FString> Bindings = TMap<FString, FString>({ {"_R.", "_L."}, {".R.", ".L."}, {"Right", "Left"} });
+
+	// Find transforms to move
+	TMap<UMovieSceneControlRigParameterSection*, TMap<FName, FMovieSceneFloatChannel*>> Sections;
+	for (const IKeyArea* Area : OutSelectedKeyAreas)
+	{
+		if (UMovieSceneControlRigParameterSection* Section = Cast<UMovieSceneControlRigParameterSection>(Area->GetOwningSection()))
+		{
+			// The trailing dot is a hack so we can match the end of string and anything between with . suffix
+			const FString Name = Area->GetName().ToString() + ".";
+			for (const auto& Binding : Bindings)
+			{
+				if ((Name).Contains(Binding.Key) && Area->GetChannelTypeName() == TEXT("MovieSceneFloatChannel"))
+				{
+					FMovieSceneFloatChannel* Channel = Area->GetChannel().Cast<FMovieSceneFloatChannel>().Get();
+					Sections.FindOrAdd(Section).Emplace(FName(*Name.Replace(*Binding.Key, *Binding.Value).LeftChop(1)), Channel);
+				}
+			}
+		}
+	}
+
+	// Deselect so we can properly select the new keys
+	Sequencer.Pin()->EmptySelection();
+
+	// Copy data
+	for (const auto& Section : Sections)
+	{
+		const auto Channels = Section.Key->GetChannelProxy().GetChannels<FMovieSceneFloatChannel>();
+		const auto MetaData = Section.Key->GetChannelProxy().GetMetaData<FMovieSceneFloatChannel>();
+
+		TArray<FName> Select;
+
+		const int32 Num = Channels.Num();
+		for (int32 Index = 0; Index < Num; Index++)
+		{
+			const FName& Name = MetaData[Index].Name;
+			if (FMovieSceneFloatChannel* const* Ptr = Section.Value.Find(Name))
 			{
 				FMovieSceneFloatChannel* Source = *Ptr;
 				FMovieSceneFloatChannel* Target = Channels[Index];
