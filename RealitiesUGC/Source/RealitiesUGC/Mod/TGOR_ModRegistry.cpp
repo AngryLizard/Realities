@@ -74,20 +74,23 @@ bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 
 	// Get all mod classes
 	AssetRegistry.GetAssets(ARFilter, AssetList);
-	for (FAssetData Asset : AssetList)
+	for (const FAssetData& Asset : AssetList)
 	{
         FAssetDataTagMapSharedView::FFindTagResult GeneratedClassResult = Asset.TagsAndValues.FindTag("GeneratedClass");
 		if (GeneratedClassResult.IsSet())
 		{
 			FString ClassPath = FPackageName::ExportTextPathToObjectPath(*GeneratedClassResult.GetValue());
-			UClass* AssetClass = LoadObject<UClass>(NULL, *ClassPath);
-			if (!IsValid(AssetClass))
+			if (!ClassPath.IsEmpty())
 			{
-				//ERRET("Modload: Couldn't load class path", Error, false);
-			}
-			else if (AssetClass->IsChildOf(UTGOR_Mod::StaticClass()))
-			{
-				Classes.Add(AssetClass, Asset.PackagePath);
+				UClass* AssetClass = LoadObject<UClass>(NULL, *ClassPath);
+				if (!IsValid(AssetClass))
+				{
+					ERRET(FString("Modload: Couldn't load class path ") + ClassPath, Warning, false);
+				}
+				else if (AssetClass->IsChildOf(UTGOR_Mod::StaticClass()))
+				{
+					Classes.Add(AssetClass, Asset.PackagePath);
+				}
 			}
 		}
 	}
@@ -121,20 +124,23 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 
 	// Get all mod classes
 	AssetRegistry.GetAssets(ARFilter, AssetList);
-	for (FAssetData Asset : AssetList)
+	for (const FAssetData& Asset : AssetList)
 	{
 		FAssetDataTagMapSharedView::FFindTagResult GeneratedClassResult = Asset.TagsAndValues.FindTag("GeneratedClass");
 		if (GeneratedClassResult.IsSet())
 		{
 			FString ClassPath = FPackageName::ExportTextPathToObjectPath(*GeneratedClassResult.GetValue());
-			UClass* AssetClass = LoadObject<UClass>(Mod, *ClassPath);
-			if (!IsValid(AssetClass))
+			if (!ClassPath.IsEmpty())
 			{
-				ERRET(FString("ContentLoad: Couldn't load class path ") + ClassPath, Error, false);
-			}
-			else if (AssetClass->IsChildOf(UTGOR_Content::StaticClass()))
-			{
-				Classes.Add(AssetClass);
+				UClass* AssetClass = LoadObject<UClass>(Mod, *ClassPath);
+				if (!IsValid(AssetClass))
+				{
+					ERRET(FString("ContentLoad: Couldn't load class path ") + ClassPath, Warning, false);
+				}
+				else if (AssetClass->IsChildOf(UTGOR_Content::StaticClass()))
+				{
+					Classes.Add(AssetClass);
+				}
 			}
 		}
 	}

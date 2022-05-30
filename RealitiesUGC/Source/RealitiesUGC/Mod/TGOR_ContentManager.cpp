@@ -520,7 +520,7 @@ FTGOR_ModInstance UTGOR_ContentManager::GetLocalModSetup(UTGOR_ModRegistry* Regi
 	}
 	return ModSetup;
 }
-
+#pragma optimize( "", off )
 ETGOR_ModloadEnumeration UTGOR_ContentManager::LoadModSetup(UTGOR_ModRegistry* Registry, const FTGOR_ModInstance& ModSetup)
 {
 	ClearModSetups();
@@ -596,5 +596,6 @@ ETGOR_ModloadEnumeration UTGOR_ContentManager::LoadModSetup(UTGOR_ModRegistry* R
 	PostLoadContent();
 	return ETGOR_ModloadEnumeration::Success;
 }
+#pragma optimize("", on)
 
 #undef LOCTEXT_NAMESPACE
