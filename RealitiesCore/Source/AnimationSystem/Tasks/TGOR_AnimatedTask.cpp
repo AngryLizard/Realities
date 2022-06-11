@@ -12,16 +12,13 @@
 
 
 UTGOR_AnimatedTask::UTGOR_AnimatedTask()
-	: Super(), BlendTime(0.5f), 
-	AnimRootMotionTranslationScale(1.00f),
-	TransformRootMotionToLinearVelocity(false),
-	TransformRootMotionToAngularVelocity(false)
+	: Super()
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UTGOR_AnimInstance* UTGOR_AnimatedTask::GetAnimationInstance()
+UTGOR_SubAnimInstance* UTGOR_AnimatedTask::GetAnimationInstance()
 {
 	TScriptInterface<ITGOR_AnimationInterface> Owner = GetAnimationOwner();
 	if (Owner)
@@ -115,10 +112,34 @@ void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 		return;
 	}
 
-	// Grab root motion now that we have ticked the pose
+	// Grab root motion
 	if (Component->IsPlayingRootMotion())
 	{
-		FRootMotionMovementParams RootMotion = Component->ConsumeRootMotion();
+		// Extract root motion from relevant animation instance
+		FRootMotionMovementParams RootMotion;
+		if (bConsumeAllRootMotion)
+		{
+			RootMotion = Component->ConsumeRootMotion();
+		}
+		else
+		{
+			UTGOR_SubAnimInstance* SubAnimInstance = GetAnimationInstance();
+			if (SubAnimInstance)
+			{
+				float InterpAlpha;
+				if (Component->bExternalTickRateControlled)
+				{
+					InterpAlpha = Component->ExternalInterpolationAlpha;
+				}
+				else
+				{
+					InterpAlpha = Component->ShouldUseUpdateRateOptimizations() ? Component->AnimUpdateRateParams->GetRootMotionInterp() : 1.f;
+				}
+
+				RootMotion = SubAnimInstance->ConsumeExtractedRootMotion(InterpAlpha);
+			}
+		}
+
 		if (RootMotion.bHasRootMotion)
 		{
 			RootMotion.ScaleRootMotionTranslation(AnimRootMotionTranslationScale);
@@ -135,7 +156,7 @@ void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime)
 {
 	FTGOR_MovementPosition Position;
-	if (TransformRootMotionToLinearVelocity)
+	if (bTransformRootMotionToLinearVelocity)
 	{
 		const FVector VelocityDelta = RootMotionDelta.LinearVelocity - Space.RelativeLinearVelocity;
 		Space.RelativeLinearVelocity += VelocityDelta;
@@ -148,7 +169,7 @@ FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_Movemen
 		RootMotionDelta.Linear = FVector::ZeroVector;
 	}
 
-	if(TransformRootMotionToAngularVelocity)
+	if(bTransformRootMotionToAngularVelocity)
 	{
 		const FVector VelocityDelta = RootMotionDelta.AngularVelocity - Space.RelativeAngularVelocity;
 		Space.RelativeAngularVelocity += VelocityDelta;

@@ -35,21 +35,25 @@ public:
 		TSubclassOf<UTGOR_SubAnimInstance> InstanceClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		float BlendTime;
+		float BlendTime = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		float AnimRootMotionTranslationScale;
+		float AnimRootMotionTranslationScale = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		bool TransformRootMotionToLinearVelocity;
+		bool bTransformRootMotionToLinearVelocity = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		bool TransformRootMotionToAngularVelocity;
+		bool bTransformRootMotionToAngularVelocity = false;
+
+	// Whether to consume only subanim instance or all root motion
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
+		bool bConsumeAllRootMotion = false;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
-		UTGOR_AnimInstance* GetAnimationInstance();
+		UTGOR_SubAnimInstance* GetAnimationInstance();
 
 
 #if WITH_EDITOR

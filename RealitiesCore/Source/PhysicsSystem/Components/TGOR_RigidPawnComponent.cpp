@@ -20,6 +20,7 @@ DECLARE_CYCLE_STAT(TEXT("Simulation"), STAT_Simulation, STATGROUP_RIGID);
 DECLARE_CYCLE_STAT(TEXT("Physics"), STAT_Physics, STATGROUP_RIGID);
 
 DECLARE_FLOAT_COUNTER_STAT(TEXT("Movement damping factor"), STAT_DampingFactor, STATGROUP_RIGID);
+DECLARE_DWORD_COUNTER_STAT(TEXT("Simulations per tick"), STAT_SimulationCount, STATGROUP_RIGID);
 
 UTGOR_RigidPawnComponent::UTGOR_RigidPawnComponent()
 :	Super(),
@@ -36,8 +37,11 @@ void UTGOR_RigidPawnComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// We always stratify on very slow frames (other parts of the game will take the hit, surely)
-	// Otherwise some parts of the simulation might flip their shit and go Nan
+	// Otherwise some parts of the simulation might go crazy and go Nan
 	TickStratified(DeltaTime, FMath::Min(DeltaTime, 0.05f));
+
+	INC_DWORD_STAT_BY(STAT_SimulationCount, SimulationsPerTick);
+	SimulationsPerTick = 0;
 }
 
 void UTGOR_RigidPawnComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -118,6 +122,8 @@ float UTGOR_RigidPawnComponent::TickPhysics(float Time)
 		FTGOR_MovementTick Tick;
 		while (PopulateMovementTick(Remaining, Tick))
 		{
+			SimulationsPerTick++;
+
 			// Compute spatial state
 			PreComputePhysics(Tick);
 

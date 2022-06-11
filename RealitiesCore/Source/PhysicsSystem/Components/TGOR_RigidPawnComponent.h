@@ -119,5 +119,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		virtual bool CanInflict() const;
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+
+	int32 SimulationsPerTick = 0;
 
 };
