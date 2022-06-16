@@ -350,8 +350,19 @@ TArray<UTGOR_MovementTask*> UTGOR_MovementComponent::GetMovementListOfType(TSubc
 
 void UTGOR_MovementComponent::ForceUpdateMovement()
 {
-	// TODO: There are some steps we can leave out to just update movement, for now we want to compute external forces accurately so we just tick zero deltatime.
-	TickPhysics(0.0f);
+	UTGOR_PilotComponent* RootPilot = GetRootPilot();
+	if (IsValid(RootPilot))
+	{
+		const FTGOR_MovementBody& MovementBody = RootPilot->GetBody();
+		const FTGOR_MovementSpace Space = RootPilot->ComputeSpace();
+
+		FTGOR_MovementOutput Out;
+		FTGOR_MovementExternal External;
+		ComputeExternal(Space, External, Out);
+
+		FTGOR_MovementTick Tick;
+		UpdateMovement(Tick, Space, External);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

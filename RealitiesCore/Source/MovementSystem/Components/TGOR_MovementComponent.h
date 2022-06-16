@@ -166,7 +166,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		void MoveWith(int32 Identifier);
 
-	/** Get attached pilot task */
+	/** Get attached movement task */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		UTGOR_MovementTask* GetCurrentMovementOfType(TSubclassOf<UTGOR_MovementTask> Type) const;
 
@@ -175,7 +175,7 @@ public:
 		return Cast<T>(GetCurrentMovementOfType(T::StaticClass()));
 	}
 
-	/** Get all pilot tasks of given type */
+	/** Get all movement tasks of given type */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
 		TArray<UTGOR_MovementTask*> GetMovementListOfType(TSubclassOf<UTGOR_MovementTask> Type) const;
 

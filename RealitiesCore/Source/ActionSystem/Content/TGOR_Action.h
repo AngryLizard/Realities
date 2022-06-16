@@ -83,23 +83,14 @@ enum class ETGOR_AimDistanceEnumeration : uint8
 };
 
 UENUM(BlueprintType)
-enum class ETGOR_MovementRestrict : uint8
-{
-	/** Always allowed */
-	Always,
-	/** Only allowed while the action is already running. */
-	OnlyRunning
-};
-
-UENUM(BlueprintType)
 enum class ETGOR_InputTrigger : uint8
 {
 	/** Trigger action on input, don't change input state */
-	TriggerOnly,
+	TriggerNoState,
 	/** Trigger action on input and change input state */
-	TriggerInput,
-	/** Change input state */
-	InputOnly
+	TriggerWithState,
+	/** Don't trigger on input, only change input state */
+	StateOnly
 };
 
 /**
@@ -233,14 +224,29 @@ public:
 	DECL_INSERTION(ChildInsertions);
 
 	/** Aimed targets for this action to be called */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TArray<TSubclassOf<UTGOR_Target>> TargetInsertions;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName = "Supported Targets"))
+		TSet<TSubclassOf<UTGOR_Target>> TargetInsertions;
 	DECL_INSERTION(TargetInsertions);
 
-	/** Movement modes that support this action, check if only supported while running */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion")
-		TMap<TSubclassOf<UTGOR_Movement>, ETGOR_MovementRestrict> MovementInsertions;
+	/** Movement modes that support this action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName = "Supported Movements"))
+		TSet<TSubclassOf<UTGOR_Movement>> MovementInsertions;
 	DECL_INSERTION(MovementInsertions);
+
+	/** Movement to be running during preparation state */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName = "Prepare Movement"))
+		TSubclassOf<UTGOR_Movement> PrepareMovementInsertion;
+	DECL_INSERTION(PrepareMovementInsertion);
+
+	/** Movement to be running during operate state */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName = "Operate Movement"))
+		TSubclassOf<UTGOR_Movement> OperateMovementInsertion;
+	DECL_INSERTION(OperateMovementInsertion);
+
+	/** Movement to be running during finish state */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Insertion", Meta = (DisplayName = "Finish Movement"))
+		TSubclassOf<UTGOR_Movement> FinishMovementInsertion;
+	DECL_INSERTION(FinishMovementInsertion);
 
 	virtual void MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success) override;
 

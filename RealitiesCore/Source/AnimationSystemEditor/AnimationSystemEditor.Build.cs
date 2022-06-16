@@ -31,7 +31,7 @@ public class AnimationSystemEditor : ModuleRules
 				"Slate",
 				"SlateCore",
 				"UnrealEd",
-				"PropertyEditor",
+				"PropertyEditor"
 			}
 			);
 		

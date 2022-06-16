@@ -777,6 +777,12 @@ public:
 		FVector Normal = FVector::UpVector;
 
 	/**
+	 * Height relative to input plate
+	 */
+	UPROPERTY(meta = (Output))
+		float Height = 0.f;
+
+	/**
 	 * Reprojected location
 	 */
 	UPROPERTY(meta = (Output))

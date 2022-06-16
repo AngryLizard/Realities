@@ -61,6 +61,9 @@ public:
 
 	UPROPERTY()
 		TSubclassOf<UTGOR_SubAnimInstance> DefaultOff;
+
+	// Lock preventing us from switching blends multiple times per frame
+	bool AnimationTaskLock = false;
 };
 
 /**
@@ -183,9 +186,6 @@ protected:
 		TArray<UTGOR_HandleComponent*> HandleComponents;
 
 private:
-
-	// Lock preventing us from switching blends multiple times per frame
-	bool AnimationTaskLock = false;
 
 	// TODO: This pointer might be unsafe to keep?
 	FAnimNode_ControlRig* LinkedControlRig;

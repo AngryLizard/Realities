@@ -169,13 +169,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		float GetDuration(const FTGOR_ActionState& State) const;
 
-	/** Returns whether this storage is currently running in the given state */
+	/** Returns whether this task is currently running in the given state */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunningIn(const FTGOR_ActionState& State) const;
 
-	/** Returns whether this storage is currently running in its ActionComponent */
+	/** Returns whether this task is currently running in its ActionComponent */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunning() const;
+
+	/** Returns whether this task is currently preparing in its ActionComponent */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsPreparing() const;
+
+	/** Returns whether this task is currently operating in its ActionComponent */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsOperating() const;
+
+	/** Returns whether this task is currently finishing in its ActionComponent */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsFinishing() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -202,6 +214,7 @@ private:
 
 	UFUNCTION()
 		bool HasValidMovement() const;
+		bool HasValidMovement(UTGOR_Movement* Movement) const;
 
 	UFUNCTION()
 		bool IsInRange() const;
@@ -219,6 +232,8 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
+	/** Process action, only called once per engine tick (opposed to update tick) */
+	void Process(float DeltaTime);
 
 	/** Update values in this task that depend on outside context (cache for CanCall and subsequent schedule) */
 	void Context(const FTGOR_AimInstance& Aim);

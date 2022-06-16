@@ -85,7 +85,12 @@ void UTGOR_AnimInstance::NativeInitializeAnimation()
 void UTGOR_AnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	UpdateHandles();
-	AnimationTaskLock = false;
+
+	// Reset locks
+	for (auto& Pair : AnimationInstanceQueues)
+	{
+		Pair.Value.AnimationTaskLock = false;
+	}
 
 	Super::NativeUpdateAnimation(DeltaSeconds);
 }
@@ -175,10 +180,10 @@ void UTGOR_AnimInstance::AddAnimationInstance(UTGOR_Performance* Performance, UT
 	{
 		// Get or add instance to queue
 		FTGOR_SubAnimationInstance& Instance = AnimationInstanceQueues.FindOrAdd(Performance);
-		if (!AnimationTaskLock)
+		if (!Instance.AnimationTaskLock)
 		{
 			Instance.IsSwitched = !Instance.IsSwitched;
-			AnimationTaskLock = true;
+			Instance.AnimationTaskLock = true;
 		}
 		Instance.Previous = Instance.Current;
 		if (Instance.Previous.IsValid())
@@ -202,6 +207,15 @@ void UTGOR_AnimInstance::AddAnimationInstance(UTGOR_Performance* Performance, UT
 		// Check that instance can produce an animation instance
 		if (IAnimClassInterface::GetFromClass(AnimatedTask->InstanceClass))
 		{
+			// Verify target skeleton match at runtime
+			IAnimClassInterface* LinkedAnimBlueprintClass = IAnimClassInterface::GetFromClass(AnimatedTask->InstanceClass);
+			USkeleton* LinkedSkeleton = LinkedAnimBlueprintClass->GetTargetSkeleton();
+			if (!IsValid(LinkedSkeleton))
+			{
+				UE_LOG(LogTemp, Error, TEXT("Linked skeleton is null, probably trying to assign a template"));
+				return;
+			}
+
 			// Set anim instance to graph and queue
 			LinkAnimGraphByTag(AnimationKey, AnimatedTask->InstanceClass);
 			Instance.Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));
@@ -235,10 +249,10 @@ void UTGOR_AnimInstance::RemoveAnimationInstance(UTGOR_Performance* Performance,
 	if (FTGOR_SubAnimationInstance* Ptr = AnimationInstanceQueues.Find(Performance))
 	{
 		// Set default value instead
-		if (!AnimationTaskLock)
+		if (!Ptr->AnimationTaskLock)
 		{
 			Ptr->IsSwitched = !Ptr->IsSwitched;
-			AnimationTaskLock = true;
+			Ptr->AnimationTaskLock = true;
 		}
 		Ptr->Previous = Ptr->Current;
 		if (Ptr->Previous.IsValid())

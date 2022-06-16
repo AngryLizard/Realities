@@ -84,4 +84,7 @@ void UTGOR_Action::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionAction
 	MOV_INSERTION(ChildInsertions);
 	MOV_INSERTION(TargetInsertions);
 	MOV_INSERTION(MovementInsertions);
+	MOV_INSERTION(PrepareMovementInsertion);
+	MOV_INSERTION(OperateMovementInsertion);
+	MOV_INSERTION(FinishMovementInsertion);
 }

@@ -706,11 +706,14 @@ FTGORRigUnit_ReprojectOntoPlane_Execute()
 	if (Context.State == EControlRigState::Update)
 	{
 		const FVector Delta = Point - Reference;
-		const FVector Projected = Delta.ProjectOnToNormal(Direction);
+		double Project = Delta | Direction;
+
+		const FVector Projected = Direction * Project;
 
 		const FVector Warp = Reference + Delta - Projected; 
 		const FVector Intersection = FVector::PointPlaneProject(Warp, FPlane(Location, Normal));
 
+		Height = Project;
 		Projection = Intersection + Projected;
 	}
 }

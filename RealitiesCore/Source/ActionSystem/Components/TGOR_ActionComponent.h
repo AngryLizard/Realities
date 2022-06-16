@@ -23,6 +23,7 @@ class UTGOR_Loadout;
 class UTGOR_Performance;
 class UTGOR_EquipableAction;
 class UTGOR_ActionTask;
+class UTGOR_MovementTask;
 
 ///////////////////////////////////////////// STRUCTS ///////////////////////////////////////////////////
 
@@ -174,6 +175,33 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** Get attached action task */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		UTGOR_ActionTask* GetCurrentActionOfType(TSubclassOf<UTGOR_ActionTask> Type) const;
+
+	template<typename T> T* GetCurrentAOfType() const
+	{
+		return Cast<T>(GetCurrentActionOfType(T::StaticClass()));
+	}
+
+	/** Get all action tasks of given type */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (DeterminesOutputType = "Type", Keywords = "C++"))
+		TArray<UTGOR_ActionTask*> GetActionListOfType(TSubclassOf<UTGOR_ActionTask> Type) const;
+
+	template<typename T> TArray<T*> GetAListOfType() const
+	{
+		TArray<T*> Output;
+		TArray<UTGOR_ActionTask*> Actions = GetActionListOfType(T::StaticClass());
+		for (UTGOR_ActionTask* Action : Actions)
+		{
+			Output.Emplace(Cast<T>(Action));
+		}
+		return Output;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
 	/** Whether any action is currently scheduled. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunning(UTGOR_Action* Action) const;
@@ -181,6 +209,18 @@ public:
 	/** Whether the given action slot is currently scheduled. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunningAt(int32 Identifier) const;
+
+	/** Whether the given action slot is currently in prepare state. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsPreparingAt(int32 Identifier) const;
+
+	/** Whether the given action slot is currently in operate state. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsOperatingAt(int32 Identifier) const;
+
+	/** Whether the given action slot is currently in finish state. */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool IsFinishingAt(int32 Identifier) const;
 
 	/** Whether any action slot it currently running. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -215,6 +255,10 @@ public:
 		This does _not_ update context updates before testing. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		TArray<int32> GetCallableSubactionIdentifiers(UTGOR_Action* Action, bool CheckCanCall);
+
+	/** Get whether a given movement can be executed */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool CanRunMovement(UTGOR_Movement* Movement) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

@@ -131,16 +131,9 @@ float UTGOR_RigidPawnComponent::TickPhysics(float Time)
 			if (RootPilot->SurroundingVolume.IsValid())
 			{
 				// Compute external forces
+				FTGOR_MovementOutput Out;
 				FTGOR_MovementExternal External;
-				External.Surroundings = RootPilot->SurroundingVolume->ComputeAllSurroundings(Space.Linear);
-
-				const FTGOR_MovementDamper ExternalForce = MovementBody.ComputeExternalForce(Space, External.Surroundings);
-				External.Force = ExternalForce.Vector;
-
-				const FTGOR_MovementDamper ExternalTorque = MovementBody.ComputeExternalTorque(Space, External.Surroundings);
-				External.Torque = ExternalTorque.Vector;
-
-				External.UpVector = ComputePhysicsUpVector();
+				ComputeExternal(Space, External, Out);
 
 				// Consume external impulses
 				const FVector InflictedLinearVelocity = MovementBody.GetUnmassedLinear(Inflicted.LinearMomentum);
@@ -151,12 +144,6 @@ float UTGOR_RigidPawnComponent::TickPhysics(float Time)
 
 				Inflicted.LinearMomentum = FVector::ZeroVector;
 				Inflicted.AngularMomentum = FVector::ZeroVector;
-
-				// Initialise movement output
-				FTGOR_MovementOutput Out;
-				Out.MaxLinearDamping = ExternalForce.Damping;
-				Out.MaxAngularDamping = ExternalTorque.Damping;
-				Out.Orientation = (External.Surroundings.Gravity * MovementBody.Mass) + MovementBody.GetMassedLinear(Space.RelativeLinearAcceleration);
 		
 				////////////////////////////////////////////////////////////////////////////////////////////
 				{
@@ -282,6 +269,30 @@ void UTGOR_RigidPawnComponent::InflictForceTorque(const FVector& Force, const FV
 	{
 		Inflicted.LinearMomentum += Force * DeltaTime;
 		Inflicted.AngularMomentum += Torque * DeltaTime;
+	}
+}
+
+void UTGOR_RigidPawnComponent::ComputeExternal(const FTGOR_MovementSpace& Space, FTGOR_MovementExternal& External, FTGOR_MovementOutput& Out)
+{
+	UTGOR_PilotComponent* RootPilot = GetRootPilot();
+	if (IsValid(RootPilot))
+	{
+		const FTGOR_MovementBody& MovementBody = RootPilot->GetBody();
+
+		External.Surroundings = RootPilot->SurroundingVolume->ComputeAllSurroundings(Space.Linear);
+
+		const FTGOR_MovementDamper ExternalForce = MovementBody.ComputeExternalForce(Space, External.Surroundings);
+		External.Force = ExternalForce.Vector;
+
+		const FTGOR_MovementDamper ExternalTorque = MovementBody.ComputeExternalTorque(Space, External.Surroundings);
+		External.Torque = ExternalTorque.Vector;
+
+		External.UpVector = ComputePhysicsUpVector();
+
+		// Initialise movement output
+		Out.MaxLinearDamping = ExternalForce.Damping;
+		Out.MaxAngularDamping = ExternalTorque.Damping;
+		Out.Orientation = (External.Surroundings.Gravity * MovementBody.Mass) + MovementBody.GetMassedLinear(Space.RelativeLinearAcceleration);
 	}
 }
 

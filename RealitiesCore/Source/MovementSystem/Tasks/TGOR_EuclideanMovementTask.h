@@ -35,7 +35,7 @@ public:
 	virtual void Interrupt() override;
 
 	/** Simulate symplectic integration for a given time */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		void SimulateSymplectic(const FTGOR_MovementSpace& Space, const FTGOR_MovementForce& Force, const FTGOR_MovementExternal& External, float DeltaTime, bool Sweep);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

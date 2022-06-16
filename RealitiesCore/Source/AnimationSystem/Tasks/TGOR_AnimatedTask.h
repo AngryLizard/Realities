@@ -50,15 +50,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
 		bool bConsumeAllRootMotion = false;
 
+	// Whether to project local root motion to XY-plane
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
+		bool bProjectZAxis = false;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
 		UTGOR_SubAnimInstance* GetAnimationInstance();
 
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Animation", Meta = (Keywords = "C++"))
+		void StopTaskMontage(const UAnimMontage* Montage = NULL);
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif // WITH_EDITOR
+
+
+	/** Tick animation and extract root motion */
+	virtual FTGOR_MovementPosition TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -71,9 +81,6 @@ protected:
 
 	/** Extract root motion from current animation over a given timeframe */
 		void ConsumeRootMotion(float DeltaTime);
-
-	/** Tick animation and extract root motion */
-		FTGOR_MovementPosition TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime);
 
 	/** Overrideable root motion conversion */
 		virtual FTransform ConvertLocalRootMotionToWorld(const FTransform& LocalRootMotionTransform, UTGOR_AnimationComponent* Component, float DeltaSeconds);

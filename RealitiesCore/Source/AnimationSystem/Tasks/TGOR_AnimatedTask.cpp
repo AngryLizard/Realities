@@ -51,6 +51,17 @@ UTGOR_SubAnimInstance* UTGOR_AnimatedTask::GetAnimationInstance()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void UTGOR_AnimatedTask::StopTaskMontage(const UAnimMontage* Montage)
+{
+	UTGOR_SubAnimInstance* SubAnimInstance = GetAnimationInstance();
+	if (SubAnimInstance)
+	{
+		SubAnimInstance->Montage_Stop(BlendTime, Montage);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void UTGOR_AnimatedTask::PlayAnimation()
 {
 	if (!*InstanceClass)
@@ -131,9 +142,14 @@ void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 				{
 					InterpAlpha = Component->ExternalInterpolationAlpha;
 				}
+				else if(Component->ShouldUseUpdateRateOptimizations() && Component->AnimUpdateRateParams->OptimizeMode == FAnimUpdateRateParameters::EOptimizeMode::LookAheadMode)
+				{
+					// Same as Component->AnimUpdateRateParams->GetRootMotionInterp but can actually be linked (thanks EPIC for not adding dll linkage to the struct, MEAN! >:)
+					InterpAlpha = FMath::Clamp(Component->AnimUpdateRateParams->ThisTickDelta / (Component->AnimUpdateRateParams->TickedPoseOffestTime + Component->AnimUpdateRateParams->ThisTickDelta), 0.f, 1.f);
+				}
 				else
 				{
-					InterpAlpha = Component->ShouldUseUpdateRateOptimizations() ? Component->AnimUpdateRateParams->GetRootMotionInterp() : 1.f;
+					InterpAlpha = 1.f;
 				}
 
 				RootMotion = SubAnimInstance->ConsumeExtractedRootMotion(InterpAlpha);
@@ -144,7 +160,12 @@ void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 		{
 			RootMotion.ScaleRootMotionTranslation(AnimRootMotionTranslationScale);
 
-			const FTransform Transform = ConvertLocalRootMotionToWorld(RootMotion.GetRootMotionTransform(), Component, DeltaTime);
+			FTransform LocalTransform = RootMotion.GetRootMotionTransform();
+			if (bProjectZAxis)
+			{
+				LocalTransform.SetTranslation(LocalTransform.GetTranslation() * FVector(1, 1, 0));
+			}
+			const FTransform Transform = ConvertLocalRootMotionToWorld(LocalTransform, Component, DeltaTime);
 			RootMotionDelta.Linear = Transform.GetTranslation();
 			RootMotionDelta.Angular = Transform.GetRotation();
 			RootMotionDelta.LinearVelocity = RootMotionDelta.Linear / DeltaTime;

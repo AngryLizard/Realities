@@ -65,13 +65,16 @@ void UTGOR_ActionComponent::DestroyComponent(bool bPromoteChildren)
 void UTGOR_ActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
 	// Update currently scheduled action
 	if (ActionSlots.IsValidIndex(ActionState.ActiveSlot))
 	{
 		UTGOR_ActionTask* ActionSlot = ActionSlots[ActionState.ActiveSlot];
 		if (IsValid(ActionSlot))
 		{
+			// Engine tick based processing (e.g. for animations)
+			ActionSlot->Process(DeltaTime);
+
 			// Update action
 			const float Timestep = UpdateActionTimestamp();
 			if (Timestep >= SMALL_NUMBER)
@@ -310,6 +313,33 @@ bool UTGOR_ActionComponent::ScheduleSlotAction(int32 Identifier)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+UTGOR_ActionTask* UTGOR_ActionComponent::GetCurrentActionOfType(TSubclassOf<UTGOR_ActionTask> Type) const
+{
+	if (ActionSlots.IsValidIndex(ActionState.ActiveSlot) && ActionSlots[ActionState.ActiveSlot]->IsA(Type))
+	{
+		return ActionSlots[ActionState.ActiveSlot];
+	}
+	return nullptr;
+}
+
+TArray<UTGOR_ActionTask*> UTGOR_ActionComponent::GetActionListOfType(TSubclassOf<UTGOR_ActionTask> Type) const
+{
+	TArray<UTGOR_ActionTask*> Actions;
+	if (*Type)
+	{
+		for (UTGOR_ActionTask* ActionSlot : ActionSlots)
+		{
+			if (ActionSlot->IsA(Type))
+			{
+				Actions.Emplace(ActionSlot);
+			}
+		}
+	}
+	return Actions;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 bool UTGOR_ActionComponent::IsRunning(UTGOR_Action* Action) const
 {
 	if (IsRunningAny())
@@ -322,6 +352,21 @@ bool UTGOR_ActionComponent::IsRunning(UTGOR_Action* Action) const
 bool UTGOR_ActionComponent::IsRunningAt(int32 Identifier) const
 {
 	return IsRunningAny() && Identifier == ActionState.ActiveSlot;
+}
+
+bool UTGOR_ActionComponent::IsPreparingAt(int32 Identifier) const
+{
+	return IsRunningAt(Identifier) && ActionState.State == ETGOR_ActionStateEnumeration::Prepare;
+}
+
+bool UTGOR_ActionComponent::IsOperatingAt(int32 Identifier) const
+{
+	return IsRunningAt(Identifier) && ActionState.State == ETGOR_ActionStateEnumeration::Operate;
+}
+
+bool UTGOR_ActionComponent::IsFinishingAt(int32 Identifier) const
+{
+	return IsRunningAt(Identifier) && ActionState.State == ETGOR_ActionStateEnumeration::Finish;
 }
 
 bool UTGOR_ActionComponent::IsRunningAny() const
@@ -442,6 +487,16 @@ TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Actio
 		}
 	}
 	return Identifiers;
+}
+
+bool UTGOR_ActionComponent::CanRunMovement(UTGOR_Movement* Movement) const
+{
+	if (ActionSlots.IsValidIndex(ActionState.ActiveSlot))
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[ActionState.ActiveSlot];
+		return IsValid(ActionSlot) && ActionSlot->HasValidMovement(Movement);
+	}
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -84,7 +84,7 @@ protected:
 
 
 /**
-*
+* Montage Movement includes functionality to handle motionwarping (other movements can also handle root motion but not motion warping)
 */
 UCLASS(Blueprintable)
 class MOVEMENTSYSTEM_API UTGOR_MontageMovementTask : public UTGOR_MovementTask

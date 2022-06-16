@@ -74,6 +74,11 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
 		void InflictForceTorque(const FVector& Force, const FVector& Torque, float DeltaTime);
 
+	/** Compute current external properties and initialise movement output with proper dampers */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement|Internal", Meta = (Keywords = "C++"))
+		void ComputeExternal(const FTGOR_MovementSpace& Space, FTGOR_MovementExternal& External, FTGOR_MovementOutput& Out);
+
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 

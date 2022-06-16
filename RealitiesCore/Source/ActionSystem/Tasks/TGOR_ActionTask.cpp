@@ -93,7 +93,7 @@ void UTGOR_ActionTask::Initialise()
 	{
 		MovementComponent = Identifier.Component->GetOwnerComponent<UTGOR_MovementComponent>();
 		PilotComponent = Identifier.Component->GetOwnerRootScene<UTGOR_ArmatureComponent>();
-		
+				
 		Identifier.Content->TaskInitialise(this);
 	}
 
@@ -113,6 +113,12 @@ bool UTGOR_ActionTask::Condition() const
 
 void UTGOR_ActionTask::PrepareStart()
 {
+	if (Identifier.Content->Instanced_PrepareMovementInsertion.Collection)
+	{
+		// In case we want to have access to the operating movement mode we need to make sure it's already switched on this frame
+		MovementComponent->ForceUpdateMovement();
+	}
+
 	PlayAnimation();
 	OnPrepareStart();
 }
@@ -127,6 +133,13 @@ bool UTGOR_ActionTask::PrepareState(float Time, float Deltatime)
 
 void UTGOR_ActionTask::OperateStart()
 {
+	// No need to update when previous state had the same movement
+	if (Identifier.Content->Instanced_OperateMovementInsertion.Collection &&
+		Identifier.Content->Instanced_OperateMovementInsertion.Collection != Identifier.Content->Instanced_PrepareMovementInsertion.Collection)
+	{
+		// In case we want to have access to the operating movement mode we need to make sure it's already switched on this frame
+		MovementComponent->ForceUpdateMovement();
+	}
 	OnOperateStart();
 }
 
@@ -140,6 +153,13 @@ bool UTGOR_ActionTask::OperateState(float Time, float Deltatime)
 
 void UTGOR_ActionTask::FinishStart()
 {
+	// No need to update when previous state had the same movement
+	if (Identifier.Content->Instanced_FinishMovementInsertion.Collection &&
+		Identifier.Content->Instanced_FinishMovementInsertion.Collection != Identifier.Content->Instanced_OperateMovementInsertion.Collection)
+	{
+		// In case we want to have access to the operating movement mode we need to make sure it's already switched on this frame
+		MovementComponent->ForceUpdateMovement();
+	}
 	OnFinishStart();
 }
 
@@ -204,6 +224,33 @@ bool UTGOR_ActionTask::IsRunning() const
 	return false;
 }
 
+bool UTGOR_ActionTask::IsPreparing() const
+{
+	if (IsValid(Identifier.Component))
+	{
+		return Identifier.Component->IsPreparingAt(Identifier.Slot);
+	}
+	return false;
+}
+
+bool UTGOR_ActionTask::IsOperating() const
+{
+	if (IsValid(Identifier.Component))
+	{
+		return Identifier.Component->IsOperatingAt(Identifier.Slot);
+	}
+	return false;
+}
+
+bool UTGOR_ActionTask::IsFinishing() const
+{
+	if (IsValid(Identifier.Component))
+	{
+		return Identifier.Component->IsFinishingAt(Identifier.Slot);
+	}
+	return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Value, bool AllowTrigger)
@@ -238,14 +285,14 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 			}
 		}
 		// Never add inputs that we only use for action triggers
-		else if (InputPair.Value != ETGOR_InputTrigger::TriggerOnly)
+		else if (InputPair.Value != ETGOR_InputTrigger::TriggerNoState)
 		{
 			Inputs.Inputs.Emplace(InputPair.Key, Value);
 		}
 
 		// Look for inputs that schedule actions
 		if (ReadyForTrigger && 
-			InputPair.Value != ETGOR_InputTrigger::InputOnly && 
+			InputPair.Value != ETGOR_InputTrigger::StateOnly && 
 			InputPair.Key->IsActive(Value) && 
 			!HasTrigger)
 		{
@@ -369,6 +416,16 @@ bool UTGOR_ActionTask::HasValidMovement() const
 		return false;
 	}
 
+	return HasValidMovement(CurrentTask->GetMovement());
+}
+
+bool UTGOR_ActionTask::HasValidMovement(UTGOR_Movement* Movement) const
+{
+	if (!IsValid(Movement))
+	{
+		return false;
+	}
+
 	// If there are no restrictions we allow all movements but issue a warning.
 	// Actions that don't require a movement check on a character with movement are almost always a sign they have been forgotten.
 	if (!ensureMsgf(Identifier.Content->Instanced_MovementInsertions.Collection.Num() > 0, TEXT("There is movement but no restriction defined. Please explicitely allow all allowed movements.")))
@@ -377,11 +434,22 @@ bool UTGOR_ActionTask::HasValidMovement() const
 	}
 
 	// Check whether movement mode is supported
-	if (ETGOR_MovementRestrict* Ptr = Identifier.Content->Instanced_MovementInsertions.Collection.Find(CurrentTask->GetMovement()))
+	if (Movement == Identifier.Content->Instanced_PrepareMovementInsertion.Collection && IsPreparing())
 	{
-		return (*Ptr == ETGOR_MovementRestrict::Always) || IsRunning();
+		return true;
 	}
-	return false;
+
+	if (Movement == Identifier.Content->Instanced_OperateMovementInsertion.Collection && IsOperating())
+	{
+		return true;
+	}
+
+	if (Movement == Identifier.Content->Instanced_FinishMovementInsertion.Collection && IsFinishing())
+	{
+		return true;
+	}
+
+	return Identifier.Content->Instanced_MovementInsertions.Contains(Movement);
 }
 
 bool UTGOR_ActionTask::IsInRange() const
@@ -466,6 +534,11 @@ bool UTGOR_ActionTask::CollectDebugInfo(float LogDuration, FTGOR_ActionDebugInfo
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_ActionTask::Process(float DeltaTime)
+{
+	ConsumeRootMotion(DeltaTime);
+}
 
 void UTGOR_ActionTask::Context(const FTGOR_AimInstance& Aim)
 {
@@ -658,6 +731,9 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 			return false;
 		}
 
+		State.Time = GameTimestamp;
+		State.State = ETGOR_ActionStateEnumeration::Prepare;
+
 		PrepareStart();
 
 		// Cancel completely if this action got interrupted
@@ -665,9 +741,6 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 		{
 			return false;
 		}
-
-		State.Time = GameTimestamp;
-		State.State = ETGOR_ActionStateEnumeration::Prepare;
 
 		LogActionMessage("Forward", "Prepare");
 	}
@@ -681,6 +754,9 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 			return false;
 		}
 
+		State.Time = GameTimestamp;
+		State.State = ETGOR_ActionStateEnumeration::Operate;
+
 		OperateStart();
 
 		// Cancel completely if this action got interrupted
@@ -688,9 +764,6 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 		{
 			return false;
 		}
-
-		State.Time = GameTimestamp;
-		State.State = ETGOR_ActionStateEnumeration::Operate;
 
 		LogActionMessage("Forward", "Operate");
 	}
@@ -704,6 +777,9 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 			return false;
 		}
 
+		State.Time = GameTimestamp;
+		State.State = ETGOR_ActionStateEnumeration::Finish;
+
 		FinishStart();
 
 		// Cancel completely if this action got interrupted
@@ -712,8 +788,6 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 			return false;
 		}
 
-		State.Time = GameTimestamp;
-		State.State = ETGOR_ActionStateEnumeration::Finish;
 		LogActionMessage("Forward", "Finish");
 	}
 
@@ -722,14 +796,15 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 	{
 		Interrupt();
 
+		State.Time = GameTimestamp;
+		State.State = ETGOR_ActionStateEnumeration::Dead;
+
 		// Cancel completely if this action got interrupted
 		if (!IsRunningIn(State))
 		{
 			return false;
 		}
 
-		State.Time = GameTimestamp;
-		State.State = ETGOR_ActionStateEnumeration::Dead;
 		State.ActiveSlot = INDEX_NONE;
 		LogActionMessage("Forward", "Death");
 
