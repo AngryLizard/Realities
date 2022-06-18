@@ -13,6 +13,17 @@ class ITGOR_AnimationInterface;
 class UTGOR_SubAnimInstance;
 class UTGOR_Performance;
 
+UENUM(BlueprintType)
+enum class ETGOR_RootMotionDynamicsMode : uint8
+{
+	/** Use Position/Rotation delta directly. */
+	Direct,
+	/** Set velocity and depend on dynamics to handle root motion. */
+	Velocity,
+	/** Set acceleration to and depend on dynamics to handle root motion. Use this if we want to maintain previous velocity */
+	Acceleration
+};
+
 /**
 * UTGOR_AnimatedTask
 */
@@ -41,10 +52,7 @@ public:
 		float AnimRootMotionTranslationScale = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		bool bTransformRootMotionToLinearVelocity = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")
-		bool bTransformRootMotionToAngularVelocity = false;
+		ETGOR_RootMotionDynamicsMode TransformRootMotionMode = ETGOR_RootMotionDynamicsMode::Direct;
 
 	// Whether to consume only subanim instance or all root motion
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Animation")

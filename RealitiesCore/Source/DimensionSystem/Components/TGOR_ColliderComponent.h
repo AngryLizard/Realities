@@ -147,7 +147,7 @@ public:
 
 	/** Translate over a given time, returns hit form last iteration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))
-		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FTGOR_MovementPosition& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration);
+		int32 SimulateTranslate(FTGOR_MovementSpace& Space, const FVector& Offset, float Timestep, bool Sweep, float Elasticity, float Friction, FTGOR_MovementImpact& ImpactResult, float Ratio, int32 Iteration);
 
 	/** Tries to resolve a penetration */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Collision|Internal", Meta = (Keywords = "C++"))

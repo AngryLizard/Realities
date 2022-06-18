@@ -208,12 +208,12 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			float AnkleHeight = 0.0f;
 			ComputeTriangle(Lengths.Z, Hypoth, MinLegDistance, AnkleHeight, AnkleKath);
 			const float MaxChangLength = Lengths.X + Lengths.Y + Lengths.Z;
-			const float DistanceRatio = FMath::Min((ObjectiveDistance - MinLegDistance) / (MaxChangLength - MinLegDistance), 1.0f);
-			const float FinalHeight = AnkleHeight * (1.0f - FMath::Pow(DistanceRatio, StandingBend));
+			const float DistanceRatio = (ObjectiveDistance - MinLegDistance) / (MaxChangLength - MinLegDistance);
+			const float FinalHeight = AnkleHeight * (1.0f - FMath::Pow(FMath::Min(DistanceRatio, 1.0f), StandingBend));
 
 			// Compute ankle location
 			const FVector AnkleDelta = LowerDirection * FinalHeight + ObjectiveNormal * AnkleKath;
-			const FVector AnkleLocation = ObjectiveLocation - AnkleDelta.GetSafeNormal() * Lengths.Z;
+			const FVector AnkleLocation = ObjectiveLocation - AnkleDelta.GetSafeNormal() * Lengths.Z * FMath::Max(DistanceRatio, 1.0f);
 			const FVector UpperDelta = AnkleLocation - PelvisLocation;
 			const float UpperDistance = UpperDelta.Size();
 			const FVector UpperNormal = UpperDelta / UpperDistance;
@@ -243,9 +243,18 @@ FTGORRigUnit_DigitigradeIK_Execute()
 			}
 
 			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			if (bEnableStretch)
+			{
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			}
+			else
+			{
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], KneeLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], AnkleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			}
 
 			// Set foot transform
 			FTransform Foot;
@@ -382,10 +391,19 @@ FTGORRigUnit_ClavicleIK_Execute()
 				Context.DrawInterface->DrawPoint(FTransform::Identity, EllbowLocation, DebugSettings.Scale * 3.0f, FLinearColor::White);
 			}
 
-			// Transform to propagate along the leg
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
-			FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			// Transform to propagate along the arm
+			if (bEnableStretch)
+			{
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsWithScale(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			}
+			else
+			{
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[0], Chain[1], ClavicleLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[1], Chain[2], EllbowLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+				FTGORRigUnit_Propagate::PropagateChainTowardsFixed(Chain[2], Chain[3], ObjectiveLocation, Hierarchy, PropagateToChildren == ETGOR_Propagation::All);
+			}
 
 			// Set foot transform
 			FTransform EE;

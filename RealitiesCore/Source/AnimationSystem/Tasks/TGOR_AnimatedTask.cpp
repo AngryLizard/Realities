@@ -168,40 +168,64 @@ void UTGOR_AnimatedTask::ConsumeRootMotion(float DeltaTime)
 			const FTransform Transform = ConvertLocalRootMotionToWorld(LocalTransform, Component, DeltaTime);
 			RootMotionDelta.Linear = Transform.GetTranslation();
 			RootMotionDelta.Angular = Transform.GetRotation();
-			RootMotionDelta.LinearVelocity = RootMotionDelta.Linear / DeltaTime;
-			RootMotionDelta.AngularVelocity = RootMotionDelta.Angular.GetRotationAxis() * (RootMotionDelta.Angular.GetAngle() / DeltaTime);
+
+			// Compute dynamics via finite difference
+			const FVector LinearVelocity = RootMotionDelta.Linear / DeltaTime;
+			const FVector AngularVelocity = RootMotionDelta.Angular.GetRotationAxis() * (RootMotionDelta.Angular.GetAngle() / DeltaTime);
+
+			RootMotionDelta.LinearAcceleration = (RootMotionDelta.LinearVelocity - LinearVelocity) / DeltaTime;
+			RootMotionDelta.AngularAcceleration = (RootMotionDelta.AngularVelocity - AngularVelocity) / DeltaTime;
+
+			RootMotionDelta.LinearVelocity = LinearVelocity;
+			RootMotionDelta.AngularVelocity = AngularVelocity;
+			return;
 		}
 	}
+
+	// Reset so we can compute acceleration correctly
+	RootMotionDelta = FTGOR_MovementDynamic();
 }
 
 FTGOR_MovementPosition UTGOR_AnimatedTask::TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime)
 {
 	FTGOR_MovementPosition Position;
-	if (bTransformRootMotionToLinearVelocity)
-	{
-		const FVector VelocityDelta = RootMotionDelta.LinearVelocity - Space.RelativeLinearVelocity;
-		Space.RelativeLinearVelocity += VelocityDelta;
-		Space.LinearVelocity += VelocityDelta;
-		Position.Linear = FVector::ZeroVector;
-	}
-	else
+
+	if (TransformRootMotionMode == ETGOR_RootMotionDynamicsMode::Direct)
 	{
 		Position.Linear = RootMotionDelta.Linear;
 		RootMotionDelta.Linear = FVector::ZeroVector;
-	}
 
-	if(bTransformRootMotionToAngularVelocity)
+		Position.Angular = RootMotionDelta.Angular;
+		RootMotionDelta.Angular = FQuat::Identity;
+	}
+	else if(TransformRootMotionMode == ETGOR_RootMotionDynamicsMode::Velocity)
 	{
-		const FVector VelocityDelta = RootMotionDelta.AngularVelocity - Space.RelativeAngularVelocity;
-		Space.RelativeAngularVelocity += VelocityDelta;
-		Space.AngularVelocity += VelocityDelta;
+		// Same as:
+		// Space.RelativeLinearVelocity = RootMotionDelta.LinearVelocity
+		// But making sure global velocity stays accurate
+		const FVector LinearVelocityDelta = RootMotionDelta.LinearVelocity - Space.RelativeLinearVelocity;
+		Space.RelativeLinearVelocity += LinearVelocityDelta;
+		Space.LinearVelocity += LinearVelocityDelta;
+		Position.Linear = FVector::ZeroVector;
+
+		const FVector AngularVelocityDelta = RootMotionDelta.AngularVelocity - Space.RelativeAngularVelocity;
+		Space.RelativeAngularVelocity += AngularVelocityDelta;
+		Space.AngularVelocity += AngularVelocityDelta;
 		Position.Angular = FQuat::Identity;
 	}
 	else
 	{
-		Position.Angular = RootMotionDelta.Angular;
-		RootMotionDelta.Angular = FQuat::Identity;
+		const FVector LinearVelocityDelta = RootMotionDelta.LinearAcceleration * DeltaTime;
+		Space.RelativeLinearVelocity += LinearVelocityDelta;
+		Space.LinearVelocity += LinearVelocityDelta;
+		Position.Linear = FVector::ZeroVector;
+
+		const FVector AngularVelocityDelta = RootMotionDelta.AngularAcceleration * DeltaTime;
+		Space.RelativeAngularVelocity += AngularVelocityDelta;
+		Space.AngularVelocity += AngularVelocityDelta;
+		Position.Angular = FQuat::Identity;
 	}
+
 	return Position;
 }
 

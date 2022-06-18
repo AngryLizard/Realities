@@ -116,6 +116,12 @@ public:
 		float KneeHipDirectionWeight = 1.0f;
 
 	/**
+	 * Whether to stretch legs if target is longer than max leg length
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		bool bEnableStretch = false;
+
+	/**
 	 * Length customisation
 	 */
 	UPROPERTY(meta = (Input))
@@ -171,6 +177,12 @@ public:
 	 */
 	UPROPERTY(meta = (Input, DetailsOnly))
 		FVector EllbowAlignmentAxis = FVector::ForwardVector;
+
+	/**
+	 * Whether to stretch legs if target is longer than max leg length
+	 */
+	UPROPERTY(meta = (Input, DetailsOnly))
+		bool bEnableStretch = false;
 
 	/**
 	 * Length customisation
