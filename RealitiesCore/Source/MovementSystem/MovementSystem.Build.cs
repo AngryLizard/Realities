@@ -34,7 +34,9 @@ public class MovementSystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"MotionWarping"
+				"MotionWarping",
+				"NavigationSystem",
+				"AIModule"
 			}
 			);
 		

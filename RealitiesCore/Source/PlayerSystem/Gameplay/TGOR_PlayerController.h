@@ -10,7 +10,6 @@
 #include "TGOR_OnlineController.h"
 #include "TGOR_PlayerController.generated.h"
 
-
 /**
 * TGOR_PlayerController allows a playercontroller to interface with TGOR_Characters
 */
@@ -25,7 +24,7 @@ public:
 	//////////////////////////////////////////////// ENGINE ////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ATGOR_PlayerController();
+	ATGOR_PlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void BeginPlay() override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
@@ -67,7 +66,6 @@ public:
 	UFUNCTION(BlueprintPure, Category = "!TGOR Interface", Meta = (Keywords = "C++"))
 		ATGOR_HUD* GetCachedHud() const;
 
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////// INTERNAL ///////////////////////////////////////////
@@ -75,8 +73,4 @@ public:
 protected:
 
 private:
-
-	bool _initial;
-	float _cameraZoom;
-	float _cameraPitch;
 };

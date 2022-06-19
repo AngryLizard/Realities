@@ -15,15 +15,10 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "ActionSystem/Content/TGOR_Action.h"
 
-ATGOR_PlayerController::ATGOR_PlayerController()
-	: Super()
+ATGOR_PlayerController::ATGOR_PlayerController(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
-	_initial = true;
-
-	PrimaryActorTick.bCanEverTick = true;
 }
-
-
 
 void ATGOR_PlayerController::BeginPlay()
 {
@@ -40,14 +35,12 @@ ATGOR_HUD* ATGOR_PlayerController::GetCachedHud() const
 	return Hud;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ATGOR_PlayerController::ForceGarbageCollection()
 {
 	GEngine->ForceGarbageCollection(true);
 }
-
 
 FVector ATGOR_PlayerController::HitTraceFrom(FVector2D ScreenPosition, ETraceTypeQuery Query)
 {
@@ -100,4 +93,3 @@ float ATGOR_PlayerController::LerpWidgetTo(UWidget* Widget, FVector Location, fl
 
 	return(FMath::Clamp(1.0f - Ratio, 0.0f, 1.0f));
 }
-
