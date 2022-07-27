@@ -14,7 +14,7 @@ UTGOR_PathFollowingComponent::UTGOR_PathFollowingComponent(const FObjectInitiali
 {
 	OnRequestFinished.AddUObject(this, &UTGOR_PathFollowingComponent::OnMoveCompleted);
 
-	// TODO: Factor 3 is going to work for most pawns to properly "reach" the desitionation even if it's on the floot, but there might be better ways of doing this
+	// TODO: Factor 3 is going to work for most pawns to properly "reach" the desitionation even if it's on the floor, but there might be better ways of doing this
 	SetPreciseReachThreshold(1.f, 3.f);
 }
 

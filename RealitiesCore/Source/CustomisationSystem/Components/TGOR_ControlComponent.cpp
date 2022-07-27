@@ -43,7 +43,6 @@ void UTGOR_ControlComponent::PostEditChangeProperty(FPropertyChangedEvent& Prope
 void UTGOR_ControlComponent::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	const FName PropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
-
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 }
 

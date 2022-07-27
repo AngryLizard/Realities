@@ -64,5 +64,4 @@ public:
 	//~ Begin UShapeComponent Interface
 	virtual void UpdateBodySetup() override;
 	//~ End UShapeComponent Interface
-
 };

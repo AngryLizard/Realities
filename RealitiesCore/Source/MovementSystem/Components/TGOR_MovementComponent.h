@@ -55,6 +55,7 @@ public:
 	virtual float GetMaxSpeed() const override;
 	virtual void RequestDirectMove(const FVector& MoveVelocity, bool bForceMaxSpeed) override;
 	virtual void RequestPathMove(const FVector& MoveInput) override;
+	virtual float GetPathFollowingBrakingDistance(float MaxSpeed) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 

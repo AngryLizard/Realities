@@ -85,7 +85,7 @@ bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 				UClass* AssetClass = LoadObject<UClass>(NULL, *ClassPath);
 				if (!IsValid(AssetClass))
 				{
-					ERRET(FString("Modload: Couldn't load class path ") + ClassPath, Warning, false);
+					//ERRET(FString("Modload: Couldn't load class path ") + ClassPath, Warning, false);
 				}
 				else if (AssetClass->IsChildOf(UTGOR_Mod::StaticClass()))
 				{
@@ -135,7 +135,7 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 				UClass* AssetClass = LoadObject<UClass>(Mod, *ClassPath);
 				if (!IsValid(AssetClass))
 				{
-					ERRET(FString("ContentLoad: Couldn't load class path ") + ClassPath, Warning, false);
+					//ERRET(FString("ContentLoad: Couldn't load class path ") + ClassPath, Warning, false);
 				}
 				else if (AssetClass->IsChildOf(UTGOR_Content::StaticClass()))
 				{

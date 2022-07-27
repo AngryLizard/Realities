@@ -49,6 +49,7 @@ UTGOR_MovementComponent::UTGOR_MovementComponent()
 	KnockoutHeadThreshold(230'000.0),
 	KnockoutFootThreshold(320'000.0)
 {
+	bUseAccelerationForPaths = true;
 }
 
 void UTGOR_MovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
@@ -213,7 +214,12 @@ void UTGOR_MovementComponent::RequestDirectMove(const FVector& MoveVelocity, boo
 
 void UTGOR_MovementComponent::RequestPathMove(const FVector& MoveInput)
 {
-	Super::RequestPathMove(MoveInput * 0.5f);
+	Super::RequestPathMove(MoveInput);
+}
+
+float UTGOR_MovementComponent::GetPathFollowingBrakingDistance(float MaxSpeed) const
+{
+	return Super::GetPathFollowingBrakingDistance(MaxSpeed * 0.5f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -54,7 +54,7 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 	{
 		// Rotate towards input direction
 		const float TotalSpeedRatio = Speed / FinalMaximumSpeed;
-		if (Input.Magnitude > 0.1f)
+		if (Input.Magnitude > KINDA_SMALL_NUMBER)
 		{
 			const FVector Direction = Repel.Project(Input.Direction, KINDA_SMALL_NUMBER);
 			
@@ -71,7 +71,7 @@ float UTGOR_WalkingTask::GetInputForce(const FTGOR_MovementTick& Tick, const FTG
 	if (FinalMaxVelocity >= SMALL_NUMBER)
 	{
 		const float SpeedRatio = Speed / FinalMaxVelocity;
-		if (Input.Magnitude > 0.1f)
+		if (Input.Magnitude > SMALL_NUMBER)
 		{
 			// Get input vector transformed to Frame, move forwards if aligned, directly move towards input if not
 			const float ForwardRatio = MovementContact.FrameForward | Input.Direction;
