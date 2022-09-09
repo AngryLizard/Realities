@@ -1,9 +1,9 @@
 [submodule "RealitiesAnimation"]
 	path = RealitiesAnimation
-	url = https://github.com/AngryLizard/RealitiesAnimation
+	url = git@github.com:AngryLizard/RealitiesAnimation.git
 [submodule "RealitiesRendering"]
 	path = RealitiesRendering
-	url = https://github.com/AngryLizard/RealitiesRendering
+	url = git@github.com:AngryLizard/RealitiesRendering.git
 [submodule "RealitiesProcedural"]
 	path = RealitiesProcedural
-	url = https://github.com/AngryLizard/RealitiesProcedural
+	url = git@github.com:AngryLizard/RealitiesProcedural.git
