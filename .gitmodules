@@ -4,3 +4,6 @@
 [submodule "RealitiesRendering"]
 	path = RealitiesRendering
 	url = https://github.com/AngryLizard/RealitiesRendering
+[submodule "RealitiesProcedural"]
+	path = RealitiesProcedural
+	url = https://github.com/AngryLizard/RealitiesProcedural
