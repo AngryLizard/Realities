@@ -61,6 +61,7 @@ void UTGOR_DamageComponent::HitAround(const FVector& Origin, float Radius, const
 	{
 		for (const FOverlapResult& Overlap : Overlaps)
 		{
+			/*
 			UTGOR_InteractableComponent* Interactable = Cast<UTGOR_InteractableComponent>(Overlap.GetComponent());
 			if (IsValid(Interactable))
 			{
@@ -79,6 +80,7 @@ void UTGOR_DamageComponent::HitAround(const FVector& Origin, float Radius, const
 					}
 				}
 			}
+			*/
 		}
 	}
 }

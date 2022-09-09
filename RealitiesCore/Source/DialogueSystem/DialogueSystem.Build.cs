@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class TargetSystem : ModuleRules
+public class DialogueSystem : ModuleRules
 {
-	public TargetSystem(ReadOnlyTargetRules Target) : base(Target)
+	public DialogueSystem(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -15,10 +15,12 @@ public class TargetSystem : ModuleRules
 				"RealitiesUtility",
 
 				"CoreSystem",
-				"DimensionSystem",
-				"AttributeSystem",
 				"UISystem",
-				"PhysicsCore",
+				"AttributeSystem",
+				"DimensionSystem",
+				"AnimationSystem",
+				"ActionSystem",
+				"TargetSystem",
 
 				"Core",
 			}
@@ -30,8 +32,8 @@ public class TargetSystem : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				"Slate",
-				"SlateCore",
+				"InputCore",
+				"PhysicsCore"
 			}
 			);
 		

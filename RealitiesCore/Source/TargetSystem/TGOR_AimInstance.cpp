@@ -93,15 +93,3 @@ void FTGOR_AimInstance::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Context* C
 	Package.ReadEntry(Offset);
 	Package.ReadEntry(Index);
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-FTGOR_AimPoint::FTGOR_AimPoint()
-:	Target(nullptr),
-	Component(TWeakObjectPtr<USceneComponent>()),
-	Distance(0.0f),
-	Center(FVector::ZeroVector)
-{
-
-}

@@ -2,7 +2,7 @@
 
 #include "TGOR_SkeletalTarget.h"
 
-#include "../Components/TGOR_InteractableComponent.h"
+#include "../Components/TGOR_AimTargetComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
 UTGOR_SkeletalTarget::UTGOR_SkeletalTarget()
@@ -13,7 +13,7 @@ UTGOR_SkeletalTarget::UTGOR_SkeletalTarget()
 	Importance = 0.5f;
 }
 
-bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -41,7 +41,7 @@ bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_InteractableComponent* Component,
 	return false;
 }
 
-bool UTGOR_SkeletalTarget::SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SkeletalTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 

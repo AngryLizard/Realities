@@ -9,6 +9,8 @@
 
 #define PARAMS_CHK check(Component && "Interactable Component invalid"); if (MaxDistance < SMALL_NUMBER) { return false; }
 
+class UTGOR_AimTargetComponent;
+
 /**
  * Target content, defines a target that can be aimed at. By default targets interactable component itself.
  */
@@ -22,11 +24,11 @@ public:
 
 	/** Intersects this target with a sphere overlap with given origin and radius (Used for hit detection) */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Target", Meta = (Keywords = "C++"))
-		virtual bool OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float Radius, FTGOR_AimPoint& Point) const;
+		virtual bool OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float Radius, FTGOR_AimPoint& Point) const;
 
 	/** Fill AimPoint with custom target data from ray, used to store a potential target location (Used for targeting) */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Target", Meta = (Keywords = "C++"))
-		virtual bool SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const;
+		virtual bool SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const;
 
 	/** Fill AimInstance with custom target data from ray, used to store a relative target location */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Target", Meta = (Keywords = "C++"))
@@ -46,7 +48,7 @@ public:
 
 	/** Return interactable component for a given aim (defaults to the first Interactable component found on Component owner)*/
 	UFUNCTION(BlueprintPure, Category = "!TGOR Target", Meta = (Keywords = "C++"))
-		virtual UTGOR_InteractableComponent* QueryInteractable(const FTGOR_AimInstance& Instance) const;
+		virtual UTGOR_AimTargetComponent* QueryInteractable(const FTGOR_AimInstance& Instance) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 

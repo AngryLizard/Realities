@@ -12,31 +12,18 @@
 #include "DimensionSystem/Volumes/TGOR_LevelVolume.h"
 #include "DimensionSystem/Data/TGOR_DimensionData.h"
 
-#include "TargetSystem/Components/TGOR_InteractableComponent.h"
+#include "TargetSystem/Components/TGOR_AimTargetComponent.h"
 #include "TargetSystem/Content/TGOR_Target.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "EngineUtils.h"
 
-
-FTGOR_WeightedPoint::FTGOR_WeightedPoint()
-: Weight(0.0f),
-Direction(FVector::OneVector)
-{
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 UTGOR_AimComponent::UTGOR_AimComponent()
-:	Super(),
-	AngleThreshold(0.05f),
-	SelfAimWeight(0.0f),
-	MaxAimDistance(10'000.0f),
-	ForwardAimDistance(250.0f),
-	ConsiderOutOfRange(false),
-	CameraTrace(ECC_GameTraceChannel1)
+:	Super()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
@@ -60,15 +47,22 @@ void UTGOR_AimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	APawn* Pawn = Cast<APawn>(GetOwner());
 	if (IsValid(Pawn) && Pawn->IsLocallyControlled())
 	{
-		UpdateCandidatesNearby();
-
 		APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController());
-		if (IsValid(PlayerController) && PlayerController->IsLocalController())
+		if (IsValid(PlayerController) && PlayerController->IsLocalController() && bAutoUpdateAim)
 		{
 			// Update aim
-			const FVector Location = PlayerController->PlayerCameraManager->GetCameraLocation();
-			const FRotator Rotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-			UpdateAimFromCamera(Location, Rotation.Vector());
+			if (PlayerController->bShowMouseCursor)
+			{
+				FVector Location, Direction;
+				PlayerController->DeprojectMousePositionToWorld(Location, Direction);
+				UpdateAimFromCamera(Location, Direction);
+			}
+			else
+			{
+				const FVector Location = PlayerController->PlayerCameraManager->GetCameraLocation();
+				const FVector Direction = PlayerController->PlayerCameraManager->GetCameraRotation().Vector();
+				UpdateAimFromCamera(Location, Direction);
+			}
 		}
 	}
 }
@@ -102,7 +96,7 @@ bool UTGOR_AimComponent::UpdateCandidatesNearby()
 		ATGOR_LevelVolume* LevelVolume = Dimension->GetLevelVolume();
 		if (IsValid(LevelVolume))
 		{
-			UTGOR_InteractableComponent* Interactable = LevelVolume->FindComponentByClass<UTGOR_InteractableComponent>();
+			UTGOR_AimTargetComponent* Interactable = LevelVolume->FindComponentByClass<UTGOR_AimTargetComponent>();
 			if (IsValid(Interactable))
 			{
 				QueryParams.AddIgnoredActor(LevelVolume);
@@ -127,7 +121,7 @@ bool UTGOR_AimComponent::UpdateCandidatesNearby()
 	{
 		for (const FOverlapResult& Result : Results)
 		{
-			UTGOR_InteractableComponent* Interactable = Cast<UTGOR_InteractableComponent>(Result.GetComponent());
+			UTGOR_AimTargetComponent* Interactable = Cast<UTGOR_AimTargetComponent>(Result.GetComponent());
 			if (IsValid(Interactable) && Result.Component.IsValid())
 			{
 				// Ignoring attached actors
@@ -142,24 +136,32 @@ bool UTGOR_AimComponent::UpdateCandidatesNearby()
 	return false;
 }
 
-void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVector& Direction)
+void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVector& Direction, TSubclassOf<UTGOR_Target> Filter)
 {
+	// TODO: Check whether this is important to do even if suspended
+	UpdateCandidatesNearby();
+
 	if (IsSuspended())
 	{
 		return;
 	}
 
-	// Project aim origin onto AimComponent if we aren't focusing self so we don't catch things behind the character
-	const FVector Pivot = GetComponentLocation();
-	const FVector Offset = GetForwardVector() * ForwardAimDistance;
-	const FVector Origin = Location + Direction * ((Pivot + Offset - Location) | Direction) * (1.0f - SelfAimWeight);
+	// Query targets from input view
+	FTGOR_AimQueryParams Params;
+	//TSubclassOf<UTGOR_Target> Filter = GetAimFilter();
+	FVector Origin = Location;
 
-	// Get filter from current handles
-	TSubclassOf<UTGOR_Target> Filter = GetAimFilter();
+	if (bIgnoreBehindAim)
+	{
+		// Project aim origin onto AimComponent if we aren't focusing self so we don't catch things behind the character
+		const FVector Pivot = GetComponentLocation();
+		const FVector Offset = GetForwardVector() * ForwardAimDistance;
+		Origin += Direction * ((Pivot + Offset - Location) | Direction);
+	}
 
 	// Query all candidates for matches
 	Points.Empty();
-	for (UTGOR_InteractableComponent* Candidate : Candidates)
+	for (UTGOR_AimTargetComponent* Candidate : Candidates)
 	{
 		// Adapt starting weight depending on whether target is owner
 		const AActor* SelfOwner = GetOwner();
@@ -170,16 +172,14 @@ void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVec
 			// Grab all target points
 			for (UTGOR_Target* Target : Candidate->Targets)
 			{
-				if (IsValid(Target) && Target->IsA(Filter))
+				if (IsValid(Target) && (!*Filter || Target->IsA(Filter)))
 				{
-					FTGOR_AimPoint Point;
-					Point.Target = Target;
-					if (Target->SearchTarget(Candidate, Origin, Direction, MaxAimDistance, Point))
+					FTGOR_WeightedAimPoint WeightedPoint;
+					WeightedPoint.Point.Target = Target;
+					if (Target->SearchTarget(Candidate, Origin, Direction, MaxAimDistance, WeightedPoint.Point))
 					{
-						FTGOR_WeightedPoint WeightedPoint;
-						WeightedPoint.Point = Point;
 						WeightedPoint.Weight = Weight * Target->Importance;
-						WeightedPoint.Direction = UTGOR_Math::Normalize(Point.Center - Location);
+						WeightedPoint.Direction = UTGOR_Math::Normalize(WeightedPoint.Point.Center - Origin);
 						Points.Add(WeightedPoint);
 					}
 				}
@@ -187,22 +187,21 @@ void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVec
 		}
 	}
 
-	// Filter targets that are too close
+	// Filter targets that are too close to each other
 	for (auto It = Points.CreateIterator(); It; ++It)
 	{
 		const FVector& Reference = It->Direction;
 
-		for (const FTGOR_WeightedPoint& Point : Points)
+		for (const FTGOR_WeightedAimPoint& Point : Points)
 		{
 			const float Angle = Point.Direction | Reference;
-			if (Angle < AngleThreshold && It->Point.Target->Importance < Point.Point.Target->Importance)
+			if (!IsValid(It->Point.Target) || (Angle < AngleThreshold && It->Point.Target->Importance < Point.Point.Target->Importance))
 			{
 				It.RemoveCurrent();
 				break;
 			}
 		}
 	}
-
 
 	// Make sure any points have been found
 	if (Points.Num() > 0)
@@ -211,7 +210,7 @@ void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVec
 		float Total = 0.0f;
 		for (int32 i = 0; i < Points.Num(); i++)
 		{
-			FTGOR_WeightedPoint& Own = Points[i];
+			FTGOR_WeightedAimPoint& Own = Points[i];
 			for (int32 j = 0; j < Points.Num(); j++)
 			{
 				FTGOR_AimPoint& Their = Points[j].Point;
@@ -227,7 +226,7 @@ void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVec
 		// Normalize and find best point (Default to first found)
 		if (Total >= SMALL_NUMBER)
 		{
-			for (FTGOR_WeightedPoint& Point : Points)
+			for (FTGOR_WeightedAimPoint& Point : Points)
 			{
 				Point.Weight /= Total;
 			}
@@ -238,11 +237,11 @@ void UTGOR_AimComponent::UpdateAimFromCamera(const FVector& Location, const FVec
 		}
 
 		// Sort points by weight, highest first
-		Points.Sort([](const FTGOR_WeightedPoint& A, const FTGOR_WeightedPoint& B)->bool {return(A.Weight > B.Weight); });
+		Points.Sort([](const FTGOR_WeightedAimPoint& A, const FTGOR_WeightedAimPoint& B)->bool {return(A.Weight > B.Weight); });
 
 		// Create actual AimInstance
 		const FTGOR_AimPoint& BestPoint = Points[0].Point;
-		if (ConsiderOutOfRange || BestPoint.Distance < 1.0f)
+		if (bConsiderOutOfRange || BestPoint.Distance < 1.0f)
 		{
 			if (BestPoint.Target->ComputeTarget(BestPoint, Origin, Direction, MaxAimDistance, AimInstance))
 			{
@@ -331,12 +330,12 @@ TSubclassOf<UTGOR_Target> UTGOR_AimComponent::GetAimFilter() const
 	return Filter;
 }
 
-TArray<UTGOR_InteractableComponent*> UTGOR_AimComponent::GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const
+TArray<UTGOR_AimTargetComponent*> UTGOR_AimComponent::GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const
 {
 	// TODO: Use heap structure for better performance
 	// Find matching candidates
-	TArray<TPair<UTGOR_InteractableComponent*, float>> CandidateDistances;
-	for (UTGOR_InteractableComponent* Candidate : Candidates)
+	TArray<TPair<UTGOR_AimTargetComponent*, float>> CandidateDistances;
+	for (UTGOR_AimTargetComponent* Candidate : Candidates)
 	{
 		const float DistanceSqr = (Candidate->GetComponentLocation() - GetComponentLocation()).SizeSquared();
 		if (DistanceSqr < MaxDistance * MaxDistance && Candidate->Targets.ContainsByPredicate([Type](UTGOR_Target* Target) { return Target->IsA(Type); }))
@@ -349,7 +348,7 @@ TArray<UTGOR_InteractableComponent*> UTGOR_AimComponent::GetNearbyCandidates(TSu
 	CandidateDistances.Sort([](const auto& A, const auto& B) { return A.Value < B.Value; });
 
 	// Compile output interactions
-	TArray<UTGOR_InteractableComponent*> Output;
+	TArray<UTGOR_AimTargetComponent*> Output;
 	for (const auto& Pair : CandidateDistances)
 	{
 		Output.Emplace(Pair.Key);

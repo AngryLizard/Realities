@@ -3,7 +3,7 @@
 #include "TGOR_SplineTarget.h"
 #include "Engine/Classes/Components/SplineComponent.h"
 
-#include "../Components/TGOR_InteractableComponent.h"
+#include "../Components/TGOR_AimTargetComponent.h"
 
 UTGOR_SplineTarget::UTGOR_SplineTarget()
 :	Super(),
@@ -13,7 +13,7 @@ UTGOR_SplineTarget::UTGOR_SplineTarget()
 	Importance = 0.5f;
 }
 
-bool UTGOR_SplineTarget::OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SplineTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -42,7 +42,7 @@ bool UTGOR_SplineTarget::OverlapTarget(UTGOR_InteractableComponent* Component, c
 	return false;
 }
 
-bool UTGOR_SplineTarget::SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SplineTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 

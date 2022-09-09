@@ -2,7 +2,7 @@
 
 #include "TGOR_WorldTarget.h"
 
-#include "TargetSystem/Components/TGOR_InteractableComponent.h"
+#include "TargetSystem/Components/TGOR_AimTargetComponent.h"
 #include "DrawDebugHelpers.h"
 
 UTGOR_WorldTarget::UTGOR_WorldTarget()
@@ -11,7 +11,7 @@ UTGOR_WorldTarget::UTGOR_WorldTarget()
 	Importance = 0.1f;
 }
 
-bool UTGOR_WorldTarget::OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_WorldTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -21,7 +21,7 @@ bool UTGOR_WorldTarget::OverlapTarget(UTGOR_InteractableComponent* Component, co
 	return true;
 }
 
-bool UTGOR_WorldTarget::SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_WorldTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -46,7 +46,7 @@ bool UTGOR_WorldTarget::SearchTarget(UTGOR_InteractableComponent* Component, con
 
 bool UTGOR_WorldTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const
 {
-	UTGOR_InteractableComponent* Component = Cast<UTGOR_InteractableComponent>(Point.Component.Get());
+	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Point.Component.Get());
 	if (IsValid(Component))
 	{
 		// Use interactable itself
@@ -65,7 +65,7 @@ bool UTGOR_WorldTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector
 
 FVector UTGOR_WorldTarget::QueryAimLocation(const FTGOR_AimInstance& Instance) const
 {
-	UTGOR_InteractableComponent* Component = Cast<UTGOR_InteractableComponent>(Instance.Component.Get());
+	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 	if (IsValid(Component))
 	{
 		const FTransform Transform = Component->GetComponentTransform();
@@ -78,8 +78,8 @@ FVector UTGOR_WorldTarget::QueryAimLocation(const FTGOR_AimInstance& Instance) c
 	return FVector::ZeroVector;
 }
 
-UTGOR_InteractableComponent* UTGOR_WorldTarget::QueryInteractable(const FTGOR_AimInstance& Instance) const
+UTGOR_AimTargetComponent* UTGOR_WorldTarget::QueryInteractable(const FTGOR_AimInstance& Instance) const
 {
-	return Cast<UTGOR_InteractableComponent>(Instance.Component.Get());
+	return Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 }
 

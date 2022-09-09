@@ -139,13 +139,13 @@ struct TARGETSYSTEM_API FTGOR_AimPoint
 {
 	GENERATED_USTRUCT_BODY()
 
-		FTGOR_AimPoint();
+		FTGOR_AimPoint() {}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Target class */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Target* Target;
+		UTGOR_Target* Target = nullptr;
 
 	/** Target Component */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -153,9 +153,32 @@ struct TARGETSYSTEM_API FTGOR_AimPoint
 
 	/** Target distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Distance;
+		float Distance = 0.0f;
 
 	/** Target center */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector Center;
+		FVector Center = FVector::ZeroVector;
+};
+
+/**
+*
+*/
+USTRUCT(BlueprintType)
+struct FTGOR_WeightedAimPoint
+{
+	GENERATED_USTRUCT_BODY()
+
+		FTGOR_WeightedAimPoint() {}
+
+	/** Point to be weighted */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FTGOR_AimPoint Point;
+
+	/** Weight of the point */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Weight = 1.0f;
+
+	/** Direction of the point to origin */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector Direction = FVector::ZeroVector;
 };

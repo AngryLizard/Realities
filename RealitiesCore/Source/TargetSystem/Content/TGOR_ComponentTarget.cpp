@@ -2,33 +2,31 @@
 
 #include "TGOR_ComponentTarget.h"
 
-#include "../Components/TGOR_InteractableComponent.h"
+#include "../Components/TGOR_AimTargetComponent.h"
 
 UTGOR_ComponentTarget::UTGOR_ComponentTarget()
-:	Super(),
-	Offset(FVector::ZeroVector),
-	DistanceThreshold(150.0f)
+:	Super()
 {
 	Importance = 1.0f;
 }
 
-bool UTGOR_ComponentTarget::OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_ComponentTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
+	const float ScaledThreshold = Component->TargetRadius * DistanceThreshold * Component->GetComponentScale().GetMax();
 
 	Point.Component = Component;
 
 	// When overlapping we take the interactable radius into consideration
-	const float Radius = Component->GetScaledSphereRadius();
 	const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
-	return ComputeDistance(Transform.GetLocation(), Origin, MaxDistance + Radius, Point);
+	return ComputeDistance(Transform.GetLocation(), Origin, MaxDistance + ScaledThreshold, Point);
 }
 
 
-bool UTGOR_ComponentTarget::SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_ComponentTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
-	const float ScaledThreshold = DistanceThreshold * Component->GetComponentScale().GetMax();
+	const float ScaledThreshold = Component->TargetRadius * DistanceThreshold * Component->GetComponentScale().GetMax();
 
 	Point.Component = Component;
 
@@ -37,13 +35,13 @@ bool UTGOR_ComponentTarget::SearchTarget(UTGOR_InteractableComponent* Component,
 
 	// Project onto view plane and transform to relative offset
 	const FVector Relative = ComputeProject(Point.Center, Origin, Direction);
-	Point.Distance = Relative.Size() / DistanceThreshold;
+	Point.Distance = Relative.Size() / ScaledThreshold;
 	return Point.Distance < 1.0f;
 }
 
 bool UTGOR_ComponentTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const
 {
-	UTGOR_InteractableComponent* Component = Cast<UTGOR_InteractableComponent>(Point.Component.Get());
+	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Point.Component.Get());
 	if (IsValid(Component))
 	{
 		// Use interactable itself
@@ -62,7 +60,7 @@ bool UTGOR_ComponentTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVe
 
 FVector UTGOR_ComponentTarget::QueryAimLocation(const FTGOR_AimInstance& Instance) const
 {
-	UTGOR_InteractableComponent* Component = Cast<UTGOR_InteractableComponent>(Instance.Component.Get());
+	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 	if (IsValid(Component))
 	{
 		const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
@@ -77,7 +75,7 @@ FVector UTGOR_ComponentTarget::QueryAimLocation(const FTGOR_AimInstance& Instanc
 
 FVector UTGOR_ComponentTarget::QueryStickyLocation(const FTGOR_AimInstance& Instance) const
 {
-	UTGOR_InteractableComponent* Component = Cast<UTGOR_InteractableComponent>(Instance.Component.Get());
+	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 	if (IsValid(Component))
 	{
 		const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
@@ -90,7 +88,7 @@ FVector UTGOR_ComponentTarget::QueryStickyLocation(const FTGOR_AimInstance& Inst
 	return FVector::ZeroVector;
 }
 
-UTGOR_InteractableComponent* UTGOR_ComponentTarget::QueryInteractable(const FTGOR_AimInstance& Instance) const
+UTGOR_AimTargetComponent* UTGOR_ComponentTarget::QueryInteractable(const FTGOR_AimInstance& Instance) const
 {
-	return Cast<UTGOR_InteractableComponent>(Instance.Component.Get());
+	return Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 }

@@ -8,10 +8,10 @@
 
 #include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_DimensionInterface.h"
-#include "TGOR_AimTargetComponent.h"
+#include "Components/ArrowComponent.h"
 #include "TGOR_AimComponent.generated.h"
 
-class UTGOR_InteractableComponent;
+class UTGOR_AimTargetComponent;
 
 ////////////////////////////////////////////// STRUCT //////////////////////////////////////////////////////
 
@@ -33,35 +33,12 @@ struct FTGOR_AimSuspensionHandle
 		TSubclassOf<UTGOR_Target> Filter;
 };
 
-/**
-*
-*/
-USTRUCT(BlueprintType)
-struct FTGOR_WeightedPoint
-{
-	GENERATED_USTRUCT_BODY()
-
-	FTGOR_WeightedPoint();
-
-	/** Point to be weighted */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FTGOR_AimPoint Point;
-
-	/** Weight of the point */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float Weight = 1.0f;
-
-	/** Direction of the point to origin */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector Direction = FVector::ZeroVector;
-};
-
 
 /**
 * TGOR_AimComponent adds aiming functionality to an actor
 */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class TARGETSYSTEM_API UTGOR_AimComponent : public UTGOR_AimTargetComponent, public ITGOR_DimensionInterface
+class TARGETSYSTEM_API UTGOR_AimComponent : public UArrowComponent, public ITGOR_DimensionInterface
 {
 	GENERATED_BODY()
 
@@ -86,7 +63,7 @@ public:
 
 	/** Query current candidates for targets from camera */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		void UpdateAimFromCamera(const FVector& Location, const FVector& Direction);
+		void UpdateAimFromCamera(const FVector& Location, const FVector& Direction, TSubclassOf<UTGOR_Target> Filter = nullptr);
 
 	/** Compute current aim location in world space */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
@@ -110,7 +87,7 @@ public:
 
 	/** Get nearby targets according to distance to aim-component */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		TArray<UTGOR_InteractableComponent*> GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const;
+		TArray<UTGOR_AimTargetComponent*> GetNearbyCandidates(TSubclassOf<UTGOR_Target> Type, float MaxDistance) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -132,11 +109,11 @@ protected:
 
 	/** Current interaction candidates */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		TArray<UTGOR_InteractableComponent*> Candidates;
+		TArray<UTGOR_AimTargetComponent*> Candidates;
 
 	/** Current aim points */
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		TArray<FTGOR_WeightedPoint> Points;
+		TArray<FTGOR_WeightedAimPoint> Points;
 
 	/** Replicate aimtuple */
 	UFUNCTION()
@@ -148,27 +125,35 @@ protected:
 
 	/** Angle threshold in radians for when points are discarded */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		float AngleThreshold;
+		float AngleThreshold = 0.05f;
 
-	/** Weight of own component for targets */
+	/** Weight modifier for components by owning actor */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		float SelfAimWeight;
+		float SelfAimWeight = 1.0f;
 
 	/** Maximum aim distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		float MaxAimDistance;
+		float MaxAimDistance = 10000.0f;
+
+	/** Whether this component updates aim automatically */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
+		bool bAutoUpdateAim = false;
+
+	/** Whether only targets in front of this aim component are gathered */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
+		bool bIgnoreBehindAim = false;
 
 	/** Distance in front of character to ignore when aiming from behind */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		float ForwardAimDistance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++", EditCondition = "bIgnoreBehindAim"))
+		float ForwardAimDistance = 250.0f;
 
 	/** Set AimDistance to best weighted target even if they are out of range */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		bool ConsiderOutOfRange;
+		bool bConsiderOutOfRange = false;
 
 	/** Camera trace type */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
-		TEnumAsByte<ECollisionChannel> CameraTrace;
+		TEnumAsByte<ECollisionChannel> CameraTrace = ECC_GameTraceChannel1;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

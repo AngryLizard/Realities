@@ -2,7 +2,7 @@
 
 #include "TGOR_BoneTarget.h"
 
-#include "TargetSystem/Components/TGOR_InteractableComponent.h"
+#include "TargetSystem/Components/TGOR_AimTargetComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
 UTGOR_BoneTarget::UTGOR_BoneTarget()
@@ -16,7 +16,7 @@ UTGOR_BoneTarget::UTGOR_BoneTarget()
 }
 
 
-bool UTGOR_BoneTarget::OverlapTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_BoneTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -42,7 +42,7 @@ bool UTGOR_BoneTarget::OverlapTarget(UTGOR_InteractableComponent* Component, con
 	return false;
 }
 
-bool UTGOR_BoneTarget::SearchTarget(UTGOR_InteractableComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_BoneTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 

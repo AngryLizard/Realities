@@ -159,11 +159,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		UTGOR_MovementTask* GetMovementTask() const;
 
-	/** Check whether a given pilot is attached */
+	/** Check whether a given movement is ative */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		bool IsMovingWith(int32 Identifier) const;
 
-	/** Set which pilot we're attaching to */
+	/** Set which movement should currently be active */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
 		void MoveWith(int32 Identifier);
 

@@ -76,6 +76,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "DialogueSystem",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "DimensionSystem",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
