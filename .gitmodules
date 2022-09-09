@@ -1,0 +1,6 @@
+[submodule "RealitiesAnimation"]
+	path = RealitiesAnimation
+	url = https://github.com/AngryLizard/RealitiesAnimation
+[submodule "RealitiesRendering"]
+	path = RealitiesRendering
+	url = https://github.com/AngryLizard/RealitiesRendering
