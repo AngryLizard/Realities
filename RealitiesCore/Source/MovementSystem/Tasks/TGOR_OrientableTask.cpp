@@ -18,9 +18,12 @@ UTGOR_OrientableTask::UTGOR_OrientableTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_OrientableTask::Initialise()
+bool UTGOR_OrientableTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	UTGOR_AnimationLibrary::GetHandleComponents(Primitives, Identifier.Component->GetOwner(), PrimitiveTypes, true);
 
@@ -30,6 +33,7 @@ void UTGOR_OrientableTask::Initialise()
 		LocalUpVector -= Primitive->MovementCone->GetAlignmentDirection(FVector2D::ZeroVector);
 	}
 	LocalUpVector.Normalize();
+	return true;
 }
 
 bool UTGOR_OrientableTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

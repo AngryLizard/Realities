@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 
-#include "TGOR_TouchableComponent.h"
-#include "TGOR_ChainTouchableComponent.generated.h"
+#include "TGOR_ActivatorComponent.h"
+#include "TGOR_ChainActivatorComponent.generated.h"
 
 USTRUCT(BlueprintType)
 struct FTGOR_ChainCurve
@@ -16,22 +16,23 @@ struct FTGOR_ChainCurve
 		FTransform Transform;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Interaction")
-		float Tangent;
+		float Tangent = 0.0f;
 };
 
 /**
- * UTGOR_ChainTouchableComponent
+ * UTGOR_ChainActivatorComponent
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class DIALOGUESYSTEM_API UTGOR_ChainTouchableComponent : public UTGOR_TouchableComponent
+class DIALOGUESYSTEM_API UTGOR_ChainActivatorComponent : public UTGOR_ActivatorComponent
 {
 	GENERATED_BODY()
 
 public:
-	UTGOR_ChainTouchableComponent();
+	UTGOR_ChainActivatorComponent();
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	virtual FTransform GetTargetTransform() const override;
+	virtual FVector WorldToTarget(const FVector& Location) const override;
+	virtual FVector TargetToWorld(const FVector& Local) const override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -72,19 +73,8 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	/** How full this chain link is */
-	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Interaction")
-		float Fillment;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
-
-	/** Get current world transform of the curve state*/
-	UFUNCTION(BlueprintPure, Category = "!TGOR Interaction", Meta = (Keywords = "C++"))
-		FTransform GetCurrentCurveTransform() const;
-
-	UTGOR_ChainTouchableComponent* FindChainLink(const FName& Name) const;
-	static void GetCurve(const UTGOR_ChainTouchableComponent* PrevLink, const UTGOR_ChainTouchableComponent* NextLink, FTGOR_ChainCurve& From, FTGOR_ChainCurve& To);
+	UTGOR_ChainActivatorComponent* FindChainLink(const FName& Name) const;
+	static void GetCurve(const UTGOR_ChainActivatorComponent* PrevLink, const UTGOR_ChainActivatorComponent* NextLink, FTGOR_ChainCurve& From, FTGOR_ChainCurve& To);
 	void GetPrevCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const;
 	void GetNextCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const;
 
@@ -103,28 +93,6 @@ private:
 
 	/** Ordered list of chain links in this branch */
 	UPROPERTY()
-		TArray<UTGOR_ChainTouchableComponent*> ChainCache;
-
-	/** Current chain position of interaction */
-	UPROPERTY()
-		float ChainPosition = 0.f;
-
-	/** Current chain velocity of interaction */
-	UPROPERTY()
-		float ChainVelocity = 0.f;
-
-	/** Currently accumulated applied force */
-	UPROPERTY()
-		float ChainForce = 0.f;
-
-
-	UPROPERTY()
-		UTGOR_ChainTouchableComponent* CurrentFromLink = nullptr;
-
-	UPROPERTY()
-		UTGOR_ChainTouchableComponent* CurrentToLink = nullptr;
-
-	UPROPERTY()
-		float CurrentCurveTime = 0.f;
+		TArray<UTGOR_ChainActivatorComponent*> ChainCache;
 };
 

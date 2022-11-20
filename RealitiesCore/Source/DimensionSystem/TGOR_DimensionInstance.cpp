@@ -94,7 +94,7 @@ bool FTGOR_DimensionRequestEntry::NetSerialize(FArchive& Ar, class UPackageMap* 
 	bOutSuccess = true;
 
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE
+	SERIALISE_INIT_SOURCE();
 	SERIALISE_MASK_SOURCE(Content, Dimension);
 
 	return(bOutSuccess);

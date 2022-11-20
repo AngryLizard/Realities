@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 
 #include "CoreSystem/Storage/TGOR_PackageGroup.h"
 #include "CoreSystem/Storage/TGOR_PackageNetwork.h"
@@ -18,7 +19,7 @@ USTRUCT(BlueprintType)
 struct FTGOR_MatterContainer
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
@@ -51,7 +52,7 @@ USTRUCT(BlueprintType)
 struct FTGOR_MatterContainers
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);

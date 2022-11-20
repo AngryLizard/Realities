@@ -25,14 +25,14 @@ TArray<UTGOR_CoreContent*> UTGOR_ActionSlotQuery::QueryContent() const
 	return Contents;
 }
 
-void UTGOR_ActionSlotQuery::AssignComponent(UTGOR_ActionComponent* ActionComponent, TSubclassOf<UTGOR_Action> Type, bool CheckCanCall)
+void UTGOR_ActionSlotQuery::AssignComponent(UTGOR_ActionComponent* ActionComponent, TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim, bool CheckCanCall)
 {
 	OwnerComponent = ActionComponent;
 
 	if (IsValid(OwnerComponent))
 	{
 		// Get callables
-		SlotIdentifiers = ActionComponent->GetCallableActionIdentifiers(Type, CheckCanCall);
+		SlotIdentifiers = ActionComponent->GetCallableActionIdentifiers(Type, Aim, CheckCanCall);
 
 		// Call and initialise initial selection
 		InitialiseSelection(0);

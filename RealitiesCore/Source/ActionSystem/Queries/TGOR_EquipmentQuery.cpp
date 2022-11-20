@@ -34,7 +34,7 @@ void UTGOR_EquipmentQuery::Assign(UTGOR_ActionComponent* ActionComponent, TSubcl
 	*/
 
 	// Only fail if there are no actions to go by
-	const TArray<int32> Identifiers = ActionComponent->GetCallableActionIdentifiers(Type, false);
+	const TArray<int32> Identifiers = ActionComponent->GetCallableActionIdentifiers(Type, FTGOR_AimInstance(), false);
 
 	const int32 Size = Identifiers.Num();
 	if (Size > 0)

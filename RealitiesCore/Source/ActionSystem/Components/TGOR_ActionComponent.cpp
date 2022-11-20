@@ -66,6 +66,24 @@ void UTGOR_ActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	// Autotrigger actions that could have higher priority than currently running
+	const int32 LastIndex = ActionSlots.IsValidIndex(ActionState.ActiveSlot) ? ActionState.ActiveSlot : ActionSlots.Num();
+	for (int32 Slot = 0; Slot < LastIndex; Slot++)
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
+		if (IsValid(ActionSlot))
+		{
+			UTGOR_Action* Action = ActionSlot->GetAction();
+			if (IsValid(Action) &&
+				Action->AutoTrigger &&
+				ActionSlot->CanCall(ActionState.Aim))
+			{
+				ScheduleSlotAction(Slot, ActionState.Aim);
+				break;
+			}
+		}
+	}
+
 	// Update currently scheduled action
 	if (ActionSlots.IsValidIndex(ActionState.ActiveSlot))
 	{
@@ -79,9 +97,6 @@ void UTGOR_ActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 			const float Timestep = UpdateActionTimestamp();
 			if (Timestep >= SMALL_NUMBER)
 			{
-				// Make sure context is up to date with provided aim
-				ActionSlot->Context(ActionState.Aim);
-
 				ETGOR_ActionStateEnumeration OldState = ActionState.State;
 				if (ActionSlot->Update(ActionState, Timestep))
 				{
@@ -207,6 +222,71 @@ TArray<UTGOR_Modifier*> UTGOR_ActionComponent::QueryActiveModifiers_Implementati
 	return Modifiers;
 }
 
+bool UTGOR_ActionComponent::TestAimTarget_Implementation(const FTGOR_AimInstance& Aim)
+{
+	// Check currently running
+	if (IsRunningAny())
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[ActionState.ActiveSlot];
+
+		const bool hasValidAim = ActionSlot->CheckAim(ActionState.Aim, Aim);
+		if (hasValidAim || ActionSlot->ConsumeAimCheck())
+		{
+			return hasValidAim;
+		}
+	}
+
+	// Look for fitting action type
+	for (int32 Slot = 0; Slot < ActionSlots.Num(); Slot++)
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
+		if (!IsValid(ActionSlot))
+		{
+			continue;
+		}
+
+		UTGOR_Action* Action = ActionSlot->GetAction();
+		if (IsValid(Action) && 
+			Action->HasTargetCondition() && 
+			ActionSlot->CanCall(Aim))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UTGOR_ActionComponent::ApplyAimTarget_Implementation(const FTGOR_AimInstance& Aim)
+{
+	if (IsRunningAny())
+	{
+		UTGOR_ActionTask* ActionSlot = ActionSlots[ActionState.ActiveSlot];
+
+		ETGOR_ActionStateEnumeration OldState = ActionState.State;
+		if (ActionSlot->Context(ActionState, Aim, false))
+		{
+			// Replicate state immediately if changed
+			if (OldState != ActionState.State)
+			{
+				const ENetRole NetRole = GetOwnerRole();
+				if (NetRole == ENetRole::ROLE_AutonomousProxy)
+				{
+					SendState(ActionState);
+				}
+				else if (NetRole == ENetRole::ROLE_Authority)
+				{
+					// Make sure clients are updated asap
+					ForceReplication();
+				}
+			}
+		}
+		return;
+	}
+
+	// Update state so we properly run auto trigger actions. No need to replicate.
+	ActionState.Aim = Aim;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UTGOR_ActionComponent::ForceReplication()
@@ -220,8 +300,7 @@ void UTGOR_ActionComponent::ForceReplication()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-bool UTGOR_ActionComponent::ScheduleActionType(TSubclassOf<UTGOR_Action> Type)
+bool UTGOR_ActionComponent::ScheduleActionType(TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim)
 {
 	SINGLETON_RETCHK(false);
 
@@ -232,22 +311,26 @@ bool UTGOR_ActionComponent::ScheduleActionType(TSubclassOf<UTGOR_Action> Type)
 	for (int32 Slot = 0; Slot < ActionSlots.Num(); Slot++)
 	{
 		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
-		if (IsValid(ActionSlot))
+		if (!IsValid(ActionSlot))
 		{
-			UTGOR_Action* Action = ActionSlot->GetAction();
-			if (IsValid(Action) && Action->IsA(Type))
-			{
-				const float Duration = ActionSlot->GetTimeSinceLastCall();
-				if (ActionSlot->CanCall() && (Identifier == INDEX_NONE || Duration < Last))
-				{
-					Identifier = Slot;
-					Last = Duration;
-				}
-			}
+			continue;
+		}
+
+		UTGOR_Action* Action = ActionSlot->GetAction();
+		if (!IsValid(Action) || !Action->IsA(Type))
+		{
+			continue;
+		}
+
+		const float Duration = ActionSlot->GetTimeSinceLastCall();
+		if (ActionSlot->CanCall(Aim) && (Identifier == INDEX_NONE || Duration < Last))
+		{
+			Identifier = Slot;
+			Last = Duration;
 		}
 	}
 
-	return ScheduleSlotAction(Identifier);
+	return ScheduleSlotAction(Identifier, Aim, false);
 }
 
 bool UTGOR_ActionComponent::IsRunningActionType(TSubclassOf<UTGOR_Action> Type) const
@@ -287,9 +370,9 @@ int32 UTGOR_ActionComponent::GetCurrentActionSlotIdentifier() const
 	return ActionState.ActiveSlot;
 }
 
-bool UTGOR_ActionComponent::ScheduleSlotAction(int32 Identifier)
+bool UTGOR_ActionComponent::ScheduleSlotAction(int32 Identifier, const FTGOR_AimInstance& Aim, bool Rerun)
 {
-	if (RunSlotAction(Identifier, false))
+	if (RunSlotAction(Identifier, Aim, false, Rerun))
 	{
 		if (IsServer())
 		{
@@ -420,20 +503,20 @@ UTGOR_Action* UTGOR_ActionComponent::GetAction(int32 Identifier) const
 	return nullptr;
 }
 
-bool UTGOR_ActionComponent::CollectDebugInfo(int32 Identifier, float Duration, FTGOR_ActionDebugInfo& Info) const
+bool UTGOR_ActionComponent::CollectDebugInfo(int32 Identifier, const FTGOR_AimInstance& Aim, float Duration, FTGOR_ActionDebugInfo& Info) const
 {
 	if (ActionSlots.IsValidIndex(Identifier))
 	{
 		UTGOR_ActionTask* ActionSlot = ActionSlots[Identifier];
 		if (IsValid(ActionSlot))
 		{
-			return ActionSlot->CollectDebugInfo(Duration, Info);
+			return ActionSlot->CollectDebugInfo(Aim, Duration, Info);
 		}
 	}
 	return false;
 }
 
-void UTGOR_ActionComponent::CollectDebugInfos(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const
+void UTGOR_ActionComponent::CollectDebugInfos(const FTGOR_AimInstance& Aim, float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const
 {
 	const int32 SlotNum = ActionSlots.Num();
 	for (int32 Slot = 0; Slot < SlotNum; Slot++)
@@ -442,7 +525,7 @@ void UTGOR_ActionComponent::CollectDebugInfos(float Duration, TArray<FTGOR_Actio
 		if (IsValid(ActionSlot))
 		{
 			FTGOR_ActionDebugInfo Info;
-			if (ActionSlot->CollectDebugInfo(Duration, Info))
+			if (ActionSlot->CollectDebugInfo(Aim, Duration, Info))
 			{
 				Infos.Emplace(Info);
 			}
@@ -450,7 +533,7 @@ void UTGOR_ActionComponent::CollectDebugInfos(float Duration, TArray<FTGOR_Actio
 	}
 }
 
-TArray<int32> UTGOR_ActionComponent::GetCallableActionIdentifiers(TSubclassOf<UTGOR_Action> Type, bool CheckCanCall)
+TArray<int32> UTGOR_ActionComponent::GetCallableActionIdentifiers(TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim, bool CheckCanCall)
 {
 	TArray<int32> Identifiers;
 	if (!*Type) return Identifiers;
@@ -461,7 +544,7 @@ TArray<int32> UTGOR_ActionComponent::GetCallableActionIdentifiers(TSubclassOf<UT
 		if (IsValid(ActionSlot))
 		{
 			UTGOR_Action* Action = ActionSlot->GetAction();
-			if (IsValid(Action) && Action->IsA(Type) && (!CheckCanCall || ActionSlot->CanCall()))
+			if (IsValid(Action) && Action->IsA(Type) && (!CheckCanCall || ActionSlot->CanCall(Aim)))
 			{
 				Identifiers.Emplace(Slot);
 			}
@@ -470,7 +553,7 @@ TArray<int32> UTGOR_ActionComponent::GetCallableActionIdentifiers(TSubclassOf<UT
 	return Identifiers;
 }
 
-TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Action* Action, bool CheckCanCall)
+TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Action* Action, const FTGOR_AimInstance& Aim, bool CheckCanCall)
 {
 	TArray<int32> Identifiers;
 	if (!IsValid(Action)) return Identifiers;
@@ -480,7 +563,7 @@ TArray<int32> UTGOR_ActionComponent::GetCallableSubactionIdentifiers(UTGOR_Actio
 		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
 		if (IsValid(ActionSlot))
 		{
-			if (Action->Instanced_ChildInsertions.Contains(ActionSlot->GetAction()) && (!CheckCanCall || ActionSlot->CanCall()))
+			if (Action->Instanced_ChildInsertions.Contains(ActionSlot->GetAction()) && (!CheckCanCall || ActionSlot->CanCall(Aim)))
 			{
 				Identifiers.Emplace(Slot);
 			}
@@ -715,7 +798,7 @@ void UTGOR_ActionComponent::FastForwardState(const FTGOR_ActionState& TargetStat
 		if (!IsSameAction)
 		{
 			// Need to schedule so forwarding works
-			RunSlotAction(TargetState.ActiveSlot, true);
+			RunSlotAction(TargetState.ActiveSlot, TargetState.Aim, true, false);
 		}
 
 		// Forward action state
@@ -743,7 +826,7 @@ void UTGOR_ActionComponent::FastForwardState(const FTGOR_ActionState& TargetStat
 	}
 }
 
-bool UTGOR_ActionComponent::RunSlotAction(int32 Identifier, bool Force)
+bool UTGOR_ActionComponent::RunSlotAction(int32 Identifier, const FTGOR_AimInstance& Aim, bool Force, bool Rerun)
 {
 	SINGLETON_RETCHK(false);
 
@@ -753,7 +836,7 @@ bool UTGOR_ActionComponent::RunSlotAction(int32 Identifier, bool Force)
 		if (IsValid(ActionSlot))
 		{
 			// Check whether this action can be called at all
-			if (Force || ActionSlot->CanCall())
+			if (Force || ActionSlot->CanCall(Aim))
 			{
 				// Make sure to terminate previous action
 				if (ActionSlots.IsValidIndex(ActionState.ActiveSlot))
@@ -761,7 +844,7 @@ bool UTGOR_ActionComponent::RunSlotAction(int32 Identifier, bool Force)
 					UTGOR_ActionTask* OtherSlot = ActionSlots[ActionState.ActiveSlot];
 					if (IsValid(OtherSlot))
 					{
-						if (ActionState.ActiveSlot == Identifier)
+						if (ActionState.ActiveSlot == Identifier && !Rerun)
 						{
 							// No need to run what's already running
 							OtherSlot->LogActionMessage("RunSlotAction", "Tried to rerun same action");
@@ -774,10 +857,7 @@ bool UTGOR_ActionComponent::RunSlotAction(int32 Identifier, bool Force)
 				}
 
 				// Actually schedule action
-				ActionSlot->Prepare(ActionState);
-
-				// Make sure context is up to date
-				ActionSlot->Context(ActionState.Aim);
+				ActionSlot->Prepare(ActionState, Aim);
 				return true;
 			}
 			else if(!Force)
@@ -809,11 +889,8 @@ void UTGOR_ActionComponent::SendState_Implementation(FTGOR_ActionState State)
 			// Schedule new action if we're not running it yet
 			if (!ActionSlot->IsRunning())
 			{
-				// We only take properties from client if action isn't already running
-				ActionSlot->Context(State.Aim);
-
 				// Schedule action on server
-				if (!ScheduleSlotAction(State.ActiveSlot))
+				if (!ScheduleSlotAction(State.ActiveSlot, State.Aim))
 				{
 					// Owned client apparently is getting wrong ideas, scold them back into place
 					// (This way replication is forced whether or not new action is scheduled)
@@ -834,7 +911,7 @@ void UTGOR_ActionComponent::SendState_Implementation(FTGOR_ActionState State)
 	}
 	else if (IsRunningAny())
 	{
-		ScheduleSlotAction(INDEX_NONE);
+		ScheduleSlotAction(INDEX_NONE, FTGOR_AimInstance());
 	}
 	
 }
@@ -867,46 +944,17 @@ void UTGOR_ActionComponent::SetInput(TSubclassOf<UTGOR_Input> InputType, float V
 {
 	bool HasHandledAction = false;
 
-	if (ActionSlots.IsValidIndex(ActionState.ActiveSlot))
-	{
-
-	}
-
 	const int32 SlotNum = ActionSlots.Num();
 	for (int32 Slot = 0; Slot < SlotNum; Slot++)
 	{
 		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
 		if (IsValid(ActionSlot))
 		{
-			if (ActionSlot->UpdateInput(InputType, Value, !HasHandledAction))
+			if (ActionSlot->UpdateInput(InputType, ActionState.Aim, Value, !HasHandledAction))
 			{
 				// Only trigger one new action
 				HasHandledAction = true;
 			}
-		}
-	}
-
-}
-
-void UTGOR_ActionComponent::UpdateContext(const FTGOR_AimInstance& Aim)
-{
-	// TODO: Could do something fancy here like filter by target content
-	// (though that would break range constraints and there is seemingly no gain to doing that currently)
-	const int32 SlotNum = ActionSlots.Num();
-	for (int32 Slot = 0; Slot < SlotNum; Slot++)
-	{
-		UTGOR_ActionTask* ActionSlot = ActionSlots[Slot];
-		if (IsValid(ActionSlot))
-		{
-			ActionSlot->Context(Aim);
-
-			/* Make exception for weapons where target changes continuously.
-			* Need to replicate this to server efficiently. For now actions can just use the current aim component for targets that don't need a handshake.
-			if (Slot == ActionState.ActiveSlot)
-			{
-				ActionState.Aim = Aim;
-			}
-			*/
 		}
 	}
 }

@@ -24,7 +24,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	UTGOR_ActionGroundTask();
-	virtual void Initialise() override;
+	virtual bool Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 	virtual FTGOR_MovementPosition TickAnimationRootMotion(FTGOR_MovementSpace& Space, float DeltaTime) override;
 

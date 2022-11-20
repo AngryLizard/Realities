@@ -20,10 +20,9 @@ UTGOR_SlidingTask::UTGOR_SlidingTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_SlidingTask::Initialise()
+bool UTGOR_SlidingTask::Initialise()
 {
-	Super::Initialise();
-
+	return Super::Initialise();
 }
 
 bool UTGOR_SlidingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

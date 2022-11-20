@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TGOR_ModRegistry.h"
-#include "AssetRegistryModule.h"
-#include "ARFilter.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "AssetRegistry/ARFilter.h"
 #include "ProjectDescriptor.h"
 #include "Interfaces/IPluginManager.h"
 #include "Interfaces/IProjectManager.h"
@@ -64,7 +64,7 @@ bool UTGOR_ModRegistry::GetModsInPackages(TMap<UClass*, FName> &Classes)
 	ARFilter.bRecursivePaths = true;
 	ARFilter.bIncludeOnlyOnDiskAssets = true;
 	ARFilter.bRecursiveClasses = true;
-	ARFilter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
+	ARFilter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
 
 	// Go through all packages
 	for (const FTGOR_UGCPackage& Package : UGCPackages)
@@ -108,7 +108,7 @@ bool UTGOR_ModRegistry::GetContentInMod(UTGOR_Mod* Mod, TArray<UClass*>& Classes
 	ARFilter.bRecursivePaths = true;
 	ARFilter.bIncludeOnlyOnDiskAssets = true;
 	ARFilter.bRecursiveClasses = true;
-	ARFilter.ClassNames.Add(UBlueprint::StaticClass()->GetFName());
+	ARFilter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
 	ARFilter.PackagePaths.Add(Mod->PackagePath);
 
 	if (Mod->IsA<UTGOR_CoreMod>())

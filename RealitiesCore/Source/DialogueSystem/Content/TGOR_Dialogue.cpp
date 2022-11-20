@@ -25,3 +25,12 @@ void UTGOR_Dialogue::TaskInitialise(UTGOR_DialogueTask* Task)
 {
 	OnTaskInitialise(Task);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void UTGOR_Dialogue::MoveInsertion(UTGOR_Content* Insertion, ETGOR_InsertionActionEnumeration Action, bool& Success)
+{
+	Super::MoveInsertion(Insertion, Action, Success);
+
+	MOV_INSERTION(ConditionInsertions);
+}

@@ -130,17 +130,21 @@ FQuat FTGOR_RootMotionModifier::WarpRotation(const FTGOR_MovementPosition& Posit
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_MontageMovementTask::Initialise()
+bool UTGOR_MontageMovementTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	RootComponent = Identifier.Component->GetRootPilot();
 	if (!RootComponent.IsValid())
 	{
-		ERROR("RootComponent invalid", Error);
+		ERRET("RootComponent invalid", Error, false);
 	}
 
 	AttachedTask.Reset();
+	return false;
 }
 
 bool UTGOR_MontageMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const
@@ -291,15 +295,16 @@ void UTGOR_MontageMovementTask::Update()
 		{
 			const FAnimTrack& AnimTrack = Montage->SlotAnimTracks[SlotIdx].AnimTrack;
 			const FAnimSegment* AnimSegment = AnimTrack.GetSegmentAtTime(PreviousPosition);
-			if (AnimSegment && AnimSegment->AnimReference)
+			const TObjectPtr<UAnimSequenceBase>& AnimReference = AnimSegment->GetAnimReference();
+			if (AnimSegment && AnimReference)
 			{
-				for (const FAnimNotifyEvent& NotifyEvent : AnimSegment->AnimReference->Notifies)
+				for (const FAnimNotifyEvent& NotifyEvent : AnimReference->Notifies)
 				{
 					const UTGOR_MotionWarpingNotifyState* MotionWarpingNotify = NotifyEvent.NotifyStateClass ? Cast<UTGOR_MotionWarpingNotifyState>(NotifyEvent.NotifyStateClass) : nullptr;
 					if (MotionWarpingNotify)
 					{
-						const float NotifyStartTime = FMath::Clamp(NotifyEvent.GetTriggerTime(), 0.f, AnimSegment->AnimReference->GetPlayLength());
-						const float NotifyEndTime = FMath::Clamp(NotifyEvent.GetEndTriggerTime(), 0.f, AnimSegment->AnimReference->GetPlayLength());
+						const float NotifyStartTime = FMath::Clamp(NotifyEvent.GetTriggerTime(), 0.f, AnimReference->GetPlayLength());
+						const float NotifyEndTime = FMath::Clamp(NotifyEvent.GetEndTriggerTime(), 0.f, AnimReference->GetPlayLength());
 
 						// Convert notify times from AnimSequence times to montage times
 						const float StartTime = (NotifyStartTime - AnimSegment->AnimStartTime) + AnimSegment->StartPos;

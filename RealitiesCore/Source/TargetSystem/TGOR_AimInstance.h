@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "CoreSystem/Storage/TGOR_Serialisation.h"
 #include "CoreSystem/Storage/TGOR_PackageNetwork.h"
 
@@ -22,7 +23,7 @@ USTRUCT(BlueprintType)
 struct TARGETSYSTEM_API FTGOR_ForceInstance
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_ForceInstance();
 	FTGOR_ForceInstance operator*(float Intensity) const;
@@ -53,7 +54,7 @@ USTRUCT(BlueprintType)
 struct TARGETSYSTEM_API FTGOR_InfluenceInstance
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_InfluenceInstance();
 
@@ -95,7 +96,7 @@ USTRUCT(BlueprintType)
 struct TARGETSYSTEM_API FTGOR_AimInstance
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_AimInstance();
 
@@ -143,13 +144,9 @@ struct TARGETSYSTEM_API FTGOR_AimPoint
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/** Target class */
+	/** Target instance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UTGOR_Target* Target = nullptr;
-
-	/** Target Component */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TWeakObjectPtr<UActorComponent> Component;
+		FTGOR_AimInstance Instance;
 
 	/** Target distance */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

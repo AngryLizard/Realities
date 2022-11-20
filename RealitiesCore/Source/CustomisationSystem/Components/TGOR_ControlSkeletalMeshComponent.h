@@ -56,7 +56,7 @@ public:
 	UTGOR_ControlSkeletalMeshComponent();
 	virtual void InitializeComponent() override;
 	virtual void OnRegister() override;
-	virtual void SetSkeletalMesh(class USkeletalMesh* NewMesh, bool bReinitPose = true) override;
+	virtual void SetSkinnedAssetAndUpdate(class USkinnedAsset* NewMesh, bool bReinitPose = true) override;
 	virtual void TickPose(float DeltaTime, bool bNeedsValidRootMotion) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////

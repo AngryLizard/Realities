@@ -30,7 +30,7 @@ void FTGOR_KnowledgeCollection::Read(FTGOR_GroupReadPackage& Package, UTGOR_Sing
 bool FTGOR_KnowledgeCollection::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE;
+	SERIALISE_INIT_SOURCE();
 
 	// Send data size
 	int32 Num = Data.Num();
@@ -83,7 +83,7 @@ void FTGOR_KnowledgePin::Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* 
 bool FTGOR_KnowledgePin::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE;
+	SERIALISE_INIT_SOURCE();
 	SERIALISE_MASK_SOURCE(Knowledge, Knowledge);
 
 	Ar << Progress;
@@ -106,7 +106,7 @@ FTGOR_KnowledgePinRequest::FTGOR_KnowledgePinRequest()
 bool FTGOR_KnowledgePinRequest::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE;
+	SERIALISE_INIT_SOURCE();
 	SERIALISE_MASK_SOURCE(Knowledge, Knowledge);
 
 	return bOutSuccess = true;

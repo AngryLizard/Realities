@@ -16,7 +16,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")
 		FText Description;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content", meta = (AllowPrivateAccess = "true", DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "Texture,MaterialInterface,SlateTextureAtlasInterface"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content", meta = (AllowPrivateAccess = "true", DisplayThumbnail = "true", DisplayName = "Image", AllowedClasses = "/Script/Engine.Texture,/Script/Engine.MaterialInterface,/Script/Engine.SlateTextureAtlasInterface"))
 		UObject* Icon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Content")

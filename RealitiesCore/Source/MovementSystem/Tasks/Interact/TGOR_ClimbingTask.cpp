@@ -37,9 +37,9 @@ float UTGOR_ClimbingTask::GetMaxSpeed() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ClimbingTask::Initialise()
+bool UTGOR_ClimbingTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 }
 
 bool UTGOR_ClimbingTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

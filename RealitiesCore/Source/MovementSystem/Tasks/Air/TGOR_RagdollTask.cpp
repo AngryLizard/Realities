@@ -21,9 +21,9 @@ void UTGOR_RagdollTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& 
 
 }
 
-void UTGOR_RagdollTask::Initialise()
+bool UTGOR_RagdollTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 }
 
 bool UTGOR_RagdollTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

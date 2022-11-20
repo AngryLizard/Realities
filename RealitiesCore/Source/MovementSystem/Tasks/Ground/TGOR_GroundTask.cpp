@@ -23,9 +23,9 @@ UTGOR_GroundTask::UTGOR_GroundTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_GroundTask::Initialise()
+bool UTGOR_GroundTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 }
 
 bool UTGOR_GroundTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

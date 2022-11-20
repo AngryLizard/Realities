@@ -13,11 +13,15 @@ UTGOR_ActionMontageMovementTask::UTGOR_ActionMontageMovementTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ActionMontageMovementTask::Initialise()
+bool UTGOR_ActionMontageMovementTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	ActionComponent = RootComponent->GetOwnerComponent<UTGOR_ActionComponent>();
+	return ActionComponent.IsValid();
 }
 
 bool UTGOR_ActionMontageMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

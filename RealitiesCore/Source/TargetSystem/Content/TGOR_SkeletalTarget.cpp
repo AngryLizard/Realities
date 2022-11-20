@@ -13,7 +13,7 @@ UTGOR_SkeletalTarget::UTGOR_SkeletalTarget()
 	Importance = 0.5f;
 }
 
-bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -22,14 +22,14 @@ bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, co
 	if (IsValid(Skeletal))
 	{
 		// Only interested in master pose
-		if (Skeletal->MasterPoseComponent.IsValid())
+		if (Skeletal->LeaderPoseComponent.IsValid())
 		{
-			Skeletal = Skeletal->MasterPoseComponent.Get();
+			Skeletal = Skeletal->LeaderPoseComponent.Get();
 		}
-		Point.Component = Skeletal;
+		Point.Instance.Component = Skeletal;
 
 		// TODO: Overlap doesn't output bones. Could sweep over super small distance instead
-		const FCollisionShape Shape = FCollisionShape::MakeSphere(MaxDistance);
+		const FCollisionShape Shape = FCollisionShape::MakeSphere(Component->TargetRadius);
 		if (Skeletal->OverlapComponent(Origin, FQuat::Identity, Shape))
 		{
 			Point.Center = Origin;
@@ -41,7 +41,7 @@ bool UTGOR_SkeletalTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, co
 	return false;
 }
 
-bool UTGOR_SkeletalTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_SkeletalTarget::ComputeTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -50,16 +50,15 @@ bool UTGOR_SkeletalTarget::SearchTarget(UTGOR_AimTargetComponent* Component, con
 	if (IsValid(Skeletal))
 	{
 		// Only interested in master pose
-		if (Skeletal->MasterPoseComponent.IsValid())
+		if (Skeletal->LeaderPoseComponent.IsValid())
 		{
-			Skeletal = Skeletal->MasterPoseComponent.Get();
+			Skeletal = Skeletal->LeaderPoseComponent.Get();
 		}
-		Point.Component = Skeletal;
 
 		// Default to full distance 
 		FHitResult Hit;
 		FCollisionQueryParams Params;
-		if (Skeletal->LineTraceComponent(Hit, Origin, Origin + Direction * MaxDistance, Params))
+		if (Skeletal->LineTraceComponent(Hit, Origin, Origin + Direction * Component->TargetRadius, Params))
 		{
 			if (SnapCenterToBone)
 			{
@@ -74,34 +73,20 @@ bool UTGOR_SkeletalTarget::SearchTarget(UTGOR_AimTargetComponent* Component, con
 			}
 
 			Point.Distance = HitDistancePercentage;
+
+			Point.Instance.Component = Skeletal;
+
+			// Get bone transform
+			Point.Instance.Index = Skeletal->GetBoneIndex(Hit.BoneName);
+			const FTransform Transform = Skeletal->GetBoneTransform(Point.Instance.Index);
+
+			// Compute relative offset
+			Point.Instance.Offset = Transform.InverseTransformPosition(Hit.ImpactPoint);
+
 			return true;
 		}
 	}
 	Point.Distance = 1.0f;
-	return false;
-}
-
-bool UTGOR_SkeletalTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const
-{
-	USkeletalMeshComponent* Skeletal = Cast<USkeletalMeshComponent>(Point.Component.Get());
-	if (IsValid(Skeletal))
-	{
-		FHitResult Hit;
-		FCollisionQueryParams Params;
-		if (Skeletal->LineTraceComponent(Hit, Origin, Origin + Direction * MaxDistance, Params))
-		{
-			Instance.Component = Point.Component;
-
-			// Get bone transform
-			Instance.Index = Skeletal->GetBoneIndex(Hit.BoneName);
-			const FTransform Transform = Skeletal->GetBoneTransform(Instance.Index);
-
-			// Compute relative offset
-			Instance.Offset = Transform.InverseTransformPosition(Hit.ImpactPoint);
-			return true;
-		}
-	}
-	
 	return false;
 }
 

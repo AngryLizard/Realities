@@ -13,19 +13,28 @@
 
 DEFINE_LOG_CATEGORY(TGOR_DialogueLogs);
 
-SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_DialogueState);
+SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_SpectacleConfiguration);
+SERIALISE_INIT_SOURCE_IMPLEMENT(FTGOR_SpectacleState);
 
-FTGOR_DialogueState::FTGOR_DialogueState()
-:	ActiveSlot(INDEX_NONE)
+void FTGOR_SpectacleConfiguration::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const
 {
+	Package.WriteEntry(Participants);
 }
 
-void FTGOR_DialogueState::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const
+void FTGOR_SpectacleConfiguration::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context)
+{
+	Package.ReadEntry(Participants);
+}
+
+void FTGOR_SpectacleState::Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const
 {
 	Package.WriteEntry(ActiveSlot);
+	Package.WriteEntry(Configuration);
 }
 
-void FTGOR_DialogueState::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context)
+void FTGOR_SpectacleState::Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context)
 {
 	Package.ReadEntry(ActiveSlot);
+	Package.ReadEntry(Configuration);
 }
+

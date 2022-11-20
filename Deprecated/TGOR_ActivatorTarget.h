@@ -5,18 +5,18 @@
 #include "TargetSystem/TGOR_AimInstance.h"
 
 #include "TargetSystem/Content/TGOR_Target.h"
-#include "TGOR_TouchableTarget.generated.h"
+#include "TGOR_ActivatorTarget.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable)
-class DIALOGUESYSTEM_API UTGOR_TouchableTarget : public UTGOR_Target
+class DIALOGUESYSTEM_API UTGOR_ActivatorTarget : public UTGOR_Target
 {
 	GENERATED_BODY()
 		
 public:
-	UTGOR_TouchableTarget();
+	UTGOR_ActivatorTarget();
 	virtual bool OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const override;
 	virtual bool SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const override;
 	virtual bool ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const override;

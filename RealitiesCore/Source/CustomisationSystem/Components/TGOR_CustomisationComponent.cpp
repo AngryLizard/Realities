@@ -521,7 +521,7 @@ void UTGOR_CustomisationComponent::ApplyInternalCustomisation()
 				ENQUEUE_RENDER_COMMAND(CanvasRenderTargetResolveCommand)(
 					[RenderTargetResource, DrawEvent](FRHICommandList& RHICmdList)
 				{
-					RHICmdList.CopyToResolveTarget(RenderTargetResource->GetRenderTargetTexture(), RenderTargetResource->TextureRHI, FResolveParams());
+					RHICmdList.CopyTexture(RenderTargetResource->GetRenderTargetTexture(), RenderTargetResource->TextureRHI, FRHICopyTextureInfo());
 					STOP_DRAW_EVENT((*DrawEvent));
 					delete DrawEvent;
 				}

@@ -3,6 +3,7 @@
 #include "TGOR_DialogueTask.h"
 #include "DialogueSystem/Components/TGOR_DialogueComponent.h"
 #include "AttributeSystem/Components/TGOR_AttributeComponent.h"
+#include "DialogueSystem/Content/TGOR_Participant.h"
 #include "DialogueSystem/Content/TGOR_Dialogue.h"
 #include "AttributeSystem/Content/TGOR_Attribute.h"
 
@@ -47,20 +48,34 @@ float UTGOR_DialogueTask::GetAttribute(TSubclassOf<UTGOR_Attribute> Type, float 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_DialogueTask::Initialise()
+bool UTGOR_DialogueTask::Initialise()
 {
 	Identifier.Content->TaskInitialise(this);
-	OnInitialise();
+
+	if (!InitialiseParticipants(Identifier.Component, Identifier.Content))
+	{
+		return false;
+	}
+
+	return Super::Initialise();
 }
 
-void UTGOR_DialogueTask::PrepareStart()
+void UTGOR_DialogueTask::Prepare(FTGOR_SpectacleState& DialogueState)
 {
-	PlayAnimation();
+	Super::Prepare(DialogueState);
+	OnPrepare();
 }
 
-void UTGOR_DialogueTask::Interrupt()
+bool UTGOR_DialogueTask::Update(FTGOR_SpectacleState& DialogueState, float DeltaTime)
 {
-	ResetAnimation();
+	Super::Update(DialogueState, DeltaTime);
+	ETGOR_SpectacleStateEnumeration State = ETGOR_SpectacleStateEnumeration::Continue;
+	OnUpdate(DeltaTime, State);
+	return State == ETGOR_SpectacleStateEnumeration::Continue;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+void UTGOR_DialogueTask::Interrupt(FTGOR_SpectacleState& DialogueState)
+{
+	Super::Interrupt(DialogueState);
+	OnInterrupt();
+}

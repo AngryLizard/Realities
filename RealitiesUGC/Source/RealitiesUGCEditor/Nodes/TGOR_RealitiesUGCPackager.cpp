@@ -118,7 +118,7 @@ void FTGOR_RealitiesUGCPackager::PackagePlugin(TSharedRef<class IPlugin> Plugin,
 
 	FString FriendlyName = Plugin->GetDescriptor().FriendlyName;
 	IUATHelperModule::Get().CreateUatTask(CommandLine, PlatformName, PackagingText,
-		PackagingText, FTGOR_RealitiesUGCEditorStyle::Get().GetBrush(TEXT("SimpleUGCEditor.PackageUGCAction")),
+		PackagingText, FTGOR_RealitiesUGCEditorStyle::Get().GetBrush(TEXT("SimpleUGCEditor.PackageUGCAction")), nullptr,
 		[ReleaseVersion, PlatformName, FriendlyName](FString TaskResult, double TimeSec) {});
 }
 

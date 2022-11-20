@@ -7,10 +7,11 @@
 #include "../TGOR_EventInstance.h"
 
 #include "CoreSystem/Storage/TGOR_SaveInterface.h"
-#include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "DimensionSystem/Interfaces/TGOR_SpawnerInterface.h"
 #include "AnimationSystem/Interfaces/TGOR_AnimationInterface.h"
+#include "TargetSystem/Interfaces/TGOR_AimReceiverInterface.h"
 #include "AttributeSystem/Interfaces/TGOR_AttributeInterface.h"
+#include "CoreSystem/Interfaces/TGOR_RegisterInterface.h"
 #include "DimensionSystem/Components/TGOR_DimensionComponent.h"
 #include "TGOR_ActionComponent.generated.h"
 
@@ -66,7 +67,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FActionScheduleDelegate, UTGOR_Actio
  * TGOR_ActionComponent allows equipment of actions
  */
 UCLASS(ClassGroup = (Custom), Blueprintable, meta = (BlueprintSpawnableComponent))
-class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_DimensionComponent, public ITGOR_SaveInterface, public ITGOR_SpawnerInterface, public ITGOR_AnimationInterface, public ITGOR_AttributeInterface, public ITGOR_RegisterInterface
+class ACTIONSYSTEM_API UTGOR_ActionComponent : public UTGOR_DimensionComponent,
+	public ITGOR_SaveInterface, 
+	public ITGOR_SpawnerInterface, 
+	public ITGOR_AnimationInterface, 
+	public ITGOR_AimReceiverInterface, 
+	public ITGOR_AttributeInterface, 
+	public ITGOR_RegisterInterface
 {
 	GENERATED_BODY()
 
@@ -98,6 +105,9 @@ public:
 	virtual UTGOR_AnimationComponent* GetAnimationComponent() const override;
 
 	TArray<UTGOR_Modifier*> QueryActiveModifiers_Implementation() const override;
+
+	virtual bool TestAimTarget_Implementation(const FTGOR_AimInstance& Aim) override;
+	virtual void ApplyAimTarget_Implementation(const FTGOR_AimInstance& Aim) override;
 
 	//////////////////////////////////////////// IMPLEMENTABLES ////////////////////////////////////////
 
@@ -147,10 +157,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void ForceReplication();
 
-
 	/** Schedule last active action of given type */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool ScheduleActionType(TSubclassOf<UTGOR_Action> Type);
+		bool ScheduleActionType(TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim);
 
 	/** Check whether given action type is currently running */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -170,7 +179,7 @@ public:
 
 	/** Schedule an equipped slot action. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool ScheduleSlotAction(int32 Identifier);
+		bool ScheduleSlotAction(int32 Identifier, const FTGOR_AimInstance& Aim, bool Rerun = false);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -240,21 +249,21 @@ public:
 
 	/** Get more specific information about the state of a given slot. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool CollectDebugInfo(int32 Identifier, float Duration, FTGOR_ActionDebugInfo& Info) const;
+		bool CollectDebugInfo(int32 Identifier, const FTGOR_AimInstance& Aim, float Duration, FTGOR_ActionDebugInfo& Info) const;
 
 	/** Get more specific information about the state of all slots. */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void CollectDebugInfos(float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const;
+		void CollectDebugInfos(const FTGOR_AimInstance& Aim, float Duration, TArray<FTGOR_ActionDebugInfo>& Infos) const;
 
 	/** Get callable action slots of given type.
 		This does _not_ update context updates before testing. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		TArray<int32> GetCallableActionIdentifiers(TSubclassOf<UTGOR_Action> Type, bool CheckCanCall);
+		TArray<int32> GetCallableActionIdentifiers(TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim, bool CheckCanCall);
 
 	/** Get callable action slots that are subactions of a given action
 		This does _not_ update context updates before testing. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		TArray<int32> GetCallableSubactionIdentifiers(UTGOR_Action* Action, bool CheckCanCall);
+		TArray<int32> GetCallableSubactionIdentifiers(UTGOR_Action* Action, const FTGOR_AimInstance& Aim, bool CheckCanCall);
 
 	/** Get whether a given movement can be executed */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -342,10 +351,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action|Internal", Meta = (Keywords = "C++"))
 		void FastForwardState(const FTGOR_ActionState& TargetState);
 
-
 	/** Run an equipped slot action. */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action|Internal", Meta = (Keywords = "C++"))
-		bool RunSlotAction(int32 Identifier, bool Force);
+		bool RunSlotAction(int32 Identifier, const FTGOR_AimInstance& Aim, bool Force, bool Rerun);
 
 	/** Update state for the server, checks for matching identifier and schedules action on mismatch */
 	UFUNCTION(Reliable, Server, WithValidation, Category = "!TGOR Action|Internal", Meta = (Keywords = "C++"))
@@ -364,10 +372,6 @@ public:
 	/** Set input value to compatible actions (or triggers an action if part of trigger). */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void SetInput(TSubclassOf<UTGOR_Input> InputType, float Value);
-
-	/** Update context for all actions using provided aim target. Should be updated before CanCall to get proper action responses. */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void UpdateContext(const FTGOR_AimInstance& Aim);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

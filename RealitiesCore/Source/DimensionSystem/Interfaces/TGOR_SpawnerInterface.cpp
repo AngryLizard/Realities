@@ -14,12 +14,14 @@ void FTGOR_SpawnerDependencies::Process(TSubclassOf<UObject> Class)
 	int32 Index = Pointer;
 	while (Objects.IsValidIndex(Index))
 	{
-		if (Objects[Index]->IsA(Class))
+		UObject* Object = Objects[Index];
+		UClass* ObjectClass = Object->GetClass();
+		if (ObjectClass && (ObjectClass->IsChildOf(Class) || ObjectClass->ImplementsInterface(Class)))
 		{
 			// Swap to end of list
 			if (Index != Pointer)
 			{
-				Swap(Objects[Index], Objects[Pointer]);
+				Swap(Object, Objects[Pointer]);
 			}
 
 			// Continue pointer

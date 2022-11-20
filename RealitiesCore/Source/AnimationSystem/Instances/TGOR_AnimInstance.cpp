@@ -193,7 +193,7 @@ void UTGOR_AnimInstance::AddAnimationInstance(UTGOR_Performance* Performance, UT
 
 		const FName AnimationKey = GetSubAnimName(Performance);
 		TSubclassOf<UTGOR_SubAnimInstance>& Default = Instance.IsSwitched ? Instance.DefaultOn : Instance.DefaultOff;
-		if (!IsValid(Default))
+		if (!*Default)
 		{
 			// Set default to current state if not already set
 			UAnimInstance* AnimInstance = GetLinkedAnimGraphInstanceByTag(AnimationKey);
@@ -262,7 +262,7 @@ void UTGOR_AnimInstance::RemoveAnimationInstance(UTGOR_Performance* Performance,
 
 		const FName AnimationKey = GetSubAnimName(Performance);
 		const TSubclassOf<UTGOR_SubAnimInstance>& Default = Ptr->IsSwitched ? Ptr->DefaultOn : Ptr->DefaultOff;
-		if (!IsValid(Default))
+		if (*Default)
 		{
 			LinkAnimGraphByTag(AnimationKey, Default);
 			Ptr->Current = Cast<UTGOR_SubAnimInstance>(GetLinkedAnimGraphInstanceByTag(AnimationKey));

@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreSystem/Storage/TGOR_Serialisation.h"
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "CoreSystem/Storage/TGOR_PackageNetwork.h"
 #include "CoreSystem/Storage/TGOR_PackageGroup.h"
 
@@ -24,7 +25,7 @@ USTRUCT(BlueprintType)
 struct CREATURESYSTEM_API FTGOR_CreatureSetupInstance
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_CreatureSetupInstance();
 

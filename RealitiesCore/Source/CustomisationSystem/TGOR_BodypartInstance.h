@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "Engine/Canvas.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -39,7 +40,7 @@ USTRUCT(BlueprintType)
 struct CUSTOMISATIONSYSTEM_API FTGOR_CustomisationInstance
 {
 	GENERATED_USTRUCT_BODY();
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_CustomisationInstance();
 
@@ -75,7 +76,7 @@ USTRUCT(BlueprintType)
 struct CUSTOMISATIONSYSTEM_API FTGOR_BodypartInstance
 {
 	GENERATED_USTRUCT_BODY();
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_BodypartInstance();
 
@@ -117,7 +118,7 @@ USTRUCT(BlueprintType)
 struct CUSTOMISATIONSYSTEM_API FTGOR_AppearanceInstance
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_AppearanceInstance();
 

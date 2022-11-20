@@ -11,7 +11,7 @@
 
 #if WITH_EDITOR
 #include "Dialogs/DlgPickAssetPath.h"
-#include "AssetRegistryModule.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "AssetToolsModule.h"
 #endif
 

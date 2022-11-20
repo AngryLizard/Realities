@@ -2,7 +2,8 @@
 
 #pragma once
 
-
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "DimensionSystem/TGOR_PilotInstance.h"
 
 #include "Engine/UserDefinedStruct.h"
@@ -28,7 +29,7 @@ class UTGOR_Mobile;
 //struct MOVEMENTSYSTEM_API FTGOR_MovementBase : public FTGOR_MovementDynamic
 //{
 //	GENERATED_USTRUCT_BODY()
-//		SERIALISE_INIT_HEADER;
+//		SERIALISE_INIT_HEADER();
 //
 //	FTGOR_MovementBase();
 //	FTGOR_MovementBase(UTGOR_MobilityComponent*  Component);
@@ -94,7 +95,7 @@ USTRUCT(BlueprintType)
 struct MOVEMENTSYSTEM_API FTGOR_MovementState
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementState();
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
@@ -229,7 +230,7 @@ USTRUCT(BlueprintType)
 struct MOVEMENTSYSTEM_API FTGOR_MovementFrame
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementFrame();
 
@@ -265,7 +266,7 @@ USTRUCT(BlueprintType)
 struct MOVEMENTSYSTEM_API FTGOR_MovementInput
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementInput();
 
@@ -303,7 +304,7 @@ USTRUCT(BlueprintType)
 struct MOVEMENTSYSTEM_API FTGOR_MovementContent
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementContent();
 

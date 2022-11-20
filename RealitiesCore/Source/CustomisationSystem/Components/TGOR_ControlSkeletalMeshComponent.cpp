@@ -23,19 +23,20 @@ void FTGOR_ControlRigCache::InitialiseControls(TSubclassOf<UControlRig> ControlR
 		// Register skeletalmesh component
 		ControlRig->GetDataSourceRegistry()->RegisterDataSource(UControlRig::OwnerComponent, Owner);
 
-		if (IsValid(SkinnedMesh->SkeletalMesh))
+		USkinnedAsset* SkinnedMeshAsset = SkinnedMesh->GetSkinnedAsset();
+		if (IsValid(SkinnedMeshAsset))
 		{
-			ControlRig->SetBoneInitialTransformsFromSkeletalMesh(SkinnedMesh->SkeletalMesh);
+			ControlRig->SetBoneInitialTransformsFromRefSkeleton(SkinnedMeshAsset->GetRefSkeleton());
 
 			TArray<FName> NodeNames;
 			TArray<FNodeItem> NodeItems;
 			ControlRig->GetMappableNodeData(NodeNames, NodeItems);
 
 			RigBoneMapping.Reset();
-			const int32 NumTargetBones = SkinnedMesh->SkeletalMesh->GetRefSkeleton().GetNum();
+			const int32 NumTargetBones = SkinnedMeshAsset->GetRefSkeleton().GetNum();
 			for (uint16 Index = 0; Index < NumTargetBones; ++Index)
 			{
-				const FName& BoneName = SkinnedMesh->SkeletalMesh->GetRefSkeleton().GetBoneName(Index);
+				const FName& BoneName = SkinnedMeshAsset->GetRefSkeleton().GetBoneName(Index);
 				if (NodeNames.Contains(BoneName))
 				{
 					RigBoneMapping.Add(BoneName, Index);
@@ -125,7 +126,8 @@ void FTGOR_ControlRigCache::UpdateTransforms(TArray<FTransform>& Transforms, USk
 
 		/// /////////////////////////////////////////////////////////
 
-		if (IsValid(SkinnedMesh->SkeletalMesh))
+		USkinnedAsset* SkinnedMeshAsset = SkinnedMesh->GetSkinnedAsset();
+		if (IsValid(SkinnedMeshAsset))
 		{
 			// get component pose from control rig
 			for (auto Iter = RigBoneMapping.CreateConstIterator(); Iter; ++Iter)
@@ -200,9 +202,9 @@ void UTGOR_ControlSkeletalMeshComponent::OnRegister()
 	InitAutoControlRig();
 }
 
-void UTGOR_ControlSkeletalMeshComponent::SetSkeletalMesh(class USkeletalMesh* NewMesh, bool bReinitPose)
+void UTGOR_ControlSkeletalMeshComponent::SetSkinnedAssetAndUpdate(USkinnedAsset* NewMesh, bool bReinitPose)
 {
-	Super::SetSkeletalMesh(NewMesh, bReinitPose);
+	Super::SetSkinnedAssetAndUpdate(NewMesh, bReinitPose);
 	InitAutoControlRig(true);
 }
 
@@ -256,8 +258,9 @@ void UTGOR_ControlSkeletalMeshComponent::UpdateTransforms(float DeltaTime)
 
 void UTGOR_ControlSkeletalMeshComponent::RefreshBoneTransforms(FActorComponentTickFunction* TickFunction)
 {
-	// Can't do anything without a SkeletalMesh
-	if (!SkeletalMesh)
+	// Can't do anything without a SkinnedAsset
+	USkinnedAsset* SkinnedMeshAsset = GetSkinnedAsset();
+	if (!SkinnedMeshAsset)
 	{
 		return;
 	}
@@ -284,7 +287,8 @@ bool UTGOR_ControlSkeletalMeshComponent::AllocateTransformData()
 	// Allocate transforms if not present.
 	if (Super::AllocateTransformData())
 	{
-		LocalSpaceTransforms = SkeletalMesh->GetRefSkeleton().GetRefBonePose();
+		USkinnedAsset* SkinnedMeshAsset = GetSkinnedAsset();
+		LocalSpaceTransforms = SkinnedMeshAsset->GetRefSkeleton().GetRefBonePose();
 		FillComponentSpaceTransforms();
 
 		return true;
@@ -313,14 +317,15 @@ bool UTGOR_ControlSkeletalMeshComponent::ShouldUpdateTransform(bool bLODHasChang
 
 void UTGOR_ControlSkeletalMeshComponent::FillComponentSpaceTransforms()
 {
-	if (!SkeletalMesh)
+	USkinnedAsset* SkinnedMeshAsset = GetSkinnedAsset();
+	if (!SkinnedMeshAsset)
 	{
 		return;
 	}
 
-	if (LocalSpaceTransforms.Num() != SkeletalMesh->GetRefSkeleton().GetNum())
+	if (LocalSpaceTransforms.Num() != SkinnedMeshAsset->GetRefSkeleton().GetNum())
 	{
-		LocalSpaceTransforms = SkeletalMesh->GetRefSkeleton().GetRefBonePose();
+		LocalSpaceTransforms = SkinnedMeshAsset->GetRefSkeleton().GetRefBonePose();
 	}
 
 	// Compute component transforms of whole hierarchy
@@ -333,7 +338,7 @@ void UTGOR_ControlSkeletalMeshComponent::FillComponentSpaceTransforms()
 		FPlatformMisc::Prefetch(SpaceBasesData + BoneIndex);
 
 		// For all bones below the root, final component-space transform is relative transform * component-space transform of parent.
-		const int32 ParentIndex = SkeletalMesh->GetRefSkeleton().GetParentIndex(BoneIndex);
+		const int32 ParentIndex = SkinnedMeshAsset->GetRefSkeleton().GetParentIndex(BoneIndex);
 		FPlatformMisc::Prefetch(SpaceBasesData + ParentIndex);
 
 		FTransform::Multiply(SpaceBasesData + BoneIndex, LocalTransformsData + BoneIndex, SpaceBasesData + ParentIndex);

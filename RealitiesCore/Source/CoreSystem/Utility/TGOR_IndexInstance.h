@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "../Storage/TGOR_PackageGroup.h"
 #include "../Storage/TGOR_PackageNetwork.h"
 #include "../Storage/TGOR_Serialisation.h"
@@ -18,9 +19,10 @@
 USTRUCT(BlueprintType)
 struct CORESYSTEM_API FTGOR_ContainerIndex
 {
-	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-		FTGOR_ContainerIndex();
+	GENERATED_USTRUCT_BODY();
+	SERIALISE_INIT_HEADER();
+
+	FTGOR_ContainerIndex();
 	FTGOR_ContainerIndex(uint8 Container);
 	FTGOR_ContainerIndex(const FTGOR_ContainerIndex& Slot);
 
@@ -28,7 +30,6 @@ struct CORESYSTEM_API FTGOR_ContainerIndex
 	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Recv(FTGOR_NetworkReadPackage& Package, UTGOR_Singleton* Context);
-
 
 	bool operator==(const FTGOR_ContainerIndex& Other) const;
 	bool operator!=(const FTGOR_ContainerIndex& Other) const;
@@ -70,9 +71,9 @@ static uint32 GetTypeHash(const FTGOR_ContainerIndex& Key)
 USTRUCT(BlueprintType)
 struct CORESYSTEM_API FTGOR_SlotIndex : public FTGOR_ContainerIndex
 {
-	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-		FTGOR_SlotIndex();
+	GENERATED_USTRUCT_BODY();
+	SERIALISE_INIT_HEADER();
+	FTGOR_SlotIndex();
 	FTGOR_SlotIndex(uint8 Byte);
 	FTGOR_SlotIndex(uint8 Container, uint8 Slot);
 	FTGOR_SlotIndex(const FTGOR_ContainerIndex& Container, uint8 Slot);
@@ -122,8 +123,8 @@ USTRUCT(BlueprintType)
 struct CORESYSTEM_API FTGOR_ItemIndex : public FTGOR_SlotIndex
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
-		FTGOR_ItemIndex();
+	SERIALISE_INIT_HEADER();
+	FTGOR_ItemIndex();
 	FTGOR_ItemIndex(int16 Word);
 	FTGOR_ItemIndex(uint8 Container, uint8 Slot, uint8 Item);
 	FTGOR_ItemIndex(const FTGOR_SlotIndex& Slot, uint8 Item);

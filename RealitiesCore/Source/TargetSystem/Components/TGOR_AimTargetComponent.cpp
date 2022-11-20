@@ -30,6 +30,38 @@ TMap<int32, UTGOR_SpawnModule*> UTGOR_AimTargetComponent::GetModuleType_Implemen
 	return Modules;
 }
 
+FTransform UTGOR_AimTargetComponent::GetTargetTransform() const
+{
+	return GetComponentTransform();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+FVector UTGOR_AimTargetComponent::ProjectRay(const FVector& RayOrigin, const FVector& RayDirection) const
+{
+	const FVector Location = GetComponentLocation();
+	const FVector Projection = (Location - RayOrigin).ProjectOnToNormal(RayDirection);
+	return RayOrigin + Projection;
+}
+
+float UTGOR_AimTargetComponent::ComputeRelativeDistance(const FVector& Location, const FVector& Center, float Threshold) const
+{
+	const float ScaledThreshold = TargetRadius * Threshold * GetComponentScale().GetMax();
+	return (Location - Center).Size() / ScaledThreshold;
+}
+
+FVector UTGOR_AimTargetComponent::WorldToTarget(const FVector& Location) const
+{
+	const FTransform Transform = GetTargetTransform();
+	return Transform.InverseTransformPosition(Location);
+}
+
+FVector UTGOR_AimTargetComponent::TargetToWorld(const FVector& Local) const
+{
+	const FTransform Transform = GetTargetTransform();
+	return Transform.TransformPosition(Local);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 FBoxSphereBounds UTGOR_AimTargetComponent::CalcBounds(const FTransform& LocalToWorld) const
@@ -178,6 +210,7 @@ UTGOR_AimTargetComponent::FDrawAimTargetSceneProxy::FDrawAimTargetSceneProxy(con
 	, bDrawOnlyIfSelected(InComponent->bDrawOnlyIfSelected)
 	, ShapeColor(InComponent->ShapeColor)
 	, TargetRadius(InComponent->CanBeTargeted ? InComponent->TargetRadius : 0.0f)
+	, ActivationThreshold(InComponent->ActivationThreshold)
 {
 	bWillEverBeLit = false;
 }
@@ -207,16 +240,24 @@ void UTGOR_AimTargetComponent::FDrawAimTargetSceneProxy::GetDynamicMeshElements(
 
 			if (TargetRadius > SMALL_NUMBER)
 			{
-				const FVector ScaledX = Transform.GetScaledAxis(EAxis::X);
-				const FVector ScaledY = Transform.GetScaledAxis(EAxis::Y);
-				const FVector ScaledZ = Transform.GetScaledAxis(EAxis::Z);
+				const FVector ScaledX = Transform.GetScaledAxis(EAxis::X).GetSafeNormal();
+				const FVector ScaledY = Transform.GetScaledAxis(EAxis::Y).GetSafeNormal();
+				const FVector ScaledZ = Transform.GetScaledAxis(EAxis::Z).GetSafeNormal();
 
 				const int32 SphereSides = FMath::Clamp<int32>(TargetRadius / 4.f, 16, 64);
 				DrawCircle(PDI, Transform.GetOrigin(), ScaledX, ScaledY, DrawColor, TargetRadius, SphereSides, SDPG_World);
 				DrawCircle(PDI, Transform.GetOrigin(), ScaledX, ScaledZ, DrawColor, TargetRadius, SphereSides, SDPG_World);
 				DrawCircle(PDI, Transform.GetOrigin(), ScaledY, ScaledZ, DrawColor, TargetRadius, SphereSides, SDPG_World);
 
-				DrawArrowHead(PDI, Transform.GetOrigin() + ScaledX * SphereSides, Transform.GetOrigin() + ScaledX * SphereSides * 0.1f, TargetRadius, DrawColor, SDPG_World);
+				if (IsSelected())
+				{
+					const FLinearColor TransparentColor = FLinearColor(DrawColor.R, DrawColor.G, DrawColor.B, DrawColor.A * 0.5f);
+					DrawCircle(PDI, Transform.GetOrigin(), ScaledX, ScaledY, TransparentColor, TargetRadius * ActivationThreshold, SphereSides, SDPG_World);
+					DrawCircle(PDI, Transform.GetOrigin(), ScaledX, ScaledZ, TransparentColor, TargetRadius * ActivationThreshold, SphereSides, SDPG_World);
+					DrawCircle(PDI, Transform.GetOrigin(), ScaledY, ScaledZ, TransparentColor, TargetRadius * ActivationThreshold, SphereSides, SDPG_World);
+
+					DrawArrowHead(PDI, Transform.GetOrigin() + ScaledX * SphereSides, Transform.GetOrigin() + ScaledX * SphereSides * 0.1f, TargetRadius, DrawColor, SDPG_World);
+				}
 			}
 		}
 	}

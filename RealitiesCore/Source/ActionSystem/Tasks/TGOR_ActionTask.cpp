@@ -22,7 +22,6 @@
 
 #include "Net/UnrealNetwork.h"
 
-
 UTGOR_ActionTask::UTGOR_ActionTask()
 	: Super()
 {
@@ -74,41 +73,61 @@ void UTGOR_ActionTask::LogActionMessage(const FString& Domain, const FString& Me
 	}
 }
 
-bool UTGOR_ActionTask::CanCall() const
+bool UTGOR_ActionTask::CanCall(const FTGOR_AimInstance& Aim) const
 {
 	if (IsValid(Identifier.Component) && IsValid(Identifier.Content))
 	{
 		// Check invariant on empty params
-		return Condition();
+		return Condition(Aim);
 	}
-
 	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ActionTask::Initialise()
+bool UTGOR_ActionTask::Initialise()
 {
-	if (IsValid(Identifier.Component) && IsValid(Identifier.Content))
+	if (!IsValid(Identifier.Component) || !IsValid(Identifier.Content))
 	{
-		MovementComponent = Identifier.Component->GetOwnerComponent<UTGOR_MovementComponent>();
-		PilotComponent = Identifier.Component->GetOwnerRootScene<UTGOR_ArmatureComponent>();
-				
-		Identifier.Content->TaskInitialise(this);
+		return false;
 	}
 
+	MovementComponent = Identifier.Component->GetOwnerComponent<UTGOR_MovementComponent>();
+	PilotComponent = Identifier.Component->GetOwnerRootScene<UTGOR_ArmatureComponent>();
+				
+	Identifier.Content->TaskInitialise(this);
+
 	OnInitialise();
+	return true;
 }
 
-bool UTGOR_ActionTask::Condition() const
+bool UTGOR_ActionTask::Condition(const FTGOR_AimInstance& Aim) const
 {
-	if (CheckOwnerState())
+	if (HasNoCooldown() && HasValidTarget(Aim) && HasValidMovement() && IsInRange(Aim))
 	{
 		ETGOR_ValidEnumeration Invariance = ETGOR_ValidEnumeration::Valid;
-		OnCondition(Invariance);
+		OnCondition(Aim, Invariance);
 		return Invariance == ETGOR_ValidEnumeration::Valid;
 	}
 	return false;
+}
+
+bool UTGOR_ActionTask::Refresh(const FTGOR_AimInstance& Aim)
+{
+	if (HasValidTarget(Aim) && HasValidMovement() && IsInRange(Aim))
+	{
+		ETGOR_ValidEnumeration Invariance = ETGOR_ValidEnumeration::Valid;
+		OnRefresh(Aim, Invariance);
+		return Invariance == ETGOR_ValidEnumeration::Valid;
+	}
+	return false;
+}
+
+bool UTGOR_ActionTask::PrepareAim(const FTGOR_AimInstance& Aim)
+{
+	ETGOR_ValidEnumeration State = ETGOR_ValidEnumeration::Valid;
+	OnPrepareAim(Aim, State);
+	return State == ETGOR_ValidEnumeration::Valid;
 }
 
 void UTGOR_ActionTask::PrepareStart()
@@ -253,10 +272,11 @@ bool UTGOR_ActionTask::IsFinishing() const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Value, bool AllowTrigger)
+bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, const FTGOR_AimInstance& Aim, float Value, bool AllowTrigger)
 {
 	bool Handled = false;
 	bool HasTrigger = false;
+	bool Rerun = false;
 
 	// Update input values in slot
 	for (const auto& InputPair : Identifier.Content->Instanced_InputInsertions.GetListOfType(InputType))
@@ -279,8 +299,13 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 				if (IsRunning())
 				{
 					OnInputChanged(InputPair.Key, Value);
-					ReadyForTrigger = false; // We're already running
 					Handled = true;
+
+					// Keep track if we're already running and there is no need for reruns
+					if (InputPair.Value != ETGOR_InputTrigger::TriggerNoState)
+					{
+						ReadyForTrigger = false;
+					}
 				}
 			}
 		}
@@ -293,16 +318,21 @@ bool UTGOR_ActionTask::UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Val
 		// Look for inputs that schedule actions
 		if (ReadyForTrigger && 
 			InputPair.Value != ETGOR_InputTrigger::StateOnly && 
-			InputPair.Key->IsActive(Value) && 
-			!HasTrigger)
+			InputPair.Key->IsActive(Value) && !HasTrigger)
 		{
 			HasTrigger = true;
+			
+			// If the action is trigger only we want to rerun the action
+			if (InputPair.Value == ETGOR_InputTrigger::TriggerNoState)
+			{
+				Rerun = true;
+			}
 		}
 	}
 
 	if (HasTrigger && AllowTrigger)
 	{
-		Handled = Identifier.Component->ScheduleSlotAction(Identifier.Slot);
+		Handled = Identifier.Component->ScheduleSlotAction(Identifier.Slot, Aim, Rerun);
 	}
 
 	return Handled;
@@ -336,30 +366,39 @@ float UTGOR_ActionTask::GetInputValue(TSubclassOf<UTGOR_Input> InputType) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UActorComponent* UTGOR_ActionTask::GetAimedComponent() const
+UActorComponent* UTGOR_ActionTask::GetAimedComponent(const FTGOR_AimInstance& Aim, TSubclassOf<UActorComponent> ComponentClass) const
 {
-	return LastAim.Component.Get();
+	if (Aim.Component.IsValid() && Aim.Component->IsA(ComponentClass))
+	{
+		return Aim.Component.Get();
+	}
+	return nullptr;
 }
 
-UTGOR_Target* UTGOR_ActionTask::GetAimedTarget() const
+UActorComponent* UTGOR_ActionTask::GetAimedComponent(const FTGOR_AimInstance& Aim) const
 {
-	return LastAim.Target;
+	return Aim.Component.Get();
 }
 
-FVector UTGOR_ActionTask::GetAimedLocation(bool Sticky) const
+UTGOR_Target* UTGOR_ActionTask::GetAimedTarget(const FTGOR_AimInstance& Aim) const
+{
+	return Aim.Target;
+}
+
+FVector UTGOR_ActionTask::GetAimedLocation(const FTGOR_AimInstance& Aim, bool Sticky) const
 {
 	// Make sure component is either valid or undefined
-	if (IsValid(LastAim.Target) && LastAim.Component.IsValid())
+	if (IsValid(Aim.Target) && Aim.Component.IsValid())
 	{
 		if (Sticky)
 		{
-			return(LastAim.Target->QueryStickyLocation(LastAim));
+			return(Aim.Target->QueryStickyLocation(Aim));
 		}
-		return(LastAim.Target->QueryAimLocation(LastAim));
+		return(Aim.Target->QueryAimLocation(Aim));
 	}
 
 	// Default to worldspace if there is no target
-	return(LastAim.Offset);
+	return(Aim.Offset);
 }
 
 
@@ -376,22 +415,22 @@ bool UTGOR_ActionTask::HasNoCooldown() const
 	return false;
 }
 
-bool UTGOR_ActionTask::HasValidTarget() const
+bool UTGOR_ActionTask::HasValidTarget(const FTGOR_AimInstance& Aim) const
 {
 	if (Identifier.Content->AimTarget == ETGOR_AimIgnoreEnumeration::None)
 	{
 		return true;
 	}
 
-	if (LastAim.Component.IsValid() && Identifier.Content->Instanced_TargetInsertions.Contains(LastAim.Target))
+	if (Aim.Component.IsValid() && Identifier.Content->Instanced_TargetInsertions.Contains(Aim.Target))
 	{
 		if (Identifier.Content->AimTarget == ETGOR_AimIgnoreEnumeration::IgnoreSelf)
 		{
-			return (LastAim.Component->GetOwner() != Identifier.Component->GetOwner());
+			return (Aim.Component->GetOwner() != Identifier.Component->GetOwner());
 		}
 		else if (Identifier.Content->AimTarget == ETGOR_AimIgnoreEnumeration::OnlySelf)
 		{
-			return (LastAim.Component->GetOwner() == Identifier.Component->GetOwner());
+			return (Aim.Component->GetOwner() == Identifier.Component->GetOwner());
 		}
 		else
 		{
@@ -452,7 +491,7 @@ bool UTGOR_ActionTask::HasValidMovement(UTGOR_Movement* Movement) const
 	return Identifier.Content->Instanced_MovementInsertions.Contains(Movement);
 }
 
-bool UTGOR_ActionTask::IsInRange() const
+bool UTGOR_ActionTask::IsInRange(const FTGOR_AimInstance& Aim) const
 {
 	if (Identifier.Content->AimRange == ETGOR_AimDistanceEnumeration::NoRange)
 	{
@@ -468,7 +507,7 @@ bool UTGOR_ActionTask::IsInRange() const
 		const int32 SquareReach = SquareShape * FMath::Square(Identifier.Content->AimReachDistance);
 		const int32 SquareRange = SquareShape * FMath::Square(Identifier.Content->AimRangeDistance);
 
-		const FVector AimLocation = GetAimedLocation(true);
+		const FVector AimLocation = GetAimedLocation(Aim, true);
 		const FTGOR_MovementPosition Position = PilotComponent->ComputePosition();
 		const float SquareDistance = (AimLocation - Position.Linear).SizeSquared();
 
@@ -488,27 +527,22 @@ bool UTGOR_ActionTask::IsInRange() const
 	return false;
 }
 
-bool UTGOR_ActionTask::CheckOwnerState() const
-{
-	return (HasNoCooldown() || IsRunning()) && HasValidTarget() && HasValidMovement() && IsInRange();
-}
-
-bool UTGOR_ActionTask::CollectDebugInfo(float LogDuration, FTGOR_ActionDebugInfo& DebugInfo) const
+bool UTGOR_ActionTask::CollectDebugInfo(const FTGOR_AimInstance& Aim, float LogDuration, FTGOR_ActionDebugInfo& DebugInfo) const
 {
 	if (IsValid(Identifier.Content) && IsValid(Identifier.Component) && Identifier.Content->Verbose)
 	{
 		DebugInfo.Action = Identifier.Content;
-		DebugInfo.Aim = LastAim;
+		DebugInfo.Aim = Aim;
 		DebugInfo.Inputs = Inputs.Inputs;
 		DebugInfo.HasNoCooldown = HasNoCooldown();
-		DebugInfo.HasValidTarget = HasValidTarget();
+		DebugInfo.HasValidTarget = HasValidTarget(Aim);
 		DebugInfo.HasValidMovement = HasValidMovement();
-		DebugInfo.IsInRange = IsInRange();
+		DebugInfo.IsInRange = IsInRange(Aim);
 
 		ETGOR_ValidEnumeration Invariance = ETGOR_ValidEnumeration::Invalid;
-		if (CheckOwnerState())
+		if (HasValidTarget(Aim) && HasValidMovement() && IsInRange(Aim))
 		{
-			OnCondition(Invariance);
+			OnCondition(Aim, Invariance);
 		}
 		DebugInfo.HasCondition = (Invariance == ETGOR_ValidEnumeration::Valid);
 		DebugInfo.IsRunning = IsRunning();
@@ -532,6 +566,40 @@ bool UTGOR_ActionTask::CollectDebugInfo(float LogDuration, FTGOR_ActionDebugInfo
 	return false;
 }
 
+bool UTGOR_ActionTask::ConsumeAimCheck() const
+{
+	UTGOR_Action* Action = GetAction();
+	if (IsValid(Action))
+	{
+		return 
+			Action->AimCheck == ETGOR_AimCheckEnumeration::CanCall || 
+			Action->AimCheck == ETGOR_AimCheckEnumeration::Current;
+	}
+	return false;
+}
+
+bool UTGOR_ActionTask::CheckAim(const FTGOR_AimInstance& Aim, const FTGOR_AimInstance& Other) const
+{
+	UTGOR_Action* Action = GetAction();
+	if (IsValid(Action))
+	{
+		if (Action->AimCheck == ETGOR_AimCheckEnumeration::Current)
+		{
+			return Aim.Component == Other.Component && Aim.Target == Other.Target;
+		}
+		else if (Action->AimCheck == ETGOR_AimCheckEnumeration::CanCall)
+		{
+			// TODO: Checking CanCall might be undesired here, check target validity only?
+			return CanCall(Aim);
+		}
+		else if (Action->AimCheck == ETGOR_AimCheckEnumeration::All)
+		{
+			return false;
+		}
+
+	}
+	return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -540,34 +608,44 @@ void UTGOR_ActionTask::Process(float DeltaTime)
 	ConsumeRootMotion(DeltaTime);
 }
 
-void UTGOR_ActionTask::Context(const FTGOR_AimInstance& Aim)
+bool UTGOR_ActionTask::Context(FTGOR_ActionState& State, const FTGOR_AimInstance& Aim, bool bForceUpdate)
 {
-	const bool HasChanged = (Aim.Component != LastAim.Component || Aim.Target != LastAim.Target);
-
-	LastAim = Aim;
-	OnContext();
-
-	if (HasChanged)
+	if (bForceUpdate || (Aim.Component != State.Aim.Component || Aim.Target != State.Aim.Target))
 	{
-		OnTarget();
+		if (!PrepareAim(Aim))
+		{
+			Finish(State);
+			return false;
+		}
 	}
 
-	if (Identifier.Content->AutoTrigger && !Identifier.Component->IsRunningAny() && CanCall())
+	State.Aim = Aim;
+
+	if (!Refresh(State.Aim))
 	{
-		Identifier.Component->ScheduleSlotAction(Identifier.Slot);
+		Finish(State);
+		return false;
 	}
+
+	return true;
 }
 
-void UTGOR_ActionTask::Prepare(FTGOR_ActionState& State)
+void UTGOR_ActionTask::Prepare(FTGOR_ActionState& State, const FTGOR_AimInstance& Aim)
 {
 	// Set new slot properties
 	SINGLETON_CHK;
-	State.Aim = LastAim;
 	State.Time = Singleton->GetGameTimestamp();
 	State.State = ETGOR_ActionStateEnumeration::Suspended;
 	State.ActiveSlot = Identifier.Slot;
 
-	LogActionMessage("Prepare", "Starting action");
+	if (Context(State, Aim, true))
+	{
+		LogActionMessage("Prepare", "Starting action");
+	}
+	else
+	{
+		LogActionMessage("Prepare", "Failed during context update");
+	}
 }
 
 
@@ -605,6 +683,13 @@ bool UTGOR_ActionTask::Update(FTGOR_ActionState& State, float Deltatime)
 		const float Time = GameTimestamp - State.Time;
 		const float Progress = UTGOR_Math::SafeDiv(Time, Identifier.Content->MaxPrepareTime);
 		bool Equipped = PrepareState(FMath::Clamp(Progress, 0.0f, 1.0f), Deltatime);
+
+		// Cancel completely if state got reverted during operation
+		if (State.State < ETGOR_ActionStateEnumeration::Prepare)
+		{
+			return false;
+		}
+
 		if (!Equipped || Time > Identifier.Content->MaxPrepareTime)
 		{
 			// Don't forward automatically if enabled
@@ -627,7 +712,7 @@ bool UTGOR_ActionTask::Update(FTGOR_ActionState& State, float Deltatime)
 
 	case ETGOR_ActionStateEnumeration::Operate:
 	{
-		if (!Condition())
+		if (!Refresh(State.Aim))
 		{
 			break;
 		}
@@ -638,6 +723,12 @@ bool UTGOR_ActionTask::Update(FTGOR_ActionState& State, float Deltatime)
 
 		// Cancel completely if this action got interrupted
 		if (!IsRunningIn(State))
+		{
+			return false;
+		}
+
+		// Cancel completely if state got reverted during operation
+		if (State.State < ETGOR_ActionStateEnumeration::Operate)
 		{
 			return false;
 		}
@@ -664,7 +755,7 @@ bool UTGOR_ActionTask::Update(FTGOR_ActionState& State, float Deltatime)
 
 	case ETGOR_ActionStateEnumeration::Finish:
 	{
-		if (!Condition())
+		if (!Refresh(State.Aim))
 		{
 			break;
 		}
@@ -673,6 +764,13 @@ bool UTGOR_ActionTask::Update(FTGOR_ActionState& State, float Deltatime)
 		const float Time = GameTimestamp - State.Time;
 		const float Progress = UTGOR_Math::SafeDiv(Time, Identifier.Content->MaxPrepareTime);
 		bool Unequipped = FinishState(FMath::Clamp(Progress, 0.0f, 1.0f), Deltatime);
+
+		// Cancel completely if state got reverted during operation
+		if (State.State < ETGOR_ActionStateEnumeration::Finish)
+		{
+			return false;
+		}
+
 		if (!Unequipped || Time > Identifier.Content->MaxFinishTime)
 		{
 			// Don't forward automatically if enabled
@@ -725,7 +823,7 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 	// Activate if not yet running
 	if (State.State <= ETGOR_ActionStateEnumeration::Suspended && ETGOR_ActionStateEnumeration::Suspended < TargetState)
 	{
-		if (!Condition())
+		if (!Refresh(State.Aim))
 		{
 			LogActionMessage("Forward", "Condition false");
 			return false;
@@ -748,7 +846,7 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 	// Skip equip
 	if (State.State <= ETGOR_ActionStateEnumeration::Prepare && ETGOR_ActionStateEnumeration::Prepare < TargetState)
 	{
-		if (!Condition())
+		if (!Refresh(State.Aim))
 		{
 			LogActionMessage("Forward", "Condition false");
 			return false;
@@ -771,7 +869,7 @@ bool UTGOR_ActionTask::Forward(FTGOR_ActionState& State, ETGOR_ActionStateEnumer
 	// Skip operate
 	if (State.State <= ETGOR_ActionStateEnumeration::Operate && ETGOR_ActionStateEnumeration::Operate < TargetState)
 	{
-		if (!Condition())
+		if (!Refresh(State.Aim))
 		{
 			LogActionMessage("Forward", "Condition false");
 			return false;
@@ -820,7 +918,7 @@ void UTGOR_ActionTask::Finish(FTGOR_ActionState& State)
 	LogActionMessage("Finish", "Forced Interrupt");
 	Forward(State, ETGOR_ActionStateEnumeration::Dead);
 
-	// Forwarding doesn't make sure we're invalidated (e.g. through Condition)
+	// Forwarding doesn't make sure we're invalidated (e.g. through Invariant)
 	if (IsRunningIn(State))
 	{
 		// Force death if forwarding failed

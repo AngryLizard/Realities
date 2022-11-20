@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "Engine/Canvas.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -23,7 +24,7 @@ USTRUCT(BlueprintType)
 struct SIMULATIONSYSTEM_API FTGOR_SimulationInstance
 {
 	GENERATED_USTRUCT_BODY();
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_SimulationInstance();
 

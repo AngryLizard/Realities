@@ -51,7 +51,7 @@ void FTGORNode_ConnectionSelection::CustomizeHeader(TSharedRef<class IPropertyHa
 
 	HeaderRow.NameContent()
 		[
-			ConnectionSelectionUPropertyHandle->CreatePropertyNameWidget(ConnectionSelectionUPropertyHandle->GetPropertyDisplayName(), ConnectionSelectionUPropertyHandle->GetPropertyDisplayName(), false)
+			ConnectionSelectionUPropertyHandle->CreatePropertyNameWidget(ConnectionSelectionUPropertyHandle->GetPropertyDisplayName(), ConnectionSelectionUPropertyHandle->GetPropertyDisplayName())
 		]
 		.ValueContent()
 		.MinDesiredWidth(500)
@@ -81,7 +81,7 @@ void FTGORNode_ConnectionSelection::ParseValue()
 	Formatted.ParseIntoArray(Array, L"\"", false);
 	if (Array.Num() >= 6)
 	{
-		ClassProperty = FindObject<UClass>(ANY_PACKAGE, *Array[1]);
+		ClassProperty = FindObject<UClass>(nullptr, *Array[1]);
 		SuffixProperty = Array[3];
 		ConnectionProperty = FName(*Array[5]);
 	}

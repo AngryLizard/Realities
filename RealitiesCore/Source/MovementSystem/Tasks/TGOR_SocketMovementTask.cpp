@@ -16,17 +16,21 @@ UTGOR_SocketMovementTask::UTGOR_SocketMovementTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_SocketMovementTask::Initialise()
+bool UTGOR_SocketMovementTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	RootComponent = Identifier.Component->GetRootPilot();
 	if (!RootComponent.IsValid())
 	{
-		ERROR("RootComponent invalid", Error);
+		ERRET("RootComponent invalid", Error, false);
 	}
 	
 	SocketTask.Reset();
+	return true;
 }
 
 bool UTGOR_SocketMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

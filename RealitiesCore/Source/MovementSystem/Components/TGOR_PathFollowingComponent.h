@@ -24,6 +24,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR System", Meta = (AdvancedDisplay = "bStopOnOverlap,bCanStrafe,bAllowPartialPath"))
 		EPathFollowingRequestResult::Type PathFollowingToLocation(const FVector& InDest, float InAcceptanceRadius, bool bInStopOnOverlap, bool bInUsePathfinding, bool bInProjectDestinationToNavigation, bool bInCanStrafe, TSubclassOf<UNavigationQueryFilter> InFilterClass, bool bInAllowPartialPaths);
 
+	UFUNCTION(BlueprintCallable, Category = "!TGOR System")
+		void StopPathFollowing();
+
+	UFUNCTION(BlueprintCallable, Category = "!TGOR System")
+		const TArray<FVector> GetCurrentPathPoints() const;
+
 	/** Blueprint notification that we've completed the current path following request */
 	UPROPERTY(BlueprintAssignable)
 		FPathFollowingCompletedSignature OnPathFollowingCompleted;

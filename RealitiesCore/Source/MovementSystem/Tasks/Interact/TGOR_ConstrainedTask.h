@@ -25,7 +25,7 @@ public:
 	UTGOR_ConstrainedTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void Initialise() override;
+	virtual bool Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 	virtual void Reset(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External);
 	virtual void QueryInput(FVector& OutInput, FVector& OutView) const override;

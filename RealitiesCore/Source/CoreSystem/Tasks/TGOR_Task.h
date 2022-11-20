@@ -61,7 +61,10 @@ public:
 			Task->Identifier.Component = Component;
 			Task->Identifier.Content = Factory;
 			Task->Identifier.Slot = SlotIdentifier;
-			Task->Initialise(); // Initialise
+			if (!Task->Initialise()) // Initialise
+			{
+				ERRET(FString::Printf(TEXT("Initialisation for %s failed."), *TaskName), Error, nullptr);
+			}
 		}
 		else
 		{

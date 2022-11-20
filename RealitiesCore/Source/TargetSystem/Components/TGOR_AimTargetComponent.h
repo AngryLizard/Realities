@@ -19,10 +19,10 @@ struct FTGOR_AimQueryParams
 		TSubclassOf<UTGOR_Target> Filter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Aim")
-		FVector Origin;
+		FVector Origin = FVector::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Aim")
-		FVector Direction;
+		FVector Direction = FVector::ForwardVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "!TGOR Aim")
 		float MaxAimDistance;
@@ -49,6 +49,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim")
 		float TargetRadius = 300.0f;
 
+	/** Threshold percentage of when target becomes activatable (used for user input events) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim")
+		float ActivationThreshold = 1.0f;
+
 	/** Whether targeting is enabled */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "!TGOR Aim")
 		bool CanBeTargeted = true;
@@ -56,14 +60,37 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
+	/** Project ray onto a plane facing camera and located at this activator */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		FVector ProjectRay(const FVector& RayOrigin, const FVector& RayDirection) const;
+
+	/** Computes relative distance of a point to given target center */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		float ComputeRelativeDistance(const FVector& Location, const FVector& Center, float Threshold = 1.0f) const;
+
+	/** Query target focus location */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Aim", Meta = (Keywords = "C++"))
+		virtual FTransform GetTargetTransform() const;
+
+	/** Convert a world location to local domain */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		virtual FVector WorldToTarget(const FVector& Location) const;
+
+	/** Convert local domain to world transform */
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		virtual FVector TargetToWorld(const FVector& Local) const;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+public:
+
 	/** Entity type this interactable spawns with. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Stats")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "!TGOR Aim")
 		TArray<TSubclassOf<UTGOR_Target>> SpawnTargets;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Array of currently supported targets */
-	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Interaction")
+	UPROPERTY(BlueprintReadWrite, Category = "!TGOR Aim")
 		TArray<UTGOR_Target*> Targets;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,5 +129,6 @@ public:
 		const uint32  bDrawOnlyIfSelected : 1;
 		const FColor  ShapeColor;
 		const float TargetRadius;
+		const float ActivationThreshold;
 	};
 };

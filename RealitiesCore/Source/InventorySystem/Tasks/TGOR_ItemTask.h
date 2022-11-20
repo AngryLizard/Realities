@@ -87,7 +87,7 @@ public:
 public:
 
 	/** Called once when this task is created */
-	virtual void Initialise();
+	virtual bool Initialise();
 
 	/** Called right before this task is removed from the current inventory */
 	virtual void RemovedFromInventory();

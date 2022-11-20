@@ -24,7 +24,7 @@ public:
 	UTGOR_ProjectedPilotTask();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	virtual void Initialise() override;
+	virtual bool Initialise() override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

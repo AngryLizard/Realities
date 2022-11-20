@@ -17,9 +17,7 @@ class TARGETSYSTEM_API UTGOR_ComponentTarget : public UTGOR_Target
 		
 public:
 	UTGOR_ComponentTarget();
-	virtual bool OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const override;
-	virtual bool SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const override;
-	virtual bool ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const override;
+	virtual bool OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, FTGOR_AimPoint& Point) const override;
 	virtual FVector QueryAimLocation(const FTGOR_AimInstance& Instance) const override;
 	virtual FVector QueryStickyLocation(const FTGOR_AimInstance& Instance) const override;
 	virtual UTGOR_AimTargetComponent* QueryInteractable(const FTGOR_AimInstance& Instance) const override;

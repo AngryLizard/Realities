@@ -2,7 +2,8 @@
 
 #pragma once
 
-
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "DimensionSystem/TGOR_PilotInstance.h"
 
 #include "Engine/UserDefinedStruct.h"
@@ -17,7 +18,7 @@ USTRUCT(BlueprintType)
 struct PHYSICSSYSTEM_API FTGOR_MovementCapture
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementCapture();
 

@@ -73,7 +73,7 @@ public:
 public:
 
 	/** Called once when this task is created */
-	virtual void Initialise();
+	virtual bool Initialise();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:

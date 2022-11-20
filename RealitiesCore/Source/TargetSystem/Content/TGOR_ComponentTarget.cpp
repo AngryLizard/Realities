@@ -10,52 +10,22 @@ UTGOR_ComponentTarget::UTGOR_ComponentTarget()
 	Importance = 1.0f;
 }
 
-bool UTGOR_ComponentTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_ComponentTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
-	const float ScaledThreshold = Component->TargetRadius * DistanceThreshold * Component->GetComponentScale().GetMax();
 
-	Point.Component = Component;
-
-	// When overlapping we take the interactable radius into consideration
-	const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
-	return ComputeDistance(Transform.GetLocation(), Origin, MaxDistance + ScaledThreshold, Point);
-}
-
-
-bool UTGOR_ComponentTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
-{
-	PARAMS_CHK;
-	const float ScaledThreshold = Component->TargetRadius * DistanceThreshold * Component->GetComponentScale().GetMax();
-
-	Point.Component = Component;
-
-	const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
+	const FTransform Transform = FTransform(Offset) * Component->GetTargetTransform();
 	Point.Center = Transform.GetLocation();
 
-	// Project onto view plane and transform to relative offset
-	const FVector Relative = ComputeProject(Point.Center, Origin, Direction);
-	Point.Distance = Relative.Size() / ScaledThreshold;
-	return Point.Distance < 1.0f;
-}
+	Point.Instance.Component = Component;
 
-bool UTGOR_ComponentTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const
-{
-	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Point.Component.Get());
-	if (IsValid(Component))
-	{
-		// Use interactable itself
-		Instance.Component = Point.Component;
+	// Compute offset vector
+	Point.Instance.Offset = Component->WorldToTarget(Origin);
 
-		// Compute offset vector
-		const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
-		Instance.Offset = ComputeOffset(Transform, Origin, Direction);
-
-		// Index unused
-		Instance.Index = -1;
-		return true;
-	}
-	return false;
+	// Index unused
+	Point.Instance.Index = -1;
+	Point.Distance = Component->ComputeRelativeDistance(Origin, Point.Center, DistanceThreshold);
+	return true;
 }
 
 FVector UTGOR_ComponentTarget::QueryAimLocation(const FTGOR_AimInstance& Instance) const
@@ -63,7 +33,7 @@ FVector UTGOR_ComponentTarget::QueryAimLocation(const FTGOR_AimInstance& Instanc
 	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 	if (IsValid(Component))
 	{
-		const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
+		const FTransform Transform = FTransform(Offset) * Component->GetTargetTransform();
 		return Transform.TransformPosition(Instance.Offset);
 	}
 	else
@@ -78,7 +48,7 @@ FVector UTGOR_ComponentTarget::QueryStickyLocation(const FTGOR_AimInstance& Inst
 	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Instance.Component.Get());
 	if (IsValid(Component))
 	{
-		const FTransform Transform = FTransform(Offset) * Component->GetComponentTransform();
+		const FTransform Transform = FTransform(Offset) * Component->GetTargetTransform();
 		return Transform.GetLocation();
 	}
 	else

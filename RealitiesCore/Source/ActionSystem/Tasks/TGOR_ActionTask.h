@@ -13,6 +13,7 @@ class UTGOR_ArmatureComponent;
 class UTGOR_MovementComponent;
 class ATGOR_CreatureCharacter;
 class UTGOR_Animation;
+class UTGOR_Movement;
 class UTGOR_Matter;
 
 class UTGOR_Input;
@@ -74,13 +75,15 @@ public:
 
 	/** Returns whether action can be called in this context (correct slot, cooldown etc) */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		virtual bool CanCall() const;
+		virtual bool CanCall(const FTGOR_AimInstance& Aim) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
-	virtual void Initialise();
-	virtual bool Condition() const;
+	virtual bool Initialise();
+	virtual bool Condition(const FTGOR_AimInstance& Aim) const;
+	virtual bool Refresh(const FTGOR_AimInstance& Aim);
+	virtual bool PrepareAim(const FTGOR_AimInstance& Aim);
 	virtual void PrepareStart();
 	virtual bool PrepareState(float Progress, float Deltatime);
 	virtual void OperateStart();
@@ -95,20 +98,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		void OnInitialise();
 
-	/** Called on all tasks to update context information (i.e. to cache values for CanCall).
-		This is called before every update call if this action is scheduled. */
+	/** Condition if action can be started.
+		If false user can neither schedule this action nor will it be visible for them. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void OnContext();
+		void OnCondition(const FTGOR_AimInstance& Aim, ETGOR_ValidEnumeration& Branches) const;
 
-	/** Called when during a context change the aim target has been modified significantly. */
+	/** Called when during a context change the aim target or component has been modified. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void OnTarget();
+		void OnPrepareAim(const FTGOR_AimInstance& Aim, ETGOR_ValidEnumeration& Branches);
 
-	/** Condition if action can be running.
-		If false user can neither schedule this action
-		nor will it be visible for them. If the action is already running it will be terminated. */
+	/** Called every update and on significant state changes while action is running.
+		If invalid the action will be terminated. Can be used to e.g. keep track of current aim location. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		void OnCondition(ETGOR_ValidEnumeration& Branches) const;
+		void OnRefresh(const FTGOR_AimInstance& Aim, ETGOR_ValidEnumeration& Branches);
 
 	/** Called once when action starts, followed by PrepareState. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Action", Meta = (Keywords = "C++"))
@@ -162,46 +164,47 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Gets duration since last call and current time */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		float GetTimeSinceLastCall() const;
 
 	/** Returns duration since last ActionState changed */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		float GetDuration(const FTGOR_ActionState& State) const;
 
 	/** Returns whether this task is currently running in the given state */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunningIn(const FTGOR_ActionState& State) const;
 
 	/** Returns whether this task is currently running in its ActionComponent */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsRunning() const;
 
 	/** Returns whether this task is currently preparing in its ActionComponent */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsPreparing() const;
 
 	/** Returns whether this task is currently operating in its ActionComponent */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsOperating() const;
 
 	/** Returns whether this task is currently finishing in its ActionComponent */
-	UFUNCTION(BlueprintCallable, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool IsFinishing() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/** Get currently targeted component */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		UActorComponent* GetAimedComponent() const;
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (DeterminesOutputType = "ComponentClass", Keywords = "C++"))
+		UActorComponent* GetAimedComponent(const FTGOR_AimInstance& Aim, TSubclassOf<UActorComponent> ComponentClass) const;
+		UActorComponent* GetAimedComponent(const FTGOR_AimInstance& Aim) const;
 
 	/** Get currently targeted content */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		UTGOR_Target* GetAimedTarget() const;
+		UTGOR_Target* GetAimedTarget(const FTGOR_AimInstance& Aim) const;
 
 	/** Get currently targeted location */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		FVector GetAimedLocation(bool Sticky) const;
+		FVector GetAimedLocation(const FTGOR_AimInstance& Aim, bool Sticky) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -210,36 +213,40 @@ private:
 		bool HasNoCooldown() const;
 
 	UFUNCTION()
-		bool HasValidTarget() const;
+		bool HasValidTarget(const FTGOR_AimInstance& Aim) const;
 
 	UFUNCTION()
 		bool HasValidMovement() const;
 		bool HasValidMovement(UTGOR_Movement* Movement) const;
 
 	UFUNCTION()
-		bool IsInRange() const;
-
-	/** Checks current aim whether target is in current action insertion list and in range as well as current movement mode. Used by default PreCondition. */
-	UFUNCTION()
-		bool CheckOwnerState() const;
+		bool IsInRange(const FTGOR_AimInstance& Aim) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 
 	/** Populate with debug information about the current action state */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "!TGOR Action", Meta = (Keywords = "C++"))
-		bool CollectDebugInfo(float LogDuration, FTGOR_ActionDebugInfo& DebugInfo) const;
+		bool CollectDebugInfo(const FTGOR_AimInstance& Aim, float LogDuration, FTGOR_ActionDebugInfo& DebugInfo) const;
+
+	/** Whether we check aim here and don't test any other action slots */
+	UFUNCTION()
+		bool ConsumeAimCheck() const;
+
+	/** Check whether a given aim instance is a valid aim target to take into consideration */
+	UFUNCTION()
+		bool CheckAim(const FTGOR_AimInstance& Aim, const FTGOR_AimInstance& Other) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	/** Process action, only called once per engine tick (opposed to update tick) */
 	void Process(float DeltaTime);
 
-	/** Update values in this task that depend on outside context (cache for CanCall and subsequent schedule) */
-	void Context(const FTGOR_AimInstance& Aim);
+	/** Update aim for this task while it is running, deschedules itself if invariance becomes false  */
+	bool Context(FTGOR_ActionState& State, const FTGOR_AimInstance& Aim, bool bForceUpdate = false);
 
 	/** Prepare trigger structure for Update calls */
-	void Prepare(FTGOR_ActionState& State);
+	void Prepare(FTGOR_ActionState& State, const FTGOR_AimInstance& Aim);
 
 	/** Updates this action state, deschedules itself if invariance becomes false */
 	bool Update(FTGOR_ActionState& State, float Deltatime);
@@ -273,7 +280,7 @@ private:
 public:
 
 	/** Update input value, return whether input has been handled */
-	bool UpdateInput(TSubclassOf<UTGOR_Input> InputType, float Value, bool AllowTrigger);
+	bool UpdateInput(TSubclassOf<UTGOR_Input> InputType, const FTGOR_AimInstance& Aim, float Value, bool AllowTrigger);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
@@ -325,11 +332,6 @@ private:
 	/** Logging data if action is verbose */
 	UPROPERTY()
 		TArray<FTGOR_ActionLog> DebugLogs;
-
-	/** Last record aim target */
-	UPROPERTY()
-		FTGOR_AimInstance LastAim;
-
 
 protected:
 private:

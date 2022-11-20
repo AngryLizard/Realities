@@ -65,10 +65,11 @@ float UTGOR_MovementTask::GetMaxSpeed() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_MovementTask::Initialise()
+bool UTGOR_MovementTask::Initialise()
 {
 	Identifier.Content->TaskInitialise(this);
 	OnInitialise();
+	return true;
 }
 
 void UTGOR_MovementTask::PrepareStart()

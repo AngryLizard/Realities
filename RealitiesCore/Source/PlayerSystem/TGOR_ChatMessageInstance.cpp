@@ -56,7 +56,7 @@ bool FTGOR_ChatMessageInstance::NetSerialize(FArchive& Ar, class UPackageMap* Ma
 	Ar << Domain;
 
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE
+	SERIALISE_INIT_SOURCE();
 	switch (Domain)
 	{
 		case ETGOR_ChatDomainEnumeration::System:

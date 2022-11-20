@@ -7,6 +7,8 @@
 
 #include "DialogueSystem/Tasks/TGOR_DialogueTask.h"
 #include "DialogueSystem/Content/TGOR_Dialogue.h"
+#include "DialogueSystem/Components/TGOR_InstigatorComponent.h"
+#include "DialogueSystem/Interfaces/TGOR_ParticipantInterface.h"
 
 #include "DrawDebugHelpers.h"
 #include "Net/UnrealNetwork.h"
@@ -16,6 +18,22 @@ UTGOR_DialogueComponent::UTGOR_DialogueComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	SetIsReplicatedByDefault(true);
+}
+
+void UTGOR_DialogueComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void UTGOR_DialogueComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	UTGOR_DialogueTask* Dialogue = GetDialogueTask();
+	if (IsValid(Dialogue))
+	{
+		Dialogue->Update(DialogueTaskState, DeltaTime);
+	}
 }
 
 void UTGOR_DialogueComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
@@ -43,9 +61,11 @@ void UTGOR_DialogueComponent::UpdateContent_Implementation(FTGOR_SpawnerDependen
 {
 	Super::UpdateContent_Implementation(Dependencies);
 
-	Dependencies.Process<UTGOR_AnimationComponent>();
+	Dependencies.Process<UTGOR_ParticipantInterface>();
 
 	UTGOR_DialogueTask* CurrentTask = GetDialogueTask();
+	const FTGOR_SpectacleConfiguration PreviousConfiguration = DialogueTaskState.Configuration;
+
 	TMap<UTGOR_Dialogue*, TArray<UTGOR_DialogueTask*>> Previous;
 
 	// Remove slots but cache both instances and items in case the new loadout can use them
@@ -91,11 +111,11 @@ void UTGOR_DialogueComponent::UpdateContent_Implementation(FTGOR_SpawnerDependen
 	const int32 ActiveSlot = DialogueSlots.Find(CurrentTask);
 	if (DialogueSlots.IsValidIndex(ActiveSlot))
 	{
-		StartDialogueWith(ActiveSlot);
+		StartDialogueWith(ActiveSlot, PreviousConfiguration);
 	}
 	else
 	{
-		StartDialogueWith(INDEX_NONE);
+		StartDialogueWith(INDEX_NONE, PreviousConfiguration);
 	}
 
 	// Discard tasks that got removed
@@ -120,15 +140,35 @@ TMap<int32, UTGOR_SpawnModule*> UTGOR_DialogueComponent::GetModuleType_Implement
 	return Modules;
 }
 
-TSubclassOf<UTGOR_Performance> UTGOR_DialogueComponent::GetPerformanceType() const
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool UTGOR_DialogueComponent::ValidateSpectactleFor(UTGOR_InstigatorComponent* Instigator, FTGOR_SpectacleConfiguration& Configuration) const
 {
-	return PerformanceType;
+	for (UTGOR_DialogueTask* DialogueSlot : DialogueSlots)
+	{
+		if (Instigator->ValidateTask(DialogueSlot, Configuration))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
-UTGOR_AnimationComponent* UTGOR_DialogueComponent::GetAnimationComponent() const
+void UTGOR_DialogueComponent::StartSpectacle(UTGOR_InstigatorComponent* Instigator, FTGOR_SpectacleConfiguration& Configuration)
 {
-	AActor* Actor = GetOwner();
-	return Actor->FindComponentByClass<UTGOR_AnimationComponent>();
+	const int32 Num = DialogueSlots.Num();
+	for (int32 Index = 0; Index < Num; Index++)
+	{
+		if (Instigator->ValidateTask(DialogueSlots[Index], Configuration))
+		{
+			StartDialogueWith(Index, Configuration);
+		}
+	}
+}
+
+void UTGOR_DialogueComponent::EndSpectacle()
+{
+	StartDialogueWith(INDEX_NONE, FTGOR_SpectacleConfiguration());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,20 +187,20 @@ bool UTGOR_DialogueComponent::HasDialogueWith(int32 Identifier) const
 	return DialogueTaskState.ActiveSlot == Identifier;
 }
 
-void UTGOR_DialogueComponent::StartDialogueWith(int32 Identifier)
+void UTGOR_DialogueComponent::StartDialogueWith(int32 Identifier, const FTGOR_SpectacleConfiguration& Configuration)
 {
 	if (Identifier != DialogueTaskState.ActiveSlot)
 	{
 		if (UTGOR_DialogueTask* Task = GetDialogueTask())
 		{
-			Task->Interrupt();
+			Task->Interrupt(DialogueTaskState);
 		}
 
 		DialogueTaskState.ActiveSlot = Identifier;
 
 		if (UTGOR_DialogueTask* Task = GetDialogueTask())
 		{
-			Task->PrepareStart();
+			Task->Prepare(DialogueTaskState);
 		}
 	}
 }
@@ -190,6 +230,6 @@ TArray<UTGOR_DialogueTask*> UTGOR_DialogueComponent::GetDialogueListOfType(TSubc
 	return Dialogues;
 }
 
-void UTGOR_DialogueComponent::RepNotifyDialogueTaskState(const FTGOR_DialogueState& Old)
+void UTGOR_DialogueComponent::RepNotifyDialogueTaskState(const FTGOR_SpectacleState& Old)
 {
 }

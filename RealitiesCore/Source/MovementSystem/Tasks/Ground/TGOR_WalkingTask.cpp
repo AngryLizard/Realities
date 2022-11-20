@@ -28,9 +28,9 @@ float UTGOR_WalkingTask::GetMaxSpeed() const
 	return MaximumSpeed;
 }
 
-void UTGOR_WalkingTask::Initialise()
+bool UTGOR_WalkingTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 
 	//IPC.Generate(Pendulum, Riccati);
 }

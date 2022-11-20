@@ -127,8 +127,10 @@ bool ATGOR_PreviewActor::ProbeMesh(USkinnedMeshComponent* ProbeTarget, const FVe
         OutCenter = FVector::ZeroVector;
         OutNormal = FVector::UpVector;
 
-        if (IsValid(ProbeTarget->SkeletalMesh))
+        USkinnedAsset* SkinnedAsset = ProbeTarget->GetSkinnedAsset();
+        if (IsValid(SkinnedAsset))
         {
+            /*
             UTGOR_BodypartUserData* UserData = ProbeTarget->SkeletalMesh->GetAssetUserData<UTGOR_BodypartUserData>();
             if (IsValid(UserData) && UserData->RenderSections.IsValidIndex(Hit.ElementIndex))
             {
@@ -143,6 +145,7 @@ bool ATGOR_PreviewActor::ProbeMesh(USkinnedMeshComponent* ProbeTarget, const FVe
                     return true;
                 }
             }
+            */
         }
     }
     return false;

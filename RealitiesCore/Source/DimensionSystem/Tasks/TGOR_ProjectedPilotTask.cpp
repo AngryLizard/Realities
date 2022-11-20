@@ -19,12 +19,16 @@ void UTGOR_ProjectedPilotTask::GetLifetimeReplicatedProps(TArray< FLifetimePrope
 	DOREPLIFETIME_CONDITION(UTGOR_ProjectedPilotTask, Local, COND_None);
 }
 
-void UTGOR_ProjectedPilotTask::Initialise()
+bool UTGOR_ProjectedPilotTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	const UTGOR_DimensionSettings* Settings = GetDefault<UTGOR_DimensionSettings>();
 	ProjectionAxis = Settings->PilotProjectionAxis;
+	return true;
 }
 
 FTGOR_MovementPosition UTGOR_ProjectedPilotTask::ComputePosition() const

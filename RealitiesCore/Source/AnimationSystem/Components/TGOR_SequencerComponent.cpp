@@ -4,6 +4,7 @@
 #include "CoreSystem/TGOR_Singleton.h"
 #include "AnimationSystem/Tasks/TGOR_SequencerPilotTask.h"
 #include "DimensionSystem/Components/TGOR_PilotComponent.h"
+#include "LevelSequencePlayer.h"
 
 #include "RealitiesUGC/Mod/TGOR_ContentManager.h"
 #include "DrawDebugHelpers.h"

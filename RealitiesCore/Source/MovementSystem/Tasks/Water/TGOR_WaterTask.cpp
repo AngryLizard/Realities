@@ -19,9 +19,9 @@ void UTGOR_WaterTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& Ou
 
 }
 
-void UTGOR_WaterTask::Initialise()
+bool UTGOR_WaterTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 }
 
 bool UTGOR_WaterTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

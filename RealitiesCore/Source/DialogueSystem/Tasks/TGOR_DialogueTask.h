@@ -6,13 +6,15 @@
 
 #include "DialogueSystem/TGOR_DialogueInstance.h"
 
-#include "AnimationSystem/Tasks/TGOR_AnimatedTask.h"
+#include "DialogueSystem/Tasks/TGOR_SpectacleTask.h"
 #include "TGOR_DialogueTask.generated.h"
 
 ////////////////////////////////////////////// DECL //////////////////////////////////////////////////////
 
 class UTGOR_Dialogue;
 class UTGOR_DialogueComponent;
+class UTGOR_ActivatorComponent;
+class UTGOR_InstigatorComponent;
 
 /**
 *
@@ -39,7 +41,7 @@ struct DIALOGUESYSTEM_API FTGOR_DialogueTaskIdentifier
 * 
 */
 UCLASS(Abstract, Blueprintable)
-class DIALOGUESYSTEM_API UTGOR_DialogueTask : public UTGOR_AnimatedTask
+class DIALOGUESYSTEM_API UTGOR_DialogueTask : public UTGOR_SpectacleTask
 {
 	GENERATED_BODY()
 
@@ -52,6 +54,11 @@ public:
 	UTGOR_DialogueTask();
 	void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	virtual TScriptInterface<ITGOR_AnimationInterface> GetAnimationOwner() const override;
+
+	virtual bool Initialise() override;
+	virtual void Prepare(FTGOR_SpectacleState& DialogueState) override;
+	virtual bool Update(FTGOR_SpectacleState& DialogueState, float DeltaTime) override;
+	virtual void Interrupt(FTGOR_SpectacleState& DialogueState) override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -69,26 +76,23 @@ public:
 		int32 GetSlotIndex() const;
 
 	/** Get attribute for movement */
-	UFUNCTION(BlueprintPure, Category = "!TGOR Movement", Meta = (Keywords = "C++"))
+	UFUNCTION(BlueprintPure, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
 		float GetAttribute(TSubclassOf<UTGOR_Attribute> Type, float Default) const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
-	/** Called once when this task is created */
-	virtual void Initialise();
-
-	/** Called once movement is invoked */
-	virtual void PrepareStart();
-
-	/** Called once movement is stopped */
-	virtual void Interrupt();
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/** Called once when this task is assigned to a component. Should usually only happen once. */
+	/** Called once when dialogue starts, used for setup. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
-		void OnInitialise();
+		void OnPrepare();
+
+	/** Called every tick while dialogue is active. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		void OnUpdate(float DeltaTime, ETGOR_SpectacleStateEnumeration& Branches);
+
+	/** Always called when dialogue is stopped/descheduled, used for cleanup. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "!TGOR Dialogue", Meta = (Keywords = "C++"))
+		void OnInterrupt();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

@@ -28,7 +28,7 @@ void UTGOR_InteractionQuery::CallIndex(int32 Index)
 		const FTGOR_InteractionEntry& Entry = Entries[Index];
 		if (IsValid(Entry.Caller) && Entry.Identifier != INDEX_NONE && Entry.Caller->IsLocallyControlled())
 		{
-			Entry.Caller->ScheduleSlotAction(Entry.Identifier);
+			Entry.Caller->ScheduleSlotAction(Entry.Identifier, FTGOR_AimInstance());
 		}
 	}
 	Super::CallIndex(Index);
@@ -59,7 +59,7 @@ void UTGOR_InteractionQuery::Update()
 
 	for (const FTGOR_InteractionRequest& Request : Requests)
 	{
-		TArray<int32> SlotIdentifiers = Request.Caller->GetCallableSubactionIdentifiers(Request.Action, true);
+		TArray<int32> SlotIdentifiers = Request.Caller->GetCallableSubactionIdentifiers(Request.Action, FTGOR_AimInstance(), true);
 		for (int32 Identifier : SlotIdentifiers)
 		{
 			// Build entry

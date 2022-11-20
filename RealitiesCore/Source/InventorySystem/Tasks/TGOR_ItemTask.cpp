@@ -84,10 +84,11 @@ void UTGOR_ItemTask::FreeToOwner()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ItemTask::Initialise()
+bool UTGOR_ItemTask::Initialise()
 {
 	Identifier.Content->TaskInitialise(this);
 	OnInitialise();
+	return true;
 }
 
 void UTGOR_ItemTask::RemovedFromInventory()

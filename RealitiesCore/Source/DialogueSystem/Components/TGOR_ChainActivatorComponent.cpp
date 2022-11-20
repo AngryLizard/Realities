@@ -1,7 +1,8 @@
 // The Gateway of Realities: Planes of Existence.
 
-#include "TGOR_ChainTouchableComponent.h"
+#include "TGOR_ChainActivatorComponent.h"
 #include "RealitiesUtility/Utility/TGOR_Error.h"
+
 #pragma optimize("", off)
 FTransform LerpTransforms(const FTransform& From, const FTransform& To, float Time)
 {
@@ -37,24 +38,24 @@ FTransform EvalCurve(const FTGOR_ChainCurve& From, const FTGOR_ChainCurve& To, f
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UTGOR_ChainTouchableComponent::UTGOR_ChainTouchableComponent()
+UTGOR_ChainActivatorComponent::UTGOR_ChainActivatorComponent()
 	: Super()
 {
 }
 
-void UTGOR_ChainTouchableComponent::BeginPlay()
+void UTGOR_ChainActivatorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	// Get prev attached chain child
 	USceneComponent* Parent = GetAttachParent();
-	TArray<UTGOR_ChainTouchableComponent*> Chains;
+	TArray<UTGOR_ChainActivatorComponent*> Chains;
 
 	TArray<USceneComponent*> Children;
 	Parent->GetChildrenComponents(false, Children);
 	for (USceneComponent* Child : Children)
 	{
-		UTGOR_ChainTouchableComponent* Component = Cast<UTGOR_ChainTouchableComponent>(Child);
+		UTGOR_ChainActivatorComponent* Component = Cast<UTGOR_ChainActivatorComponent>(Child);
 		if (IsValid(Component) && Component != this)
 		{
 			Chains.Add(Component);
@@ -92,10 +93,11 @@ void UTGOR_ChainTouchableComponent::BeginPlay()
 	}
 }
 
-void UTGOR_ChainTouchableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UTGOR_ChainActivatorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	/*
 	ChainPosition += ChainVelocity * DeltaTime;
 	ChainPosition = FMath::Clamp(ChainPosition, -1, ChainCache.Num());
 
@@ -107,7 +109,7 @@ void UTGOR_ChainTouchableComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	CurrentToLink = ChainCache.IsValidIndex(End) ? ChainCache[End] : nullptr;
 
 	CurrentCurveTime = FMath::Clamp(ChainPosition - Start, 0.f, 1.f);
-
+	*/
 
 	if (bEnableDebugDraw)
 	{
@@ -127,24 +129,43 @@ void UTGOR_ChainTouchableComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	}
 }
 
-FTransform UTGOR_ChainTouchableComponent::GetTargetTransform() const
-{
-	FTransform Transform = GetCurrentCurveTransform();
-	Transform.SetScale3D(FVector::OneVector);
 
-	return FTransform(OffsetRotation.Quaternion()) * Transform;
+FVector UTGOR_ChainActivatorComponent::WorldToTarget(const FVector& Location) const
+{
+	/*
+	// Project onto target plane
+	FTransform Transform = GetComponentTransform();
+	Transform.SetScale3D(FVector::OneVector);
+	const FVector LocalLocation = Transform.InverseTransformPosition(Location);
+	const FVector2D Domain = FVector2D(LocalLocation) / FVector2D::Max(Size, FVector2D(KINDA_SMALL_NUMBER));
+	return FVector(FVector2D::Max(FVector2D::Min(Domain, DomainMax), DomainMin), 0.0f);
+	*/
+
+	return FVector::ZeroVector;
 }
 
-FTransform UTGOR_ChainTouchableComponent::GetCurrentCurveTransform() const
+FVector UTGOR_ChainActivatorComponent::TargetToWorld(const FVector& Local) const
 {
+	// Update link information
+	const int32 Start = FMath::Min(FMath::FloorToInt(Local.Z), ChainCache.Num() - 1);
+	UTGOR_ChainActivatorComponent* FromLink = ChainCache.IsValidIndex(Start) ? ChainCache[Start] : nullptr;
+
+	const int32 End = FMath::Max(FMath::CeilToInt(Local.Z), 0);
+	UTGOR_ChainActivatorComponent* ToLink = ChainCache.IsValidIndex(End) ? ChainCache[End] : nullptr;
+
+	float CurveTime = FMath::Clamp(float(Local.Z) - float(Start), 0.f, 1.f);
+
 	FTGOR_ChainCurve From, To;
-	GetCurve(CurrentFromLink, CurrentToLink, From, To);
-	return EvalCurve(From, To, CurrentCurveTime);
+	GetCurve(FromLink, ToLink, From, To);
+	FTransform Transform = EvalCurve(From, To, CurveTime);
+
+	Transform.SetScale3D(FVector::OneVector);
+	return (FTransform(OffsetRotation.Quaternion()) * Transform).GetLocation();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-UTGOR_ChainTouchableComponent* UTGOR_ChainTouchableComponent::FindChainLink(const FName& Name) const
+UTGOR_ChainActivatorComponent* UTGOR_ChainActivatorComponent::FindChainLink(const FName& Name) const
 {
 	if (Name.IsNone())
 	{
@@ -158,7 +179,7 @@ UTGOR_ChainTouchableComponent* UTGOR_ChainTouchableComponent::FindChainLink(cons
 	Parent->GetChildrenComponents(false, Children);
 	for (USceneComponent* Child : Children)
 	{
-		UTGOR_ChainTouchableComponent* Component = Cast<UTGOR_ChainTouchableComponent>(Child);
+		UTGOR_ChainActivatorComponent* Component = Cast<UTGOR_ChainActivatorComponent>(Child);
 		if (IsValid(Component) && Component->GetFName() == Name)
 		{
 			return Component;
@@ -167,7 +188,7 @@ UTGOR_ChainTouchableComponent* UTGOR_ChainTouchableComponent::FindChainLink(cons
 	return nullptr;
 }
 
-void UTGOR_ChainTouchableComponent::GetCurve(const UTGOR_ChainTouchableComponent* PrevLink, const UTGOR_ChainTouchableComponent* NextLink, FTGOR_ChainCurve& From, FTGOR_ChainCurve& To)
+void UTGOR_ChainActivatorComponent::GetCurve(const UTGOR_ChainActivatorComponent* PrevLink, const UTGOR_ChainActivatorComponent* NextLink, FTGOR_ChainCurve& From, FTGOR_ChainCurve& To)
 {
 	if (PrevLink)
 	{
@@ -214,31 +235,31 @@ void UTGOR_ChainTouchableComponent::GetCurve(const UTGOR_ChainTouchableComponent
 
 }
 
-void UTGOR_ChainTouchableComponent::GetPrevCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const
+void UTGOR_ChainActivatorComponent::GetPrevCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const
 {
 	GetCurve(FindChainLink(PrevChainLink), this, To, From);
 }
 
-void UTGOR_ChainTouchableComponent::GetNextCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const
+void UTGOR_ChainActivatorComponent::GetNextCurve(FTGOR_ChainCurve& From, FTGOR_ChainCurve& To) const
 {
 	GetCurve(this, FindChainLink(NextChainLink), From, To);
 }
 
 #if WITH_EDITOR
-void UTGOR_ChainTouchableComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+void UTGOR_ChainActivatorComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	const FName PropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 #endif	// WITH_EDITOR
 
-FPrimitiveSceneProxy* UTGOR_ChainTouchableComponent::CreateSceneProxy()
+FPrimitiveSceneProxy* UTGOR_ChainActivatorComponent::CreateSceneProxy()
 {
-	class FDrawChainTouchableSceneProxy final : public FDrawTouchableSceneProxy
+	class FDrawChainActivatorSceneProxy final : public FDrawActivatorSceneProxy
 	{
 	public:
-		FDrawChainTouchableSceneProxy(const UTGOR_ChainTouchableComponent* InComponent)
-			: UTGOR_TouchableComponent::FDrawTouchableSceneProxy(InComponent)
+		FDrawChainActivatorSceneProxy(const UTGOR_ChainActivatorComponent* InComponent)
+			: UTGOR_ActivatorComponent::FDrawActivatorSceneProxy(InComponent)
 		{
 			PrevTangent = InComponent->PrevChainTangent;
 			NextTangent = InComponent->NextChainTangent;
@@ -246,7 +267,7 @@ FPrimitiveSceneProxy* UTGOR_ChainTouchableComponent::CreateSceneProxy()
 
 		virtual void DrawTargetSpace(const FMatrix& Transform, const FLinearColor& DrawColor, FPrimitiveDrawInterface* PDI) const override
 		{
-			FDrawTouchableSceneProxy::DrawTargetSpace(Transform, DrawColor, PDI);
+			FDrawActivatorSceneProxy::DrawTargetSpace(Transform, DrawColor, PDI);
 
 			const FVector ScaledX = Transform.GetUnitAxis(EAxis::X);
 
@@ -262,6 +283,6 @@ FPrimitiveSceneProxy* UTGOR_ChainTouchableComponent::CreateSceneProxy()
 		float NextTangent;
 	};
 
-	return new FDrawChainTouchableSceneProxy(this);
+	return new FDrawChainActivatorSceneProxy(this);
 }
 #pragma optimize("", on)

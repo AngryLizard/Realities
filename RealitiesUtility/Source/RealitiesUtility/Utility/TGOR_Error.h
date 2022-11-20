@@ -21,6 +21,8 @@
 
 #define RP(T) UTGOR_Error::Print(T)
 
+#define EXCPT(T) {UTGOR_Error::ThrowException(this, T);}
+
 UENUM(BlueprintType)
 enum class ETGOR_ErrorMode : uint8
 {
@@ -50,6 +52,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Error", Meta = (Keywords = "C++"))
 		static void DebugTrace(UWorld* World, FVector a, FVector b, FColor Color);
 
+	UFUNCTION(BlueprintCallable, Category = "!TGOR Error", Meta = (Keywords = "C++"))
+		static void ThrowException(UObject* Object, FString Message);
 
 	static FString Print(bool B) { return(B ? "true" : "false"); }
 	static FString Print(float N) { return((FMath::IsNaN(N) ? "NaN" : FString::SanitizeFloat(N))); }

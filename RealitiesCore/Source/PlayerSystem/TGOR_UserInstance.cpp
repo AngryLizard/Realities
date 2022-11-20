@@ -49,7 +49,7 @@ FTGOR_UserBodyDisplay::FTGOR_UserBodyDisplay()
 bool FTGOR_UserBodyDisplay::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
 {
 	uint8 Mask;
-	SERIALISE_INIT_SOURCE;
+	SERIALISE_INIT_SOURCE();
 	SERIALISE_MASK_SOURCE(Spawner, Spawner);
 	SERIALISE_MASK_SOURCE(Dimension, Dimension);
 

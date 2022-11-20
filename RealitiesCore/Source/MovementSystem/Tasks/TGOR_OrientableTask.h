@@ -28,7 +28,7 @@ public:
 
 	UTGOR_OrientableTask();
 
-	virtual void Initialise() override;
+	virtual bool Initialise() override;
 	virtual bool Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const override;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////

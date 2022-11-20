@@ -11,17 +11,17 @@ UTGOR_WorldTarget::UTGOR_WorldTarget()
 	Importance = 0.1f;
 }
 
-bool UTGOR_WorldTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_WorldTarget::OverlapTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
-	Point.Component = Component;
+	Point.Instance.Component = Component;
 	Point.Center = Component->GetComponentLocation();
 	Point.Distance = 0.99f; // We always hit the environment... faintly.
 	return true;
 }
 
-bool UTGOR_WorldTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimPoint& Point) const
+bool UTGOR_WorldTarget::ComputeTarget(UTGOR_AimTargetComponent* Component, const FVector& Origin, const FVector& Direction, FTGOR_AimPoint& Point) const
 {
 	PARAMS_CHK;
 
@@ -29,38 +29,24 @@ bool UTGOR_WorldTarget::SearchTarget(UTGOR_AimTargetComponent* Component, const 
 
 	FHitResult Hit;
 	FCollisionQueryParams Params;
-	if (World->LineTraceSingleByObjectType(Hit, Origin, Origin + Direction * MaxDistance, FCollisionObjectQueryParams::AllStaticObjects, Params))
+	if (World->LineTraceSingleByObjectType(Hit, Origin, Origin + Direction * Component->TargetRadius, FCollisionObjectQueryParams::AllStaticObjects, Params))
 	{
 		Point.Center = Hit.Location;
-		Point.Component = Component;
-
-		Point.Distance = (1.0f - Hit.Distance / MaxDistance * 0.1f);
-		return true;
+		Point.Distance = (1.0f - Hit.Distance / Component->TargetRadius * 0.1f);
 	}
-
-	Point.Center = Origin + Direction * MaxDistance;
-	Point.Component = Component;
-	Point.Distance = 0.99f;
-	return true;
-}
-
-bool UTGOR_WorldTarget::ComputeTarget(const FTGOR_AimPoint& Point, const FVector& Origin, const FVector& Direction, float MaxDistance, FTGOR_AimInstance& Instance) const
-{
-	UTGOR_AimTargetComponent* Component = Cast<UTGOR_AimTargetComponent>(Point.Component.Get());
-	if (IsValid(Component))
+	else
 	{
-		// Use interactable itself
-		Instance.Component = Point.Component;
-
-		// Compute offset vector
-		const FTransform Transform = Component->GetComponentTransform();
-		Instance.Offset = Transform.InverseTransformPosition(Point.Center);
-
-		// Index unused
-		Instance.Index = -1;
-		return true;
+		Point.Center = Origin + Direction * Component->TargetRadius;
+		Point.Distance = 0.99f;
 	}
-	return false;
+
+	// Use interactable itself
+	Point.Instance.Component = Component;
+
+	// Compute offset vector
+	const FTransform Transform = Component->GetComponentTransform();
+	Point.Instance.Offset = Transform.InverseTransformPosition(Point.Center);
+	return true;
 }
 
 FVector UTGOR_WorldTarget::QueryAimLocation(const FTGOR_AimInstance& Instance) const

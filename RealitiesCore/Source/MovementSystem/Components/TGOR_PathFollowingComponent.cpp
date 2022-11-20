@@ -252,3 +252,29 @@ void UTGOR_PathFollowingComponent::OnMoveCompleted(FAIRequestID RequestID, const
 {
 	OnPathFollowingCompleted.Broadcast(RequestID, Result.Code);
 }
+
+void UTGOR_PathFollowingComponent::StopPathFollowing()
+{
+	AController* Controller = Cast<AController>(GetOwner());
+	if (!IsValid(Controller))
+	{
+		UE_VLOG(this, TGOR_LogPlayerNavigation, Log, TEXT("PathFollowing is only enabled on controllers"));
+	}
+	
+	AbortMove(*Controller, FPathFollowingResultFlags::MovementStop);
+}
+
+const TArray<FVector> UTGOR_PathFollowingComponent::GetCurrentPathPoints() const
+{
+	TArray<FVector> PathPoints;
+
+	if (GetPath().IsValid())
+	{
+		PathPoints.Reserve(GetPath()->GetPathPoints().Num());
+		for (const FNavPathPoint& NavPathPoint : GetPath()->GetPathPoints())
+		{
+			PathPoints.Add(NavPathPoint.Location);
+		}
+	}
+	return  PathPoints;
+}

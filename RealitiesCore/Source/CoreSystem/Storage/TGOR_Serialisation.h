@@ -9,30 +9,30 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define SERIALISE_INIT_HEADER \
+#define SERIALISE_INIT_HEADER(...) \
 public: bool NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess)
 
-#define SERIALISE_INIT_ARCHIVE \
+#define SERIALISE_INIT_ARCHIVE(...) \
 CTGOR_Archive Archive(Ar, Map); \
 return bOutSuccess = Archive.Serialise(nullptr, *this);
 
-#define SERIALISE_INIT_HEADER \
+#define SERIALISE_INIT_HEADER(...) \
 public: bool NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess)
 
 #define SERIALISE_INIT_IMPLEMENT(T) \
-bool T::NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess) { SERIALISE_INIT_ARCHIVE; }
+bool T::NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess) { SERIALISE_INIT_ARCHIVE(); }
 
 
-#define SERIALISE_INIT_SOURCE \
+#define SERIALISE_INIT_SOURCE(...) \
 UTGOR_Singleton* Singleton = UTGOR_GameInstance::EnsureSingletonFromWorld(Map->GetWorld()); \
 if (!IsValid(Singleton)) { ERRET("Singleton invalid", Error, bOutSuccess = false); }
 
-#define SERIALISE_INIT_SOURCE_ARCHIVE \
-SERIALISE_INIT_SOURCE; CTGOR_Archive Archive(Ar, Map); \
+#define SERIALISE_INIT_SOURCE_ARCHIVE(...) \
+SERIALISE_INIT_SOURCE(); CTGOR_Archive Archive(Ar, Map); \
 return bOutSuccess = Archive.Serialise(Singleton, *this);
 
 #define SERIALISE_INIT_SOURCE_IMPLEMENT(T) \
-bool T::NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess) { SERIALISE_INIT_SOURCE_ARCHIVE; }
+bool T::NetSerialize(FArchive & Ar, class UPackageMap* Map, bool& bOutSuccess) { SERIALISE_INIT_SOURCE_ARCHIVE(); }
 
 
 

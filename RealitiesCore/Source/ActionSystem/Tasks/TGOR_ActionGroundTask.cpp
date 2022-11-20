@@ -13,11 +13,16 @@ UTGOR_ActionGroundTask::UTGOR_ActionGroundTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ActionGroundTask::Initialise()
+bool UTGOR_ActionGroundTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	ActionComponent = RootComponent->GetOwnerComponent<UTGOR_ActionComponent>();
+
+	return true;
 }
 
 bool UTGOR_ActionGroundTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

@@ -43,6 +43,7 @@ UTGOR_Action::UTGOR_Action()
 	ClientAuthority(ETGOR_ClientAuthority::NoAuthority),
 	NetworkNotify(ETGOR_NotifyReplication::NoValidation),
 	SupportedItem(),
+	AimCheck(ETGOR_AimCheckEnumeration::None),
 	AimTarget(ETGOR_AimIgnoreEnumeration::None),
 	AimRange(ETGOR_AimDistanceEnumeration::NoRange),
 	AutoTrigger(false),
@@ -63,6 +64,11 @@ UTGOR_ActionTask* UTGOR_Action::CreateActionTask(UTGOR_ActionComponent* Componen
 bool UTGOR_Action::HasClientAuthority() const
 {
 	return ClientAuthority > ETGOR_ClientAuthority::NoAuthority;
+}
+
+bool UTGOR_Action::HasTargetCondition() const
+{
+	return AimTarget != ETGOR_AimIgnoreEnumeration::None;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

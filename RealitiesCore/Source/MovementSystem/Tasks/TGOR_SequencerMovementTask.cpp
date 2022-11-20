@@ -15,17 +15,21 @@ UTGOR_SequencerMovementTask::UTGOR_SequencerMovementTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_SequencerMovementTask::Initialise()
+bool UTGOR_SequencerMovementTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	RootComponent = Identifier.Component->GetRootPilot();
 	if (!RootComponent.IsValid())
 	{
-		ERROR("RootComponent invalid", Error);
+		ERRET("RootComponent invalid", Error, false);
 	}
 
 	SequencerTask.Reset();
+	return true;
 }
 
 bool UTGOR_SequencerMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

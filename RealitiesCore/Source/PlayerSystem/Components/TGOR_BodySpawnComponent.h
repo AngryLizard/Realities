@@ -21,7 +21,7 @@ USTRUCT(BlueprintType)
 struct PLAYERSYSTEM_API FTGOR_CreateBodySetup
 {
 	GENERATED_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 	FTGOR_CreateBodySetup();
 
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "Components/ActorComponent.h"
 
 #include "RealitiesUtility/Structures/TGOR_Time.h"
@@ -46,7 +48,7 @@ USTRUCT(BlueprintType)
 struct ACTIONSYSTEM_API FTGOR_ActionInputs
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_ActionInputs();
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
@@ -74,7 +76,7 @@ USTRUCT(BlueprintType)
 struct ACTIONSYSTEM_API FTGOR_ActionState
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_ActionState();
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;
@@ -115,7 +117,7 @@ USTRUCT(BlueprintType)
 struct ACTIONSYSTEM_API FTGOR_LoadoutInstance
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_LoadoutInstance();
 

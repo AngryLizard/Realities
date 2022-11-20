@@ -25,9 +25,9 @@ void UTGOR_ConstrainedTask::GetLifetimeReplicatedProps(TArray< FLifetimeProperty
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_ConstrainedTask::Initialise()
+bool UTGOR_ConstrainedTask::Initialise()
 {
-	Super::Initialise();
+	return Super::Initialise();
 }
 
 bool UTGOR_ConstrainedTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

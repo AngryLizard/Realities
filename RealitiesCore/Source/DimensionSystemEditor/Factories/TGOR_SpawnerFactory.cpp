@@ -91,11 +91,11 @@ bool UTGOR_SpawnerFactory::CanCreateActorFrom(const FAssetData& AssetData, FText
 		IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
 
 		const FStringView ObjectPath = FPackageName::ExportTextPathToObjectPath(FStringView(ParentClassPath));
-		const FName ParentClassPathFName = FName(FPackageName::ObjectPathToObjectName(ObjectPath));
-		TArray<FName> AncestorClassNames;
-		AssetRegistry.GetAncestorClassNames(ParentClassPathFName, AncestorClassNames);
+		const FTopLevelAssetPath ParentAssetClassPath = FTopLevelAssetPath(FPackageName::ObjectPathToObjectName(ObjectPath));
+		TArray<FTopLevelAssetPath> AncestorClassNames;
+		AssetRegistry.GetAncestorClassNames(ParentAssetClassPath, AncestorClassNames);
 
-		bIsActorBased = AncestorClassNames.Contains(UTGOR_Spawner::StaticClass()->GetFName());
+		bIsActorBased = AncestorClassNames.Contains(UTGOR_Spawner::StaticClass()->GetClassPathName());
 	}
 
 	if (!bIsActorBased)

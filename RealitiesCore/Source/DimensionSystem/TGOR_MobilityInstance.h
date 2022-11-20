@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "RealitiesUtility/Structures/TGOR_Time.h"
 #include "RealitiesUtility/Structures/TGOR_Normal.h"
 
@@ -348,7 +350,7 @@ USTRUCT(BlueprintType)
 struct DIMENSIONSYSTEM_API FTGOR_MovementShape
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementShape();
 
@@ -387,7 +389,7 @@ USTRUCT(BlueprintType)
 struct DIMENSIONSYSTEM_API FTGOR_MovementBody : public FTGOR_MovementShape
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_MovementBody();
 

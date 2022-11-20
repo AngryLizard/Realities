@@ -12,7 +12,7 @@ void UTGOR_ButtonEntry::NativeOnMouseEnter(const FGeometry& InGeometry, const FP
 {
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 	
-	if (bIsEnabled && IsAutomatic)
+	if (GetIsEnabled() && IsAutomatic)
 	{
 		ProcessHover();
 	}
@@ -22,7 +22,7 @@ void UTGOR_ButtonEntry::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
 
-	if (bIsEnabled && IsAutomatic)
+	if (GetIsEnabled() && IsAutomatic)
 	{
 		ProcessLeave();
 	}
@@ -32,7 +32,7 @@ FReply UTGOR_ButtonEntry::NativeOnMouseButtonDown(const FGeometry& InGeometry, c
 {
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 
-	if (bIsEnabled && IsAutomatic)
+	if (GetIsEnabled() && IsAutomatic)
 	{
 		ProcessPressed();
 		return FReply::Handled();
@@ -44,7 +44,7 @@ FReply UTGOR_ButtonEntry::NativeOnMouseButtonUp(const FGeometry& InGeometry, con
 {
 	Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
 
-	if (bIsEnabled && IsAutomatic)
+	if (GetIsEnabled() && IsAutomatic)
 	{
 		ProcessUnpressed();
 		return FReply::Handled();

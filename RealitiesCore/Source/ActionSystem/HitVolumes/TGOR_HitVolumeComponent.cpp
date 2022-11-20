@@ -45,6 +45,8 @@ void UTGOR_HitVolumeComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 void UTGOR_HitVolumeComponent::ShootHitVolume(TScriptInterface<ITGOR_RegisterInterface> Register, UTGOR_CoreContent* Content, TSubclassOf<ATGOR_HitVolume> Type, const FTransform& Transform, const FTGOR_ForceInstance& Forces, bool Autonomous)
 {
+	// TODO: Not supported anymore, needs reimplementation
+	/*
 	UTGOR_AimComponent* AimComponent = GetOwnerComponent<UTGOR_AimComponent>();
 	if (IsValid(AimComponent))
 	{
@@ -90,6 +92,7 @@ void UTGOR_HitVolumeComponent::ShootHitVolume(TScriptInterface<ITGOR_RegisterInt
 		HitVolume->AssignOwnerInstigator(GetOwner());
 		HitVolume->Shoot(AimComponent->GetCurrentAim(), Forces);
 	}
+	*/
 }
 
 

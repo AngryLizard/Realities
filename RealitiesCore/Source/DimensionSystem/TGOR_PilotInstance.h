@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "RealitiesUtility/Structures/TGOR_Index.h"
 #include "RealitiesUtility/Structures/TGOR_Time.h"
 
@@ -23,7 +25,7 @@ USTRUCT(BlueprintType)
 struct FTGOR_PilotState
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 
 	FTGOR_PilotState();
 	void Send(FTGOR_NetworkWritePackage& Package, UTGOR_Singleton* Context) const;

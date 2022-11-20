@@ -16,17 +16,21 @@ UTGOR_EuclideanMovementTask::UTGOR_EuclideanMovementTask()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void UTGOR_EuclideanMovementTask::Initialise()
+bool UTGOR_EuclideanMovementTask::Initialise()
 {
-	Super::Initialise();
+	if (!Super::Initialise())
+	{
+		return false;
+	}
 
 	RootComponent = Identifier.Component->GetRootPilot();
 	if (!RootComponent.IsValid())
 	{
-		ERROR("RootComponent invalid", Error);
+		ERRET("RootComponent invalid", Error, false);
 	}
 
 	EuclideanTask.Reset();
+	return true;
 }
 
 bool UTGOR_EuclideanMovementTask::Invariant(const FTGOR_MovementSpace& Space, const FTGOR_MovementExternal& External) const

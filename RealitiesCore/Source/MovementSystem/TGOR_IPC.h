@@ -16,19 +16,19 @@ struct MOVEMENTSYSTEM_API FTGOR_PendulumState
 
 	/** Pendulum X state relative to parent */
 	UPROPERTY()
-		FVector4 X;
+		FVector4 X = FVector4();
 
 	/** Pendulum Y state relative to parent */
 	UPROPERTY()
-		FVector4 Y;
+		FVector4 Y = FVector4();
 
 	/** Pendulum Z state relative to parent */
 	UPROPERTY()
-		FVector2D Z;
+		FVector2D Z = FVector2D::ZeroVector;
 
 	/** Pendulum rotation state relative to parent */
 	UPROPERTY()
-		FVector2D R;
+		FVector2D R = FVector2D::ZeroVector;
 };
 
 /**
@@ -108,11 +108,11 @@ struct MOVEMENTSYSTEM_API FTGOR_IPCProperties
 
 	/** Force coefficients */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector4 ForceCoef;
+		FVector4 ForceCoef = FVector4();
 
 	/** Force response */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FVector4 ForceResponse;
+		FVector4 ForceResponse = FVector4();
 };
 
 /**

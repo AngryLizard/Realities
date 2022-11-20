@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "RealitiesUtility/Structures/TGOR_Time.h"
 
 #include "CoreSystem/Storage/TGOR_Serialisation.h"
@@ -206,7 +207,7 @@ USTRUCT(BlueprintType)
 struct DIMENSIONSYSTEM_API FTGOR_ConnectionCollection
 {
 	GENERATED_USTRUCT_BODY()
-		SERIALISE_INIT_HEADER;
+		SERIALISE_INIT_HEADER();
 public:
 	FTGOR_ConnectionCollection();
 

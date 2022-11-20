@@ -54,6 +54,22 @@ enum class ETGOR_NotifyReplication : uint8
  *
  */
 UENUM(BlueprintType)
+enum class ETGOR_AimCheckEnumeration : uint8
+{
+	/* Don't check aim at all while running */
+	None,
+	/* Check current aim target only */
+	Current,
+	/* Check all targets we can run this action on */
+	CanCall,
+	/* Check all targets */
+	All
+};
+
+/**
+ *
+ */
+UENUM(BlueprintType)
 enum class ETGOR_AimIgnoreEnumeration : uint8
 {
 	/* Don't check targets at all */
@@ -144,6 +160,10 @@ protected:
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
 
+	/** Aim check rule */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		ETGOR_AimCheckEnumeration AimCheck;
+
 	/** Aim ignore rule */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ETGOR_AimIgnoreEnumeration AimTarget;
@@ -177,6 +197,10 @@ public:
 	/** Whether autonomous client can skip certain action states (aka action state is sent with payload data) */
 	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
 		bool HasClientAuthority() const;
+
+	/** Whether this action requires a target */
+	UFUNCTION(BlueprintPure, Category = "!TGOR Action", Meta = (Keywords = "C++"))
+		bool HasTargetCondition() const;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 public:

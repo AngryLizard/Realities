@@ -140,10 +140,11 @@ void FRawIndexBuffer::InitRHI()
 		FRHIResourceCreateInfo CreateInfo(TEXT("RawIndexBuffer"));
 
 		EBufferUsageFlags Usage = BUF_Static | BUF_IndexBuffer;
-		ERHIAccess ResourceState = RHIGetDefaultResourceState(Usage, true);
+		ERHIAccess ResourceAccessState = RHIGetDefaultResourceState(Usage, true);
 
 		FRHICommandListExecutor::GetImmediateCommandList();
-		IndexBufferRHI = GDynamicRHI->CreateBuffer_RenderThread(FRHICommandListExecutor::GetImmediateCommandList(), Size, BUF_Static | BUF_IndexBuffer, sizeof(uint16), ResourceState, CreateInfo);
+
+		IndexBufferRHI = RHICreateBuffer(Size, BUF_Static | BUF_IndexBuffer, sizeof(uint16), ResourceAccessState, CreateInfo);
 		void* Buffer = GDynamicRHI->RHILockBuffer(FRHICommandListExecutor::GetImmediateCommandList(), IndexBufferRHI, 0, Size, RLM_WriteOnly);
 		//IndexBufferRHI = RHICreateAndLockIndexBuffer(sizeof(uint16), Size, BUF_Static, CreateInfo, Buffer);
 

@@ -25,7 +25,7 @@ public:
 
 	/** Assigns ActionComponent and last used inventory slot, also defines an additional filter used for SlotActions */
 	UFUNCTION(BlueprintCallable, Category = "!TGOR Inventory", Meta = (Keywords = "C++"))
-		virtual void AssignComponent(UTGOR_ActionComponent* ActionComponent, TSubclassOf<UTGOR_Action> Type, bool CheckCanCall = false);
+		virtual void AssignComponent(UTGOR_ActionComponent* ActionComponent, TSubclassOf<UTGOR_Action> Type, const FTGOR_AimInstance& Aim, bool CheckCanCall = false);
 
 	UPROPERTY(BlueprintReadOnly, Category = "!TGOR Inventory")
 		UTGOR_ActionComponent* OwnerComponent;

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
+#include "Coresystem/Storage/TGOR_Serialisation.h"
 #include "RealitiesUtility/Structures/TGOR_Time.h"
 #include "RealitiesUtility/Structures/TGOR_Percentage.h"
 #include "AttributeSystem/TGOR_AttributeInstance.h"
@@ -88,7 +90,7 @@ USTRUCT(BlueprintType)
 struct FTGOR_StatState
 {
 	GENERATED_USTRUCT_BODY()
-	SERIALISE_INIT_HEADER;
+	SERIALISE_INIT_HEADER();
 
 	void Write(FTGOR_GroupWritePackage& Package, UTGOR_Singleton* Context) const;
 	void Read(FTGOR_GroupReadPackage& Package, UTGOR_Singleton* Context);
